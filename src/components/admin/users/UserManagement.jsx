@@ -330,10 +330,10 @@ export default function UserManagement() {
         getUsers();
       }
     } catch (error) {
-      setResponse({ success: false, message: 'Bulk role assignment failed'});
+      setResponse({ success: false, message: 'Bulk role assignment failed' });
     } finally {
       complete();
-    } 
+    }
   };
 
   // Bulk Status Update
@@ -650,6 +650,7 @@ export default function UserManagement() {
                   </th>
                   <th className="border-b border-slate-200 px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">User</th>
                   <th className="border-b border-slate-200 px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Email</th>
+                  <th className="border-b border-slate-200 px-4 py-3.5 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
                   <th className="border-b border-slate-200 px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Role</th>
                   <th className="border-b border-slate-200 px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider w-40">Actions</th>
                 </tr>
@@ -682,6 +683,9 @@ export default function UserManagement() {
                         <FiMail className="text-slate-400" size={16} />
                         <span className="text-sm">{user.email}</span>
                       </div>
+                    </td>
+                    <td className='text-xs text-center  align-middle'>
+                      <span className={(user?.active ? 'bg-green-600' : 'bg-red-600') + ' p-2 rounded text-white font-semibold'}>{user?.status}</span>
                     </td>
                     <td className="px-4 py-4 align-middle">
                       <div className="flex items-center gap-2 flex-wrap">
