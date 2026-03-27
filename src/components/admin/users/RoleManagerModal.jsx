@@ -258,7 +258,7 @@ const RoleManagerModal = ({ show, setShow, user }) => {
       </Modal.Footer>
 
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
+        .custom-scrollbar::-webkit-scrollbar { 
           width: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
