@@ -1,0 +1,118 @@
+import { Facebook, Instagram, Linkedin, Mail, Phone } from "lucide-react";
+import logo from "@/resources/logo.png";
+import { FaFacebook, FaWhatsapp } from "react-icons/fa";
+
+export default function Footer() {
+    return (
+        <footer className="bg-slate-950 text-gray-300 py-12">
+            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-10">
+
+                <div>
+                    <div>
+                        <div className="flex items-center  space-x-3 mb-3">
+                            <div className="bg-white p-2 rounded w-[200px]">
+                                <img src={logo} alt="LMS Logo" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-white">LMS</h2>
+                        </div>
+                        <p className="text-gray-400 text-sm">
+                            Your Learning Management System built for students, teachers, and digital learning.
+                        </p>
+                    </div>
+
+                    {/* Quick Links */}
+                    <div>
+                        <h3 className="text-lg font-semibold text-white mb-3">Quick Links</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li><a href="#" className="hover:text-red-500 transition">Privacy</a></li>
+                            <li><a href="#" className="hover:text-red-500 transition">Policy</a></li>
+                            <li><a href="#" className="hover:text-red-500 transition">Login</a></li>
+                            <li><a href="#" className="hover:text-red-500 transition">Register</a></li>
+                            <li><a href="#" className="hover:text-red-500 transition">Help</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Contact */}
+                    <div>
+                        <h3 className="text-lg font-semibold text-white mb-3">Contact Us</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li className="flex items-center space-x-2">
+                                <Phone className="w-4 h-4" />
+                                <span>011 568 0486 / 068 552 4477</span>
+                            </li>
+                            <li className="flex items-center space-x-2">
+                                <Mail className="w-4 h-4" />
+                                <span>support@lms.com</span>
+                            </li>
+                        </ul>
+
+                        {/* Social Icons */}
+                        <div className="flex space-x-4 mt-4">
+                            <a href="#" className="hover:text-white transition">
+                                <Linkedin className="w-5 h-5" />
+                            </a>
+                            <a href="#" className="hover:text-white transition">
+                                <Facebook className="w-5 h-5" />
+                            </a>
+                            <a href="#" className="hover:text-white transition">
+                                <Instagram className="w-5 h-5" />
+                            </a>
+                            <a href="#" className="hover:text-white transition">
+                                <FaWhatsapp className="w-5 h-5" />
+                            </a>
+                        </div>
+                    </div>
+
+                    <div className="py-3">
+                        <p className="text-gray-500 text-xs">
+                            © {new Date().getFullYear()} LMS — All Rights Reserved.
+                        </p>
+                    </div>
+                </div>
+
+
+                <div>
+                    <h3 className="text-lg font-semibold text-white mb-4">
+                        Send Us Feedback
+                    </h3>
+
+                    <form className="space-y-4">
+
+
+                        <input
+                            type="text"
+                            placeholder="Your Name"
+                            className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-red-500"
+                            required
+                        />
+
+                        <input
+                            type="email"
+                            placeholder="Your Email"
+                            className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-red-500"
+                            required
+                        />
+
+                        <textarea
+                            rows="4"
+                            placeholder="Write your message..."
+                            className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-red-500"
+                            required
+                        ></textarea>
+
+                        {/* Submit */}
+                        <button
+                            type="submit"
+                            className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition font-medium"
+                        >
+                            Send
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </footer>
+    );
+}
+
+
