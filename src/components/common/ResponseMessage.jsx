@@ -5,7 +5,8 @@ export default function ResponseMessage({ response, setResponse }) {
 
   // Determine type
   const isFullSuccess = response?.success && !response?.payload?.partialSuccess;
-  const isPartialSuccess = response?.payload?.partialSuccess;
+  const isPartialSuccess = response?.payload?.partialSuccess === true;
+  const isFullFailure = !response?.success && response?.payload?.errorCount > 0;
 
   // Colors
   const bgColor = isFullSuccess
@@ -21,7 +22,7 @@ export default function ResponseMessage({ response, setResponse }) {
     : "text-red-700";
 
   // Icon
-  const Icon = isFullSuccess ? CheckCircle : isPartialSuccess ? AlertCircle : AlertCircle;
+  const Icon = isFullSuccess ? CheckCircle : AlertCircle;
 
   return (
     <div className={`${bgColor} rounded p-3 flex flex-col mb-4 border`}>
@@ -37,18 +38,18 @@ export default function ResponseMessage({ response, setResponse }) {
         />
       </div>
 
-      {/* Partial success details */}
-      {isPartialSuccess && response?.payload && (
+      {/* Show error details for both partial success and full failure */}
+      {response?.payload && (isPartialSuccess || isFullFailure) && (
         <div className="text-sm ml-7 space-y-1">
           {response?.payload?.successCount > 0 && (
             <p className="text-green-700">
-              ✅ Successfully deleted IDs: {response?.payload?.successfulIds?.join(", ")}
+              ✅ Successfully processed IDs: {response?.payload?.successfulIds?.join(", ")}
             </p>
           )}
           {response?.payload?.errorCount > 0 && (
             <div className="text-red-700">
-              ❌ Errors:
-              <ul className="list-disc ml-5">
+              ❌ Errors ({response?.payload?.errorCount}):
+              <ul className="list-disc ml-5 mt-1">
                 {response?.payload?.errors?.map((err, idx) => (
                   <li key={idx}>{err}</li>
                 ))}

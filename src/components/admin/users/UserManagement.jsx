@@ -323,17 +323,17 @@ export default function UserManagement() {
         })
       });
 
-      setResponse(results);
+      setResponse(result);
 
       if (result?.success) {
         setBulkSelection([]);
         getUsers();
       }
     } catch (error) {
-      setResponse({ success: false, message: 'Bulk role assignment failed' });
+      setResponse({ success: false, message: 'Bulk role assignment failed'});
     } finally {
       complete();
-    }
+    } 
   };
 
   // Bulk Status Update
@@ -720,7 +720,7 @@ export default function UserManagement() {
                       </div>
                     </td>
                     <td className="px-4 py-4 align-middle">
-                      <Dropdown className="relative inline-block">
+                      <Dropdown className=" inline-block">
                         <Dropdown.Toggle
                           size="sm"
                           className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-2 py-1 rounded inline-flex items-center focus:outline-none"
@@ -728,7 +728,7 @@ export default function UserManagement() {
                           ACTION
                         </Dropdown.Toggle>
 
-                        <Dropdown.Menu className="px-auto z-[9999] min-w-[140px] bg-slate-50 border border-gray-200 rounded-md shadow-lg">
+                        <Dropdown.Menu className="px-auto absolute z-[9999] min-w-[140px] bg-slate-50 border border-gray-200 rounded-md shadow-lg">
                           {[
                             {
                               label: "ROLE MANAGER",
