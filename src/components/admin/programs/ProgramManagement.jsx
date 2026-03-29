@@ -352,7 +352,7 @@ export default function ProgramManagement() {
                                     placeholder="Search programs by title, description, or tags..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="border-l-0 focus:border-red-500 focus:ring-red-500"
+                                    className="border-l-0  "
                                 />
                             </InputGroup>
                             {(selectedCategory !== 'all' || selectedStatus !== 'all' || selectedType !== 'all' || searchTerm) && (

@@ -1,19 +1,20 @@
 import { Facebook, Instagram, Linkedin, Mail, Phone } from "lucide-react";
 import logo from "@/resources/logo.png";
 import { FaFacebook, FaWhatsapp } from "react-icons/fa";
+import { Button, Form } from "react-bootstrap";
 
 export default function Footer() {
     return (
-        <footer className="bg-slate-950 text-gray-300 py-12">
+        <footer className="bg-slate-50 text-black py-12">
             <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-10">
 
                 <div>
                     <div>
                         <div className="flex items-center  space-x-3 mb-3">
-                            <div className="bg-white p-2 rounded w-[200px]">
+                            <div className=" p-2 rounded w-[200px]">
                                 <img src={logo} alt="LMS Logo" />
                             </div>
-                            <h2 className="text-2xl font-bold text-white">LMS</h2>
+                            <h2 className="text-2xl font-bold text-black">LMS</h2>
                         </div>
                         <p className="text-gray-400 text-sm">
                             Your Learning Management System built for students, teachers, and digital learning.
@@ -22,7 +23,7 @@ export default function Footer() {
 
                     {/* Quick Links */}
                     <div>
-                        <h3 className="text-lg font-semibold text-white mb-3">Quick Links</h3>
+                        <h3 className="text-lg font-semibold text-black mb-3">Quick Links</h3>
                         <ul className="space-y-2 text-sm">
                             <li><a href="#" className="hover:text-red-500 transition">Privacy</a></li>
                             <li><a href="#" className="hover:text-red-500 transition">Policy</a></li>
@@ -34,7 +35,7 @@ export default function Footer() {
 
                     {/* Contact */}
                     <div>
-                        <h3 className="text-lg font-semibold text-white mb-3">Contact Us</h3>
+                        <h3 className="text-lg font-semibold text-black mb-3">Contact Us</h3>
                         <ul className="space-y-2 text-sm">
                             <li className="flex items-center space-x-2">
                                 <Phone className="w-4 h-4" />
@@ -48,18 +49,38 @@ export default function Footer() {
 
                         {/* Social Icons */}
                         <div className="flex space-x-4 mt-4">
-                            <a href="#" className="hover:text-white transition">
-                                <Linkedin className="w-5 h-5" />
-                            </a>
-                            <a href="#" className="hover:text-white transition">
-                                <Facebook className="w-5 h-5" />
-                            </a>
-                            <a href="#" className="hover:text-white transition">
-                                <Instagram className="w-5 h-5" />
-                            </a>
-                            <a href="#" className="hover:text-white transition">
-                                <FaWhatsapp className="w-5 h-5" />
-                            </a>
+
+                            {
+                                [
+                                    {
+                                        icon: Linkedin,
+                                        color: "text-blue-600",
+                                        href: "#"
+                                    },
+
+                                    {
+                                        icon: Facebook,
+                                        color: "text-blue-600",
+                                        href: "#"
+                                    },
+
+                                    {
+                                        icon: Instagram,
+                                        color: "text-blue-600",
+                                        href: "#"
+                                    },
+
+                                    {
+                                        icon: FaWhatsapp,
+                                        color: "text-green-600",
+                                        href: "#"
+                                    }
+                                ].map((item, index) => (
+                                    <a key={index} href={item.href} className={`${item.color} transition`}>
+                                        <item.icon className="w-5 h-5" />
+                                    </a>
+                                ))}
+
                         </div>
                     </div>
 
@@ -72,41 +93,42 @@ export default function Footer() {
 
 
                 <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">
+                    <h3 className="text-lg font-semibold text-black mb-4">
                         Send Us Feedback
                     </h3>
 
                     <form className="space-y-4">
 
 
-                        <input
+                        <Form.Control
                             type="text"
                             placeholder="Your Name"
-                            className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-red-500"
+                            className="w-full p-3 rounded-lg  "
                             required
                         />
 
-                        <input
+                        <Form.Control
                             type="email"
                             placeholder="Your Email"
-                            className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-red-500"
+                            className="w-full p-3 rounded-lg  "
                             required
                         />
 
-                        <textarea
+                        <Form.Control
+                            as="textarea"
                             rows="4"
                             placeholder="Write your message..."
-                            className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:ring-2 focus:ring-red-500"
+                            className="w-full p-3 rounded-lg  "
                             required
-                        ></textarea>
+                        />
 
                         {/* Submit */}
-                        <button
+                        <Button
                             type="submit"
-                            className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition font-medium"
+                            className="w-full py-2 font-bold "
                         >
                             Send
-                        </button>
+                        </Button>
                     </form>
                 </div>
 

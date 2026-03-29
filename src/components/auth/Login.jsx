@@ -108,7 +108,7 @@ export default function Login() {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="w-full p-3 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                            className="w-full p-3 rounded-lg border-gray-300  "
                             placeholder="Enter your email"
                         />
                     </div>

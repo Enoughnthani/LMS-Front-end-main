@@ -159,7 +159,7 @@ export default function Register() {
                                 name="firstname"
                                 value={formData.firstname}
                                 onChange={handleChange}
-                                className="w-full p-3 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="w-full p-3 rounded-lg border-gray-300  "
                                 placeholder="Enter your first name"
                             />
                         </div>
@@ -173,7 +173,7 @@ export default function Register() {
                                 name="lastname"
                                 value={formData.lastname}
                                 onChange={handleChange}
-                                className="w-full p-3 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="w-full p-3 rounded-lg border-gray-300  "
                                 placeholder="Enter your last name"
                             />
                         </div>
@@ -192,7 +192,7 @@ export default function Register() {
                                 name="contactNumber"
                                 value={formData.contactNumber}
                                 onChange={handleChange}
-                                className="w-full p-3 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="w-full p-3 rounded-lg border-gray-300  "
                                 placeholder="0123456789"
                             />
                         </div>
@@ -206,7 +206,7 @@ export default function Register() {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="w-full p-3 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="w-full p-3 rounded-lg border-gray-300  "
                                 placeholder="someone@gmail.com"
                             />
                         </div>
@@ -224,7 +224,7 @@ export default function Register() {
                             value={formData.idNo}
                             maxLength={13}
                             onChange={handleChange}
-                            className="w-full p-3 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                            className="w-full p-3 rounded-lg border-gray-300  "
                             placeholder="Enter your 13-digit ID number"
                             isInvalid={invalidIdNo}
                         />

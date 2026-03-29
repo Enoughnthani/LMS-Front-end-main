@@ -48,7 +48,7 @@ export default function ProgramModal({
                                 onChange={handleInputChange}
                                 placeholder="Enter program title"
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             />
                         </Form.Group>
 
@@ -59,7 +59,7 @@ export default function ProgramModal({
                                 value={programForm.category}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             >
                                 {categories.map(cat => (
                                     <option key={cat.id} value={cat.id}>{cat.label}</option>
@@ -74,7 +74,7 @@ export default function ProgramModal({
                                 value={programForm.type}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             >
                                 {types.map(type => (
                                     <option key={type} value={type}>{type}</option>
@@ -89,7 +89,7 @@ export default function ProgramModal({
                                 value={programForm.status}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             >
                                 {statuses.map(status => (
                                     <option key={status.id} value={status.id}>{status.label}</option>
@@ -106,7 +106,7 @@ export default function ProgramModal({
                                 onChange={handleInputChange}
                                 placeholder="e.g., 8 weeks, 3 months"
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             />
                         </Form.Group>
 
@@ -119,7 +119,7 @@ export default function ProgramModal({
                                 onChange={handleInputChange}
                                 min="1"
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             />
                         </Form.Group>
 
@@ -131,7 +131,7 @@ export default function ProgramModal({
                                 value={programForm.startDate}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             />
                         </Form.Group>
 
@@ -143,7 +143,7 @@ export default function ProgramModal({
                                 value={programForm.endDate}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             />
                         </Form.Group>
 
@@ -154,7 +154,7 @@ export default function ProgramModal({
                                 value={programForm.facilitator}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             >
                                 <option value="">Select Facilitator</option>
                                 {facilitators.map(fac => (
@@ -169,7 +169,7 @@ export default function ProgramModal({
                                 name="location"
                                 value={programForm.location}
                                 onChange={handleInputChange}
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             >
                                 {locations.map(loc => (
                                     <option key={loc} value={loc}>{loc}</option>
@@ -187,7 +187,7 @@ export default function ProgramModal({
                                 onChange={handleInputChange}
                                 placeholder="Enter program description"
                                 required
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             />
                         </Form.Group>
 
@@ -199,7 +199,7 @@ export default function ProgramModal({
                                 value={programForm.tags.join(', ')}
                                 onChange={handleTagsChange}
                                 placeholder="e.g., React, JavaScript, Frontend"
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             />
                         </Form.Group>
 
@@ -211,7 +211,7 @@ export default function ProgramModal({
                                 value={programForm.price}
                                 onChange={handleInputChange}
                                 min="0"
-                                className="border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                className="border-gray-300  "
                             />
                         </Form.Group>
 

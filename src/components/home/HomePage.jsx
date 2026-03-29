@@ -105,7 +105,7 @@ export default function HomePage() {
                         key={index}
                         onClick={() => goToSlide(index)}
                         className={`w-3 h-3 rounded-full transition-all ${index === currentSlide
-                                ? "bg-red-600 w-8"
+                                ? "bg-sky-500 w-8"
                                 : "bg-white/50 hover:bg-white/80"
                             }`}
                     />

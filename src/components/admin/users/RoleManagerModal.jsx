@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
-import { 
-  Users, 
-  X, 
-  Search, 
-  Plus, 
-  Trash2, 
-  Shield, 
-  CheckCircle2, 
+import {
+  Users,
+  X,
+  Search,
+  Plus,
+  Trash2,
+  Shield,
+  CheckCircle2,
   Clock,
   ChevronRight
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { apiFetch } from '@/api/api';
+import ResponseMessage from '@/components/common/ResponseMessage';
+import { USERS } from '@/utils/apiEndpoint';
 
 const RoleManagerModal = ({ show, setShow, user }) => {
   const roles = [
@@ -27,6 +30,7 @@ const RoleManagerModal = ({ show, setShow, user }) => {
 
   const [currentRoles, setCurrentRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [response, setResponse] = useState(null)
 
   useEffect(() => {
     if (user && user.role) {
@@ -36,10 +40,10 @@ const RoleManagerModal = ({ show, setShow, user }) => {
     }
   }, [user]);
 
-  const availableRoles = roles.filter(role => 
-    !currentRoles.includes(role.id) && 
-    (role.label.toLowerCase().includes(searchTerm.toLowerCase()) || 
-     role.id.toLowerCase().includes(searchTerm.toLowerCase()))
+  const availableRoles = roles.filter(role =>
+    !currentRoles.includes(role.id) &&
+    (role.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      role.id.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const assignRole = (roleId) => {
@@ -59,11 +63,25 @@ const RoleManagerModal = ({ show, setShow, user }) => {
     return `${user.firstname || ''} ${user.lastname || ''}`.trim() || user.email || 'User';
   };
 
+  async function handleSubmit() {
+    try {
+
+      const result = await apiFetch(`${USERS}/roles`, {
+        method: 'PUT',
+        body: { roles: currentRoles, userId: user?.id }
+      });
+
+      setResponse(result);
+    } catch (error) {
+      setResponse({ success: false, message: 'Failed to update roles. Please try again.' });
+    }
+  }
+
   return (
-    <Modal 
-      show={show} 
-      onHide={() => setShow(false)} 
-      centered 
+    <Modal
+      show={show}
+      onHide={() => setShow(false)}
+      centered
       size="lg"
       backdropClassName="backdrop-blur-sm bg-black/20"
       contentClassName="border-0 shadow-2xl"
@@ -75,7 +93,7 @@ const RoleManagerModal = ({ show, setShow, user }) => {
           <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
             <Users className="w-6 h-6 text-slate-600" />
           </div>
-          
+
           <div className="flex-1">
             <Modal.Title className="text-lg font-semibold text-slate-900">
               Manage User Roles
@@ -91,8 +109,8 @@ const RoleManagerModal = ({ show, setShow, user }) => {
               )}
             </div>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => setShow(false)}
             className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
           >
@@ -102,7 +120,9 @@ const RoleManagerModal = ({ show, setShow, user }) => {
       </Modal.Header>
 
       <Modal.Body className="p-6 bg-slate-50/50">
-        {/* Current Roles Section */}
+
+        <ResponseMessage response={response} setResponse={setResponse} />
+
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <label className="text-sm font-semibold text-slate-900 flex items-center gap-2">
@@ -112,7 +132,7 @@ const RoleManagerModal = ({ show, setShow, user }) => {
               </span>
             </label>
             {currentRoles.length > 0 && (
-              <button 
+              <button
                 onClick={() => setCurrentRoles([])}
                 className="text-xs text-slate-500 hover:text-red-500 font-medium flex items-center gap-1 px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
               >
@@ -121,7 +141,7 @@ const RoleManagerModal = ({ show, setShow, user }) => {
               </button>
             )}
           </div>
-          
+
           {currentRoles.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {currentRoles.map((roleId, index) => (
@@ -155,7 +175,7 @@ const RoleManagerModal = ({ show, setShow, user }) => {
           <label className="text-sm font-semibold text-slate-900 mb-4 block">
             Available Roles
           </label>
-          
+
           {/* Clean Search Input */}
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -198,7 +218,7 @@ const RoleManagerModal = ({ show, setShow, user }) => {
                       </span>
                     </div>
                   </div>
-                  
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -236,19 +256,15 @@ const RoleManagerModal = ({ show, setShow, user }) => {
             <span>Changes apply immediately</span>
           </div>
           <div className="flex gap-2">
-            <Button 
+            <Button
               variant="light"
               onClick={() => setShow(false)}
               className="px-4 py-2 rounded-lg font-medium text-slate-700 hover:bg-slate-100 border-0"
             >
               Cancel
             </Button>
-            <Button 
-              onClick={() => {
-                console.log('User ID:', user?.id);
-                console.log('Updated roles:', currentRoles);
-                setShow(false);
-              }}
+            <Button
+              onClick={handleSubmit}
               className="px-4 py-2 rounded-lg font-medium bg-slate-900 hover:bg-slate-800 text-white border-0 shadow-sm hover:shadow transition-all"
             >
               Save Changes

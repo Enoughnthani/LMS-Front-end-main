@@ -1,7 +1,7 @@
 import { apiFetch } from '@/api/api';
 import ResponseMessage from '@/components/common/ResponseMessage';
 import { USERS } from '@/utils/apiEndpoint';
-import { AlertCircle, CheckCircle, PenSquareIcon, X } from 'lucide-react';
+import { AlertCircle, CheckCircle, PenSquareIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -12,7 +12,6 @@ import {
   Form,
   InputGroup,
   Modal,
-  Offcanvas,
   Pagination,
   Spinner,
   Table
@@ -23,19 +22,15 @@ import {
   FaClipboardCheck,
   FaCrown,
   FaDownload,
-  FaEdit,
   FaEnvelope,
   FaGavel,
   FaGraduationCap,
   FaHistory,
-  FaIdCard,
   FaKey,
-  FaPhone,
   FaSave,
   FaSearch,
   FaSeedling,
   FaShieldAlt,
-  FaTimes,
   FaTrash,
   FaUpload,
   FaUserCog,
@@ -49,8 +44,12 @@ import { useTopLoader } from '../../../contexts/TopLoaderContext';
 import { formatLastLogin } from '../../../utils/formatLastLogin.js';
 import { readableDate } from '../../../utils/readableDate.js';
 import { isValidSouthAfricanID } from "../../../utils/validateIdNo.js";
+import BulkDeleteModal from './BulkDeleteModal';
+import DeleteUserModal from './DeleteUserModal';
 import RoleManagerModal from './RoleManagerModal';
 import UserProfileOffcanvas from './UserProfileOffcanvas';
+import BulkUploadModal from './BulkUploadModal';
+import UserFormModal from './UserFormModal';
 
 export default function UserManagement() {
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -108,7 +107,8 @@ export default function UserManagement() {
 
   useEffect(() => {
     getUsers();
-  }, []);
+  }, [roleManager]);
+
 
   // ========== FILTER AND SEARCH ==========
   useEffect(() => {
@@ -147,33 +147,6 @@ export default function UserManagement() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentUsers = filteredUsers?.slice(startIndex, startIndex + itemsPerPage);
 
-  // ========== HANDLERS ==========
-  const handleSort = (key) => {
-    setSortConfig(prev => ({
-      key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
-    }));
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "contactNumber" && value !== "") {
-      if (!/^\d*$/.test(value) || value.length > 10 || value[0] !== "0") return;
-    }
-
-    setUserForm({ ...userForm, [name]: value });
-
-    if (name === "idNo") {
-      if (!isValidSouthAfricanID(value)) {
-        setResponse({ success: false, message: "Invalid id number." });
-        setInvalidIdno(true);
-      } else {
-        setResponse(null);
-        setInvalidIdno(false);
-      }
-    }
-  };
 
   const handleEditUser = (user) => {
     setUserForm({ ...user });
@@ -181,15 +154,6 @@ export default function UserManagement() {
     setShowModal(true);
   };
 
-  const handleViewUser = (user) => {
-    setUserForm({ ...user });
-    setShowUserDetails(true);
-  };
-
-  const handleDeleteClick = (user) => {
-    setUserForm({ ...user });
-    setShowDeleteModal(true);
-  };
 
   // ========== CREATE/UPDATE USER ==========
   async function handleRegister(e) {
@@ -237,79 +201,9 @@ export default function UserManagement() {
     }
   }
 
-  // ========== DELETE USER ==========
-  async function handleDeleteUser() {
-    start();
-    try {
-      let result = await apiFetch(`${USERS}/${userForm.id}`, {
-        method: "DELETE"
-      });
-      setResponse(result);
-      getUsers();
-    } catch (error) {
-      setResponse({ success: false, message: "An error occurred while deleting a user." });
-    } finally {
-      complete();
-      setShowDeleteModal(false);
-    }
-  }
+  
 
-  // ========== BULK ACTIONS ==========
-
-  // Bulk Upload
-  const handleBulkUpload = async () => {
-    if (!bulkFile) {
-      setResponse({ success: false, message: "Please select a file" });
-      return;
-    }
-
-    start();
-    try {
-      const formData = new FormData();
-      formData.append('file', bulkFile);
-
-      const result = await apiFetch(`${USERS}/bulk`, {
-        method: "POST",
-        body: formData,
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      setResponse(result);
-      if (result?.success) {
-        getUsers();
-        setShowBulkUploadModal(false);
-        setBulkFile(null);
-      }
-    } catch (error) {
-      setResponse({ success: false, message: "Bulk upload failed" });
-    } finally {
-      complete();
-    }
-  };
-
-  // Bulk Delete
-  const handleBulkDelete = async () => {
-
-    start();
-    try {
-      const result = await apiFetch(`${USERS}/bulk-delete`, {
-        method: "POST",
-        body: JSON.stringify({ userIds: bulkSelection })
-      });
-
-      setResponse(result)
-      getUsers();
-
-      if (result?.success) {
-        setBulkSelection([]);
-        setShowBulkDeleteModal(false)
-      }
-    } catch (error) {
-      setResponse({ message: 'Bulk delete failed' + error });
-    } finally {
-      complete();
-    }
-  };
+  
 
   // Bulk Role Assign
   const handleBulkRoleAssign = async (role) => {
@@ -336,7 +230,7 @@ export default function UserManagement() {
     }
   };
 
-  // Bulk Status Update
+
   const handleBulkStatusUpdate = async (status) => {
     start();
     try {
@@ -429,6 +323,36 @@ export default function UserManagement() {
     window.URL.revokeObjectURL(url);
   };
 
+  async function deactivateUser(userId) {
+
+    try {
+      const result = await apiFetch(`${USERS}/${userId}/deactivate`, {
+        method: "POST"
+      })
+
+      setResponse(result);
+      getUsers();
+
+    } catch (error) {
+      setResponse({ success: false, message: "An error occurred while deactivating the user." });
+    }
+  }
+
+
+  async function activateUser(userId) {
+    try {
+      const result = await apiFetch(`${USERS}/${userId}/activate`, {
+        method: "POST"
+      })
+
+      setResponse(result);
+      getUsers();
+
+    } catch (error) {
+      setResponse({ success: false, message: "An error occurred while activating the user." });
+    }
+  }
+
   const getRoleIcon = (role, size = 14) => {
     const iconProps = {
       size,
@@ -455,7 +379,7 @@ export default function UserManagement() {
   };
 
   return (
-    <div className="h-screen w-full overflow-y-auto p-6 flex flex-col">
+    <div className="h-screen w-full overflow-y-auto  p-6 flex flex-col">
       {/* Header */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
@@ -494,7 +418,7 @@ export default function UserManagement() {
           {[
             { label: 'Total Users', role: "all", value: users?.length, icon: <FaUsers />, color: 'bg-gradient-to-br from-blue-500 to-blue-600' },
             { label: 'Admins', role: "ADMIN", value: users?.filter(u => u.role?.some(r => r === 'ADMIN')).length, icon: <FaKey />, color: 'bg-gradient-to-br from-red-500 to-red-600' },
-            { label: 'program manager', role: "PROGRAM_MANAGER", value: users?.filter(u => u.role?.some(r => r === 'PROGRAM MANAGER')).length, icon: <FaGraduationCap />, color: 'bg-gradient-to-br from-green-500 to-green-600' },
+            { label: 'program manager', role: "PROGRAM_MANAGER", value: users?.filter(u => u.role?.some(r => r === 'PROGRAM_MANAGER')).length, icon: <FaGraduationCap />, color: 'bg-gradient-to-br from-green-500 to-green-600' },
             { label: 'Learners', role: "LEARNER", value: users?.filter(u => u.role?.some(r => r === 'LEARNER')).length, icon: <FaGraduationCap />, color: 'bg-gradient-to-br from-green-500 to-green-600' },
             { label: 'Facilitators', role: "FACILITATOR", value: users?.filter(u => u.role?.some(r => r === 'FACILITATOR')).length, icon: <FaChalkboardTeacher />, color: 'bg-gradient-to-br from-purple-500 to-purple-600' },
             { label: 'Mentors', role: "MENTOR", value: users?.filter(u => u.role?.some(r => r === 'MENTOR')).length, icon: <FaUserTie />, color: 'bg-gradient-to-br from-indigo-500 to-indigo-600' },
@@ -636,9 +560,9 @@ export default function UserManagement() {
       {/* Users Table */}
       <Card className="border-0 flex-1">
         <Card.Body>
-          <div className="overflow-auto">
+          <div className="">
             <Table hover className="mb-0 border-separate border-spacing-0">
-              <thead className="bg-white/80 backdrop-blur-sm sticky top-0">
+              <thead className="bg-white/80 backdrop-blur-sm ">
                 <tr>
                   <th className="border-b border-slate-200 px-4 py-3.5 w-12">
                     <Form.Check
@@ -672,7 +596,7 @@ export default function UserManagement() {
                     <td className="px-4 py-4 align-middle">
                       <div className="flex items-center gap-3">
                         <div>
-                          <div className="font-medium text-slate-900">
+                          <div className="font-medium text-slate-900 truncate">
                             {user?.firstname} {user?.lastname}
                           </div>
                         </div>
@@ -688,7 +612,7 @@ export default function UserManagement() {
                       <span className={(user?.active ? 'bg-green-600' : 'bg-red-600') + ' p-2 rounded text-white font-semibold'}>{user?.status}</span>
                     </td>
                     <td className="px-4 py-4 align-middle">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1">
                         {user?.role && user.role.length > 0 ? (
                           <>
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-rose-50 text-rose-700 border border-rose-100 ring-1 ring-rose-100/50">
@@ -732,7 +656,7 @@ export default function UserManagement() {
                           ACTION
                         </Dropdown.Toggle>
 
-                        <Dropdown.Menu className="px-auto absolute z-[9999] min-w-[140px] bg-slate-50 border border-gray-200 rounded-md shadow-lg">
+                        <Dropdown.Menu className="px-auto min-w-[140px] bg-slate-50 border border-gray-200 rounded-md shadow-lg">
                           {[
                             {
                               label: "ROLE MANAGER",
@@ -742,10 +666,12 @@ export default function UserManagement() {
                             {
                               label: "DEACTIVATE",
                               style: "text-yellow-800 hover:bg-yellow-700",
+                              event: () => deactivateUser(user.id)
                             },
                             {
                               label: "ACTIVATE",
                               style: "text-green-800 hover:bg-green-700",
+                              event: () => activateUser(user.id)
                             },
                             {
                               label: "DELETE",
@@ -829,423 +755,24 @@ export default function UserManagement() {
         </Card.Footer>
       </Card>
 
-      {/* Add/Edit User Modal */}
-      <Modal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        size="lg"
-        centered
-        backdrop="static"
-        keyboard={false}
-      >
-        <Form noValidate validated={validated} onSubmit={handleRegister}>
-          <Modal.Header closeButton className="flex border-0 py-3">
-            <Modal.Title className="flex gap-2 items-center text-xl font-bold text-gray-800">
-              {editingUser ? <PenSquareIcon size={25} className='text-slate-600' /> : <FaUserPlus size={25} className='text-blue-600' />}
-              {editingUser ? 'Edit User' : 'Add New User'}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="pt-0">
+      <UserFormModal
+    show={showModal}
+    setShow={setShowModal}
+    editingUser={editingUser}
+    setEditingUser={setEditingUser}
+    getUsers={getUsers}
+    setResponse={setResponse}
+    response={response}
+/>
 
-            <ResponseMessage setResponse={setResponse} response={response} />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Form.Group>
-                <Form.Label>First Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="firstname"
-                  value={userForm?.firstname}
-                  onChange={handleInputChange}
-                  placeholder="Enter first name"
-                  required
-                  className="border-gray-300"
-                />
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>Last Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="lastname"
-                  value={userForm?.lastname}
-                  onChange={handleInputChange}
-                  placeholder="Enter last name"
-                  required
-                  className="border-gray-300"
-                />
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>Email Address</Form.Label>
-                <Form.Control
-                  type="email"
-                  name="email"
-                  value={userForm?.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter email address"
-                  required
-                  className="border-gray-300"
-                />
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>Phone Number</Form.Label>
-                <Form.Control
-                  type="tel"
-                  name="contactNumber"
-                  value={userForm?.contactNumber}
-                  onChange={handleInputChange}
-                  placeholder="Enter phone number"
-                  required
-                  className="border-gray-300"
-                />
-              </Form.Group>
-
-
-              <Form.Group>
-                <Form.Label className='truncate' >Identification Number (RSA ID)</Form.Label>
-                <Form.Control
-                  type="tel"
-                  name="idNo"
-                  value={userForm?.idNo}
-                  required
-                  maxLength={13}
-                  onChange={handleInputChange}
-                  placeholder="Enter identification number"
-                  className="border-gray-300"
-                  isInvalid={invalidIdno}
-                />
-              </Form.Group>
-
-
-              <Form.Group>
-                <Form.Label className='truncate'>Password</Form.Label>
-                <Form.Control
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={userForm?.password}
-                  onChange={handleInputChange}
-                  required={!editingUser}
-                  className="border-gray-300"
-                />
-
-              </Form.Group>
-
-
-              <Form.Group className='col-span-2'>
-                <Form.Label className='truncate'>Status</Form.Label>
-                <Form.Select
-                  name="status"
-                  value={userForm?.status}
-                  required
-                  onChange={handleInputChange}
-                  className="border-gray-300"
-                >
-                  <option value={"ACTIVE"}>Active</option>
-                  <option value={"INACTIVE"}>Inactive</option>
-                </Form.Select>
-              </Form.Group>
-
-              <Form.Group className="space-y-2 col-span-2">
-                <Form.Label className="truncate">Roles</Form.Label>
-
-                {userForm?.role?.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {userForm.role.map((role, key) => (
-                      <span
-                        key={key}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
-                      >
-                        {role}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUserForm(prev => ({
-                              ...prev,
-                              role: prev.role.filter(r => r !== role)
-                            }));
-                          }}
-                          className="ml-1 text-blue-600 hover:text-blue-800"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className={`${roleRequired ? 'border-red-400' : 'border-slate-300'} border rounded-lg p-4 bg-white`}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {roles.map(role => (
-                      <div
-                        key={role}
-                        className="flex cursor-pointer items-center gap-2 p-2 hover:bg-gray-50 rounded-md transition-colors min-w-0"
-                      >
-                        <Form.Check
-                          type="checkbox"
-                          id={`role-${role}`}
-                          name="role"
-                          value={role}
-                          checked={userForm?.role?.includes(role)}
-                          onChange={(e) => {
-                            const { value, checked } = e.target;
-                            setUserForm(prev => ({
-                              ...prev,
-                              role: checked
-                                ? [...prev.role, value]
-                                : prev.role.filter(r => r !== value)
-                            }));
-                          }}
-                          className="text-blue-600 cursor-pointer flex-shrink-0"
-                        />
-                        <Form.Label
-                          htmlFor={`role-${role}`}
-                          className="m-0 text-sm font-medium cursor-pointer truncate select-none"
-                        >
-                          {role}
-                        </Form.Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Form.Group>
-            </div>
-
-            {!editingUser && (
-              <Alert variant="info" className="flex items-center mb-0">
-                <FaEnvelope className="me-2" />
-                The user will receive an email with login instructions.
-              </Alert>
-            )}
-          </Modal.Body>
-          <Modal.Footer className="border-t pt-4">
-            <Button
-              variant="outline-secondary"
-              onClick={() => setShowModal(false)}
-              disabled={loading}
-            >
-              Close
-            </Button>
-            <Button
-              variant="outline-success"
-              type='submit'
-              disabled={loading}
-              className="flex items-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Spinner animation="border" size="sm" />
-                  {editingUser ? 'Updating...' : 'Creating...'}
-                </>
-              ) : (
-                <>
-                  <FaSave />
-                  {editingUser ? 'Update User' : 'Create User'}
-                </>
-              )}
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
-
-      {/* Bulk Upload Modal */}
-      <Modal
+      <BulkUploadModal
         show={showBulkUploadModal}
-        onHide={() => setShowBulkUploadModal(false)}
-        centered
-        size="lg"
-      >
-        <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="flex items-center gap-2 text-xl font-bold text-gray-800">
-            <FaUpload className="text-info" />
-            Bulk Upload Users
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+        setShow={setShowBulkUploadModal}
+        setResponse={setResponse}
+        response={response}
+        getUsers={getUsers}
+      />
 
-          <div className="mb-4">
-            <Alert variant="info">
-              <p className="mb-2"><strong>CSV Format Required:</strong></p>
-              <p className="mb-1">firstname,lastname,email,phone,idnumber,roles,status</p>
-              <p className="text-sm">Example: John,Doe,john@email.com,0812345678,9001015123089,LEARNER,ACTIVE</p>
-            </Alert>
-          </div>
-
-          <ResponseMessage setResponse={setResponse} response={response} />
-
-
-          <Form.Group>
-            <Form.Label>Select CSV File</Form.Label>
-            <Form.Control
-              type="file"
-              accept=".csv"
-              onChange={(e) => setBulkFile(e.target.files[0])}
-            />
-          </Form.Group>
-
-          <div className="mt-4">
-            <Button
-              variant="outline-success"
-              size="sm"
-              onClick={() => {
-                const template = "firstname,lastname,email,contactNumber,idNo,role\nJohn,Doe,john@email.com,0812345678,9001015123089,LEARNER";
-                downloadCSV(template, 'template.csv');
-              }}
-            >
-              <FaDownload className="me-2" /> Download Template
-            </Button>
-          </div>
-        </Modal.Body>
-        <Modal.Footer className="border-0 pt-0">
-          <Button variant="outline-secondary" onClick={() => setShowBulkUploadModal(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="info"
-            onClick={handleBulkUpload}
-            disabled={!bulkFile}
-            className="text-white"
-          >
-            Upload & Create Users
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* View User Offcanvas */}
-      {/*<Offcanvas
-        show={showUserDetails}
-        onHide={() => setShowUserDetails(false)}
-        placement='end'
-        className="!w-[100%]"
-      >
-        <Offcanvas.Header className="border-b px-6 py-4">
-          <Offcanvas.Title className="text-xl font-bold text-gray-900">
-            User Profile
-          </Offcanvas.Title>
-          <X onClick={() => setShowUserDetails(false)} className='ms-auto cursor-pointer text-red-600' />
-        </Offcanvas.Header>
-
-        <Offcanvas.Body className="p-6">
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4">
-              {userForm?.firstname?.[0]}{userForm?.lastname?.[0]}
-            </div>
-            <h4 className="text-2xl font-bold text-gray-900 mb-1">
-              {userForm?.firstname} {userForm?.lastname}
-            </h4>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="flex items-center gap-2">
-                {userForm?.role && userForm.role.length > 0 ? (
-                  <>
-                    <span className="flex items-center justify-start gap-2 px-3 min-w-[130px] py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">
-                      {getRoleIcon(userForm.role[0])}
-                      <span className="ml-1">{userForm.role[0]}</span>
-                    </span>
-                    {userForm.role.length > 1 && (
-                      <Dropdown align="end">
-                        <Dropdown.Toggle
-                          as="span"
-                          className="cursor-pointer inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 border-0"
-                        >
-                          +{userForm.role.length - 1} more
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu className="p-2 min-w-[150px]">
-                          {userForm.role.slice(1).map((r, idx) => (
-                            <Dropdown.Item
-                              key={idx}
-                              className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-gray-50"
-                              disabled
-                            >
-                              {getRoleIcon(r)}
-                              <span>{r}</span>
-                            </Dropdown.Item>
-                          ))}
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-gray-400 text-sm">No role</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl p-4">
-              <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <FiUser className="text-red-500" /> Personal Information
-              </h5>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-2 bg-white rounded-lg">
-                  <FiMail className="text-red-500 w-5 h-5" />
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-500">Email Address</p>
-                    <p className="font-medium text-gray-800">{userForm?.email}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-2 bg-white rounded-lg">
-                  <FaPhone className="text-red-500 w-5 h-5" />
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-500">Contact Number</p>
-                    <p className="font-medium text-gray-800">{userForm?.contactNumber || '—'}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-2 bg-white rounded-lg">
-                  <FaIdCard className="text-red-500 w-5 h-5" />
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-500">ID Number</p>
-                    <p className="font-medium text-gray-800">{userForm?.idNo || '—'}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl p-4">
-              <h5 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <FaHistory className="text-red-500" /> Account Activity
-              </h5>
-              <div className="space-y-3">
-                <div className="bg-white p-3 rounded-lg">
-                  <p className="text-xs text-gray-500">Account Created</p>
-                  <p className="font-medium text-gray-800">
-                    {readableDate(userForm?.createdAt)}
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <p className="text-xs text-gray-500">Last Login</p>
-                  <p className="font-medium text-gray-800">
-                    {formatLastLogin(userForm?.last_login) || "User has not logged in yet"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Offcanvas.Body>
-
-      <div className="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3">
-        <Button
-          variant="warning"
-          onClick={() => {
-            setShowUserDetails(false);
-            handleEditUser(userForm);
-          }}
-          className="flex items-center gap-2 px-5 py-2 border-2 hover:bg-red-50 transition-all duration-200"
-        >
-          <FaEdit className="w-4 h-4" /> Edit
-        </Button>
-        <Button
-          variant="outline-primary"
-          onClick={() => setShowUserDetails(false)}
-          className="flex items-center gap-2 px-5 py-2 hover:shadow-md transition-all duration-200"
-        >
-          <FaTimes className="w-4 h-4" /> Close
-        </Button>
-      </div>
-    </Offcanvas>*/}
 
       <UserProfileOffcanvas
         showUserDetails={showUserDetails}
@@ -1256,122 +783,30 @@ export default function UserManagement() {
         formatLastLogin={formatLastLogin}
       />
 
-      {/* Delete Confirmation Modal */}
-      <Modal
+
+
+      <DeleteUserModal
         show={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
-        centered
-        size="sm"
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header className="border-0 pb-0 flex justify-between">
-          <Modal.Title className="text-lg font-semibold text-gray-800">
-            Confirm Delete
-          </Modal.Title>
-          <X onClick={() => setShowDeleteModal(false)} className='text-red-600 cursor-pointer' />
-        </Modal.Header>
+        setShow={setShowDeleteModal}
+        userForm={userForm}
+        getRoleIcon={getRoleIcon}
+        loading={loading}
+      />
 
-        <Modal.Body className="text-center pt-2 pb-4">
-          <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
-            <FaTrash className="text-red-500 text-xl" />
-          </div>
 
-          <h5 className="font-semibold text-gray-800 mb-1">
-            Delete {userForm.firstname} {userForm.lastname}?
-          </h5>
-
-          <p className="text-gray-500 text-sm mb-3">
-            This action cannot be undone.
-          </p>
-
-          {userForm.role?.length > 0 && (
-            <div className="flex justify-center gap-1 flex-wrap mb-4">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">
-                {getRoleIcon(userForm.role[0])}
-                {userForm.role[0]}
-              </span>
-              {userForm.role.length > 1 && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                  +{userForm.role.length - 1}
-                </span>
-              )}
-            </div>
-          )}
-        </Modal.Body>
-
-        <Modal.Footer className="border-0 pt-0 justify-content-center gap-2">
-          <Button
-            variant="outline-secondary"
-            onClick={() => setShowDeleteModal(false)}
-            disabled={loading}
-            className="px-4"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="outline-danger"
-            onClick={handleDeleteUser}
-            disabled={loading}
-            className="px-4 d-flex align-items-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Spinner animation="border" size="sm" />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <FaTrash size={14} /> Delete
-              </>
-            )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/**BULK DELETE MODAL */}
-
-      <Modal
+      <BulkDeleteModal
+        setShow={setShowBulkDeleteModal}
         show={showBulkDeleteModal}
-        onHide={() => setShowBulkDeleteModal(false)}
-        centered
-        backdrop="static"
-        className="text-gray-800"
-      >
-        <Modal.Header closeButton className="border-b border-gray-200 pb-4">
-          <Modal.Title className="text-xl font-semibold text-gray-900">
-            Bulk Delete
-          </Modal.Title>
-        </Modal.Header>
+        bulkSelection={bulkSelection}
+        setBulkSelection={setBulkSelection}
+        getUsers={getUsers}
+        setResponse={setResponse} />
 
-        <Modal.Body className="py-6">
-          <p className="text-gray-700">
-            Are you sure you want to delete <strong className="font-semibold text-gray-900">{bulkSelection.length}</strong> user{bulkSelection.length !== 1 ? 's' : ''}?
-          </p>
-          <p className="mt-3 text-sm text-red-600 bg-red-50 p-3 rounded-md">
-            ⚠️ This action cannot be undone.
-          </p>
-        </Modal.Body>
+      <RoleManagerModal
+        show={roleManager}
+        setShow={setShowRoleManager}
+        user={userForm} />
 
-        <Modal.Footer className="border-t border-gray-200 pt-4 gap-3">
-          <Button
-            variant="outline-danger"
-            onClick={() => setShowBulkDeleteModal(false)}
-            className="px-4 py-2 text-sm font-medium"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="success"
-            onClick={handleBulkDelete}
-            className="px-4 py-2 text-sm font-medium"
-          >
-            Confirm
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      <RoleManagerModal show={roleManager} setShow={setShowRoleManager} user={userForm} />
     </div >
   );
 }
