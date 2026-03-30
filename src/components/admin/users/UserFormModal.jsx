@@ -1,9 +1,8 @@
-// UserFormModal.jsx
 import { apiFetch } from '@/api/api';
 import ResponseMessage from '@/components/common/ResponseMessage';
 import { USERS } from '@/utils/apiEndpoint';
 import { PenSquareIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Button, Form, Modal, Spinner } from 'react-bootstrap';
 import { FaEnvelope, FaSave, FaUserPlus } from 'react-icons/fa';
 import { useTopLoader } from '../../../contexts/TopLoaderContext';
@@ -39,7 +38,6 @@ export default function UserFormModal({
         status: "ACTIVE"
     });
 
-    // Reset form when modal opens with editing user
     const resetForm = () => {
         if (editingUser) {
             setUserForm({ ...editingUser });
@@ -60,6 +58,34 @@ export default function UserFormModal({
         setRoleRequired(false);
         setValidated(false);
     };
+
+    useEffect(() => {
+        if (show) {
+            if (editingUser) {
+                setUserForm({
+                    ...editingUser,
+                    password: "",
+                    confirmPassword: ""
+                });
+            } else {
+                setUserForm({
+                    firstname: "",
+                    lastname: "",
+                    contactNumber: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                    idNo: '',
+                    role: ["LEARNER"],
+                    status: "ACTIVE"
+                });
+            }
+
+            setInvalidIdno(false);
+            setRoleRequired(false);
+            setValidated(false);
+        }
+    }, [editingUser, show]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;

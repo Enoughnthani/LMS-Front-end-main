@@ -83,7 +83,7 @@ const RoleManagerModal = ({ show, setShow, user }) => {
       onHide={() => setShow(false)}
       centered
       size="lg"
-      backdropClassName="backdrop-blur-sm bg-black/20"
+      backdropClassName="bg-black/30"
       contentClassName="border-0 shadow-2xl"
     >
       {/* Clean Header */}

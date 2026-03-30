@@ -27,7 +27,7 @@ const UserProfileOffcanvas = ({
       onHide={() => setShowUserDetails(false)}
       placement="end"
       className="!w-[420px] !max-w-full"
-      backdropClassName="backdrop-blur-sm bg-black/30"
+      backdropClassName="bg-black/30"
     >
       {/* Glassmorphism Header */}
       <Offcanvas.Header className="border-b border-gray-100/80 px-6 py-5 bg-white/95 backdrop-blur-xl sticky top-0 z-10">

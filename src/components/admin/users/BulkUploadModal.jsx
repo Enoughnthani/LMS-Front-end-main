@@ -71,7 +71,7 @@ export default function BulkUploadModal({
     };
 
     const downloadTemplate = () => {
-        const template = "firstname,lastname,email,contactNumber,idNo,role\nJohn,Doe,john@email.com,0812345678,9001015123089,LEARNER";
+        const template = "firstname,lastname,email,contactNumber,idNumber,roles,status\nJohn,Doe,john@email.com,0812345678,9001015123089,LEARNER,ACTIVE";
         downloadCSV(template, 'bulk_upload_template.csv');
     };
 
@@ -103,15 +103,15 @@ export default function BulkUploadModal({
                         <ul className="mb-2 text-sm">
                             <li>File must be in <strong>.csv</strong> format</li>
                             <li>Maximum file size: <strong>10MB</strong></li>
-                            <li>Required columns: firstname, lastname, email, contactNumber, idNo, role</li>
+                            <li>Required columns: firstname, lastname, email, contactNumber, idNumber, roles,status</li>
                         </ul>
                         <p className="mb-1 text-sm"><strong>Column Order:</strong></p>
                         <code className="bg-white p-1 rounded text-xs block mb-2">
-                            firstname,lastname,email,contactNumber,idNo,role
+                            firstname,lastname,email,contactNumber,idNumber,roles,status
                         </code>
                         <p className="text-sm mb-0"><strong>Example:</strong></p>
                         <code className="bg-white p-1 rounded text-xs block">
-                            John,Doe,john@email.com,0812345678,9001015123089,LEARNER
+                            John,Doe,john@email.com,0812345678,9001015123089,LEARNER,ACTIVE
                         </code>
                     </Alert>
                 </div>

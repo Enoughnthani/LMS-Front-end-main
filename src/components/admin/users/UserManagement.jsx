@@ -201,9 +201,9 @@ export default function UserManagement() {
     }
   }
 
-  
 
-  
+
+
 
   // Bulk Role Assign
   const handleBulkRoleAssign = async (role) => {
@@ -756,14 +756,14 @@ export default function UserManagement() {
       </Card>
 
       <UserFormModal
-    show={showModal}
-    setShow={setShowModal}
-    editingUser={editingUser}
-    setEditingUser={setEditingUser}
-    getUsers={getUsers}
-    setResponse={setResponse}
-    response={response}
-/>
+        show={showModal}
+        setShow={setShowModal}
+        editingUser={editingUser}
+        setEditingUser={setEditingUser}
+        getUsers={getUsers}
+        setResponse={setResponse}
+        response={response}
+      />
 
       <BulkUploadModal
         show={showBulkUploadModal}
@@ -791,6 +791,8 @@ export default function UserManagement() {
         userForm={userForm}
         getRoleIcon={getRoleIcon}
         loading={loading}
+        setResponse={setResponse}
+         getUsers={getUsers}
       />
 
 

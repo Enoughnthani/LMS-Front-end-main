@@ -1,14 +1,21 @@
 import { Button, Modal, Spinner } from 'react-bootstrap';
 import { FaTrash } from 'react-icons/fa';
 import { X } from 'lucide-react';
+import { useTopLoader } from '@/contexts/TopLoaderContext';
+import { apiFetch } from '@/api/api';
+import { USERS } from '@/utils/apiEndpoint';
 
 export default function DeleteUserModal({
     show,
     setShow,
     userForm,
     getRoleIcon,
-    loading
+    setResponse,
+    loading,
+    getUsers
 }) {
+
+    const { start, complete } = useTopLoader()
 
     async function handleDeleteUser() {
         start();
@@ -19,10 +26,10 @@ export default function DeleteUserModal({
             setResponse(result);
             getUsers();
         } catch (error) {
-            setResponse({ success: false, message: "An error occurred while deleting a user." });
+            setResponse({ success: false, message: "An error occurred while deleting a user. " + error.message });
         } finally {
             complete();
-            setShowDeleteModal(false);
+            setShow(false);
         }
     }
     return (
