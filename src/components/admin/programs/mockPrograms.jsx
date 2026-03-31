@@ -1,7 +1,7 @@
 export const initialPrograms = [
     {
         id: 1,
-        title: 'Advanced React Development',
+        name: 'Advanced React Development',
         category: 'short-course',
         type: 'Technical',
         description: 'Master React with hooks, context, and advanced patterns',
@@ -21,7 +21,7 @@ export const initialPrograms = [
     },
     {
         id: 2,
-        title: 'Learnership Excellence Program',
+        name: 'Learnership Excellence Program',
         category: 'learnership',
         type: 'Management',
         description: 'Develop learnership skills for tech industry leaders',
@@ -41,7 +41,7 @@ export const initialPrograms = [
     },
     {
         id: 3,
-        title: 'Data Science Internship',
+        name: 'Data Science Internship',
         category: 'internship',
         type: 'Technical',
         description: 'Hands-on data science project with real-world data',
@@ -61,7 +61,7 @@ export const initialPrograms = [
     },
     {
         id: 4,
-        title: 'UI/UX Design Fundamentals',
+        name: 'UI/UX Design Fundamentals',
         category: 'short-course',
         type: 'Design',
         description: 'Learn user-centered design principles and prototyping',
@@ -81,7 +81,7 @@ export const initialPrograms = [
     },
     {
         id: 5,
-        title: 'Product Management Bootcamp',
+        name: 'Product Management Bootcamp',
         category: 'learnership',
         type: 'Business',
         description: 'Intensive product management training',
@@ -101,7 +101,7 @@ export const initialPrograms = [
     },
     {
         id: 6,
-        title: 'Software Engineering Internship',
+        name: 'Software Engineering Internship',
         category: 'internship',
         type: 'Technical',
         description: 'Full-stack development internship with mentorship',
@@ -121,7 +121,7 @@ export const initialPrograms = [
     },
     {
         id: 7,
-        title: 'Digital Marketing Strategy',
+        name: 'Digital Marketing Strategy',
         category: 'short-course',
         type: 'Marketing',
         description: 'Modern digital marketing techniques and analytics',
@@ -141,7 +141,7 @@ export const initialPrograms = [
     },
     {
         id: 8,
-        title: 'Executive Learnership Program',
+        name: 'Executive Learnership Program',
         category: 'learnership',
         type: 'Executive',
         description: 'Advanced learnership for senior executives',

@@ -1,23 +1,35 @@
 import { X } from 'lucide-react';
 import { Button, Form, Modal, Spinner } from 'react-bootstrap';
-import { FaBook, FaSave, FaPenSquare } from 'react-icons/fa';
-import { categories, statuses, types, locations, facilitators } from './mockPrograms';
+import { FaBook, FaSave, FaPenSquare, FaUpload } from 'react-icons/fa';
 
-export default function ProgramModal({ 
-    show, 
-    onHide, 
-    programForm, 
-    setProgramForm, 
-    editingProgram, 
-    onSave, 
-    loading 
+export default function ProgramModal({
+    show,
+    onHide,
+    programForm,
+    setProgramForm,
+    editingProgram,
+    onSave,
+    loading
 }) {
     const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
         setProgramForm(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Create preview URL
+            const imageUrl = URL.createObjectURL(file);
+            setProgramForm(prev => ({
+                ...prev,
+                imageFile: file,
+                imageBlob: imageUrl
+            }));
+        }
     };
 
     const handleTagsChange = (e) => {
@@ -26,29 +38,30 @@ export default function ProgramModal({
     };
 
     return (
-        <Modal show={show} onHide={onHide} size="lg" centered>
-            <Modal.Header className="border-0 py-3">
+        <Modal show={show} onHide={onHide} size="lg" centered backdrop="static">
+            <Modal.Header className="border-0 py-3 flex">
                 <Modal.Title className="text-xl font-bold text-gray-800 flex items-center gap-2">
                     {editingProgram ? <FaPenSquare className='text-orange-600' /> : <FaBook className='text-blue-700' />}
                     {editingProgram ? 'Edit Program' : 'Add New Program'}
                 </Modal.Title>
-                <div className="flex-1">
-                    <X size={25} onClick={onHide} className='cursor-pointer text-red-600 ms-auto' />
-                </div>
+
+                <X size={25} onClick={onHide} className='cursor-pointer  text-gray-600 ms-auto' />
+
             </Modal.Header>
+
             <Modal.Body className="pt-0">
                 <Form>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <Form.Group>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Form.Group className="md:col-span-2">
                             <Form.Label>Program Title</Form.Label>
                             <Form.Control
                                 type="text"
                                 name="title"
-                                value={programForm.title}
+                                value={programForm.title || ''}
                                 onChange={handleInputChange}
                                 placeholder="Enter program title"
                                 required
-                                className="border-gray-300  "
+                                className="border-gray-300"
                             />
                         </Form.Group>
 
@@ -56,14 +69,15 @@ export default function ProgramModal({
                             <Form.Label>Category</Form.Label>
                             <Form.Select
                                 name="category"
-                                value={programForm.category}
+                                value={programForm.category || ''}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300  "
+                                className="border-gray-300"
                             >
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.label}</option>
-                                ))}
+                                <option value="">Select Category</option>
+                                <option value="internship">Internship</option>
+                                <option value="course">Short Course</option>
+                                <option value="workshop">Learnership</option>
                             </Form.Select>
                         </Form.Group>
 
@@ -71,29 +85,24 @@ export default function ProgramModal({
                             <Form.Label>Type</Form.Label>
                             <Form.Select
                                 name="type"
-                                value={programForm.type}
+                                value={programForm.type || ''}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300  "
+                                className="border-gray-300"
                             >
-                                {types.map(type => (
-                                    <option key={type} value={type}>{type}</option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
-
-                        <Form.Group>
-                            <Form.Label>Status</Form.Label>
-                            <Form.Select
-                                name="status"
-                                value={programForm.status}
-                                onChange={handleInputChange}
-                                required
-                                className="border-gray-300  "
-                            >
-                                {statuses.map(status => (
-                                    <option key={status.id} value={status.id}>{status.label}</option>
-                                ))}
+                                <option value="">Select Field</option>
+                                <option value="ict">ICT</option>
+                                <option value="business">Business</option>
+                                <option value="engineering">Engineering</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="education">Education</option>
+                                <option value="finance">Finance</option>
+                                <option value="law">Law</option>
+                                <option value="hospitality">Hospitality</option>
+                                <option value="logistics">Logistics</option>
+                                <option value="construction">Construction</option>
+                                <option value="agriculture">Agriculture</option>
+                                <option value="marketing">Marketing</option>
                             </Form.Select>
                         </Form.Group>
 
@@ -102,11 +111,11 @@ export default function ProgramModal({
                             <Form.Control
                                 type="text"
                                 name="duration"
-                                value={programForm.duration}
+                                value={programForm.duration || ''}
                                 onChange={handleInputChange}
                                 placeholder="e.g., 8 weeks, 3 months"
                                 required
-                                className="border-gray-300  "
+                                className="border-gray-300"
                             />
                         </Form.Group>
 
@@ -115,12 +124,27 @@ export default function ProgramModal({
                             <Form.Control
                                 type="number"
                                 name="capacity"
-                                value={programForm.capacity}
+                                value={programForm.capacity || ''}
                                 onChange={handleInputChange}
                                 min="1"
                                 required
-                                className="border-gray-300  "
+                                className="border-gray-300"
                             />
+                        </Form.Group>
+
+                        <Form.Group>
+                            <Form.Label>Status</Form.Label>
+                            <Form.Select
+                                name="status"
+                                value={programForm.status || 'active'}
+                                onChange={handleInputChange}
+                                required
+                                className="border-gray-300"
+                            >
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="draft">Draft</option>
+                            </Form.Select>
                         </Form.Group>
 
                         <Form.Group>
@@ -128,10 +152,10 @@ export default function ProgramModal({
                             <Form.Control
                                 type="date"
                                 name="startDate"
-                                value={programForm.startDate}
+                                value={programForm.startDate || ''}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300  "
+                                className="border-gray-300"
                             />
                         </Form.Group>
 
@@ -140,41 +164,34 @@ export default function ProgramModal({
                             <Form.Control
                                 type="date"
                                 name="endDate"
-                                value={programForm.endDate}
+                                value={programForm.endDate || ''}
                                 onChange={handleInputChange}
                                 required
-                                className="border-gray-300  "
+                                className="border-gray-300"
                             />
                         </Form.Group>
 
                         <Form.Group>
                             <Form.Label>Facilitator</Form.Label>
-                            <Form.Select
+                            <Form.Control
+                                type="text"
                                 name="facilitator"
-                                value={programForm.facilitator}
+                                value={programForm.facilitator || ''}
                                 onChange={handleInputChange}
-                                required
-                                className="border-gray-300  "
-                            >
-                                <option value="">Select Facilitator</option>
-                                {facilitators.map(fac => (
-                                    <option key={fac} value={fac}>{fac}</option>
-                                ))}
-                            </Form.Select>
+                                placeholder="Enter facilitator name (Optional)"
+                                className="border-gray-300"
+                            />
                         </Form.Group>
 
-                        <Form.Group>
+                        <Form.Group className='col-span-2'>
                             <Form.Label>Location</Form.Label>
-                            <Form.Select
+                            <Form.Control
                                 name="location"
-                                value={programForm.location}
+                                value={programForm.location || ''}
                                 onChange={handleInputChange}
-                                className="border-gray-300  "
-                            >
-                                {locations.map(loc => (
-                                    <option key={loc} value={loc}>{loc}</option>
-                                ))}
-                            </Form.Select>
+                                placeholder='Enter program location'
+                                className="border-gray-300"
+                            />
                         </Form.Group>
 
                         <Form.Group className="md:col-span-2">
@@ -183,11 +200,11 @@ export default function ProgramModal({
                                 as="textarea"
                                 rows={3}
                                 name="description"
-                                value={programForm.description}
+                                value={programForm.description || ''}
                                 onChange={handleInputChange}
                                 placeholder="Enter program description"
                                 required
-                                className="border-gray-300  "
+                                className="border-gray-300"
                             />
                         </Form.Group>
 
@@ -196,48 +213,77 @@ export default function ProgramModal({
                             <Form.Control
                                 type="text"
                                 name="tags"
-                                value={programForm.tags.join(', ')}
+                                value={programForm.tags?.join(', ') || ''}
                                 onChange={handleTagsChange}
                                 placeholder="e.g., React, JavaScript, Frontend"
-                                className="border-gray-300  "
+                                className="border-gray-300"
                             />
                         </Form.Group>
 
-                        <Form.Group>
-                            <Form.Label>Price ($)</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="price"
-                                value={programForm.price}
-                                onChange={handleInputChange}
-                                min="0"
-                                className="border-gray-300  "
-                            />
-                        </Form.Group>
 
-                        <Form.Group className="flex items-center mt-2">
-                            <Form.Check
-                                type="checkbox"
-                                name="featured"
-                                label="Featured Program"
-                                checked={programForm.featured}
-                                onChange={handleInputChange}
-                                className="mr-3"
-                            />
+                        {/* Image Upload Section */}
+                        <Form.Group className="md:col-span-2">
+                            <Form.Label>Program Image</Form.Label>
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                                <input
+                                    type="file"
+                                    id="program-image"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                />
+                                <label
+                                    htmlFor="program-image"
+                                    className="cursor-pointer flex flex-col items-center gap-2"
+                                >
+                                    <FaUpload className="text-gray-400 text-2xl" />
+                                    <span className="text-sm text-gray-500">
+                                        Click to upload image
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                        PNG, JPG, JPEG up to 5MB
+                                    </span>
+                                </label>
+
+                                {/* Image Preview */}
+                                {programForm.imageBlob && (
+                                    <div className="mt-4 relative inline-block">
+                                        <img
+                                            src={programForm.imageBlob}
+                                            alt="Program preview"
+                                            className="max-h-48 rounded-lg object-cover shadow-md"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setProgramForm(prev => ({
+                                                    ...prev,
+                                                    imageFile: null,
+                                                    imageBlob: null
+                                                }));
+                                            }}
+                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </Form.Group>
                     </div>
                 </Form>
             </Modal.Body>
+
             <Modal.Footer className="border-t pt-4">
                 <Button
-                    variant="outline-danger"
+                    variant="outline-secondary"
                     onClick={onHide}
                     disabled={loading}
                 >
                     Cancel
                 </Button>
                 <Button
-                    variant="outline-success"
+                    variant="success"
                     onClick={onSave}
                     disabled={loading || !programForm.title || !programForm.description}
                     className="flex items-center gap-2"

@@ -4,6 +4,7 @@ import {
     Badge,
     Button,
     Card,
+    Dropdown,
     Form,
     InputGroup,
     Pagination,
@@ -29,6 +30,7 @@ import {
 import { categories, initialPrograms, statuses } from './mockPrograms';
 
 // Import modals
+import { Outlet, useNavigate } from 'react-router-dom';
 import DeleteProgramModal from './DeleteProgramModal';
 import ProgramFiltersOffcanvas from './ProgramFiltersOffcanvas';
 import ProgramModal from './ProgramModal';
@@ -45,16 +47,17 @@ export default function ProgramManagement() {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [selectedType, setSelectedType] = useState('all');
-    const [sortConfig, setSortConfig] = useState({ key: 'title', direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
     const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [alert, setAlert] = useState({ show: false, message: '', variant: 'success' });
     const [viewMode, setViewMode] = useState('list');
     const [selectedProgram, setSelectedProgram] = useState(null);
-    const [showModal,setShowModal]= useState(false)
+    const [showModal, setShowModal] = useState(false)
+    const navigate = useNavigate();
 
     const [programForm, setProgramForm] = useState({
-        title: '',
+        name: '',
         category: 'short-course',
         type: 'Technical',
         description: '',
@@ -80,7 +83,7 @@ export default function ProgramManagement() {
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             result = result.filter(program =>
-                program.title.toLowerCase().includes(term) ||
+                program.name.toLowerCase().includes(term) ||
                 program.description.toLowerCase().includes(term) ||
                 program.facilitator.toLowerCase().includes(term) ||
                 program.tags.some(tag => tag.toLowerCase().includes(term))
@@ -126,7 +129,7 @@ export default function ProgramManagement() {
 
     const handleAddProgram = () => {
         setProgramForm({
-            title: '',
+            name: '',
             category: 'short-course',
             type: 'Technical',
             description: '',
@@ -220,8 +223,8 @@ export default function ProgramManagement() {
     const getCategoryIcon = (category) => {
         const cat = categories.find(c => c.id === category);
         if (!cat) return <FaBook />;
-        
-        switch(cat.icon) {
+
+        switch (cat.icon) {
             case 'FaBook': return <FaBook />;
             case 'FaUserTie': return <FaUserTie />;
             case 'FaGraduationCap': return <FaGraduationCap />;
@@ -260,6 +263,7 @@ export default function ProgramManagement() {
 
     return (
         <div className="h-screen w-full overflow-y-auto p-4 md:p-6">
+            <Outlet />
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
@@ -280,14 +284,13 @@ export default function ProgramManagement() {
                                 {viewMode === 'grid' ? 'List View' : 'Grid View'}
                             </Button>
                             <Button
-                                variant="outline-primary"
+                                variant="outline-secondary"
                                 onClick={() => setShowFiltersOffcanvas(true)}
                                 className="flex items-center gap-2"
                             >
                                 <FaFilter /> Filters
                             </Button>
                             <Button
-                                variant="outline-danger"
                                 onClick={handleAddProgram}
                                 className="flex items-center gap-2"
                             >
@@ -349,7 +352,7 @@ export default function ProgramManagement() {
                                     <FaSearch className="text-gray-500" />
                                 </InputGroup.Text>
                                 <Form.Control
-                                    placeholder="Search programs by title, description, or tags..."
+                                    placeholder="Search programs by name, description, or tags..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="border-l-0  "
@@ -382,7 +385,7 @@ export default function ProgramManagement() {
                                         )}
                                     </div>
 
-                                    <h5 className="font-bold min-h-[2.5rem] text-gray-800 mb-2 line-clamp-2">{program.title}</h5>
+                                    <h5 className="font-bold min-h-[2.5rem] text-gray-800 mb-2 line-clamp-2">{program.name}</h5>
 
                                     <div className="space-y-3 mb-4">
                                         <div className="flex items-center justify-between text-sm">
@@ -420,32 +423,47 @@ export default function ProgramManagement() {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="outline-primary"
-                                            size="sm"
-                                            onClick={() => handleViewProgram(program)}
-                                            className="flex-1 flex justify-center items-center gap-1"
+
+                                    <Dropdown>
+                                        <Dropdown.Toggle
+                                            size="lg"
+                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-2 py-1 rounded-md inline-flex items-center justify-around"
                                         >
-                                            <FaEye /> View
-                                        </Button>
-                                        <Button
-                                            variant="outline-warning"
-                                            size="sm"
-                                            onClick={() => handleEditProgram(program)}
-                                            className="flex-1 flex justify-center items-center gap-1"
-                                        >
-                                            <FaEdit /> Edit
-                                        </Button>
-                                        <Button
-                                            variant="outline-danger"
-                                            size="sm"
-                                            onClick={() => handleDeleteClick(program)}
-                                            className="flex-1 flex justify-center items-center gap-1"
-                                        >
-                                            <FaTrash /> Del
-                                        </Button>
-                                    </div>
+                                            ACTION
+                                        </Dropdown.Toggle>
+
+                                        <Dropdown.Menu className="px-auto min-w-[140px] bg-slate-50 border border-gray-200 rounded-md shadow-lg">
+                                            {[
+                                                {
+                                                    label: "VIEW",
+                                                    event: () => { navigate(`${program?.id}`) },
+                                                    style: "text-gray-800 hover:bg-gray-700",
+                                                },
+
+                                                {
+                                                    label: "EDIT",
+                                                    event: () => { },
+                                                    style: "text-yellow-800 hover:bg-yellow-700",
+                                                },
+
+                                                {
+                                                    label: "DELETE",
+                                                    event: () => { },
+                                                    style: "text-red-800 hover:bg-red-700",
+                                                },
+
+                                            ].map((action, idx) => (
+                                                <Dropdown.Item
+                                                    key={idx}
+                                                    onClick={action?.event}
+                                                    className={action?.style + ' font-semibold hover:text-slate-50 rounded-md mx-1 '}
+                                                >
+                                                    {action?.label}
+                                                </Dropdown.Item>
+                                            ))}
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+
                                 </Card.Body>
                             </Card>
                         ))}
@@ -459,7 +477,7 @@ export default function ProgramManagement() {
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="border-0 px-4 py-3 text-gray-700 font-semibold cursor-pointer" onClick={() => handleSort('title')}>
-                                                Program {sortConfig.key === 'title' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                                Program {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                                             </th>
                                             <th className="border-0 px-4 py-3 text-gray-700 font-semibold cursor-pointer" onClick={() => handleSort('category')}>
                                                 Category {sortConfig.key === 'category' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
@@ -484,7 +502,7 @@ export default function ProgramManagement() {
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <div className="font-medium text-gray-800">{program.title}</div>
+                                                            <div className="font-medium text-gray-800">{program.name}</div>
                                                             <div className="text-sm text-gray-600">{program.facilitator}</div>
                                                         </div>
                                                     </div>
@@ -509,32 +527,45 @@ export default function ProgramManagement() {
                                                     </div>
                                                 </td>
                                                 <td className="p-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <Button
-                                                            variant="outline-primary"
+                                                    <Dropdown className=" inline-block">
+                                                        <Dropdown.Toggle
                                                             size="sm"
-                                                            onClick={() => handleViewProgram(program)}
-                                                            className="px-3"
+                                                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-2 py-1 rounded inline-flex items-center focus:outline-none"
                                                         >
-                                                            <FaEye />
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline-warning"
-                                                            size="sm"
-                                                            onClick={() => handleEditProgram(program)}
-                                                            className="px-3"
-                                                        >
-                                                            <FaEdit />
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline-danger"
-                                                            size="sm"
-                                                            onClick={() => handleDeleteClick(program)}
-                                                            className="px-3"
-                                                        >
-                                                            <FaTrash />
-                                                        </Button>
-                                                    </div>
+                                                            ACTION
+                                                        </Dropdown.Toggle>
+
+                                                        <Dropdown.Menu className="px-auto min-w-[140px] bg-slate-50 border border-gray-200 rounded-md shadow-lg">
+                                                            {[
+                                                                {
+                                                                    label: "VIEW",
+                                                                    event: () => { navigate(`${program?.id}`) },
+                                                                    style: "text-gray-800 hover:bg-gray-700",
+                                                                },
+
+                                                                {
+                                                                    label: "EDIT",
+                                                                    event: () => { },
+                                                                    style: "text-yellow-800 hover:bg-yellow-700",
+                                                                },
+
+                                                                {
+                                                                    label: "DELETE",
+                                                                    event: () => { },
+                                                                    style: "text-red-800 hover:bg-red-700",
+                                                                },
+
+                                                            ].map((action, idx) => (
+                                                                <Dropdown.Item
+                                                                    key={idx}
+                                                                    onClick={action?.event}
+                                                                    className={action?.style + ' font-semibold hover:text-slate-50 rounded-md mx-1 '}
+                                                                >
+                                                                    {action?.label}
+                                                                </Dropdown.Item>
+                                                            ))}
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
                                                 </td>
                                             </tr>
                                         ))}

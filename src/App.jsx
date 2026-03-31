@@ -23,6 +23,8 @@ import ModeratorPage from "./components/moderator/ModeratorPage";
 import AuthLayout from "./components/auth/AuthLayout";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/register";
+import ProgramView from "./components/admin/programs/ProgramView";
+import ProgramLayout from "./components/admin/programs/ProgramLayout";
 
 export default function App() {
 
@@ -36,7 +38,7 @@ export default function App() {
           <Route path={ROUTES.UNAUTHORIZED} element={<ForbiddenPage />} />
           <Route path={ROUTES.NOT_FOUND} element={<PageNotFound />} />
           <Route path={ROUTES.INTERNAL_ERROR} element={<InternalError />} />
-          <Route path="*" element={<Navigate to={ROUTES.NOT_FOUND} replace />} />
+          {/*<Route path="*" element={<Navigate to={ROUTES.NOT_FOUND} replace />} />*/}
         </Route>
 
 
@@ -87,7 +89,10 @@ export default function App() {
         }>
           <Route index element={<AdminDashboardOverview />} />
           <Route path="users" element={<UserManagement />} />
-          <Route path="programs" element={<ProgramManagement />} />
+          <Route path="programs" element={<ProgramLayout />}>
+            <Route index element={<ProgramManagement />} />
+            <Route path=":id" element={<ProgramView />} />
+          </Route>
           <Route path="settings" element={<AdminProfile />} />
         </Route>
 
