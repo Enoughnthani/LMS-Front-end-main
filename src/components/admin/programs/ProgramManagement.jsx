@@ -14,14 +14,11 @@ import {
 import {
     FaBook,
     FaClock,
-    FaEdit,
-    FaEye,
     FaFilter,
     FaGraduationCap,
     FaMapMarkerAlt,
     FaPlus,
     FaSearch,
-    FaTrash,
     FaUsers,
     FaUserTie
 } from 'react-icons/fa';
@@ -160,11 +157,6 @@ export default function ProgramManagement() {
         setShowViewModal(true);
     };
 
-    const handleDeleteClick = (program) => {
-        setSelectedProgram(program);
-        setShowDeleteModal(true);
-    };
-
     const handleSaveProgram = () => {
         setLoading(true);
 
@@ -203,17 +195,7 @@ export default function ProgramManagement() {
         }, 500);
     };
 
-    const handleToggleFeatured = (programId) => {
-        setPrograms(prev => prev.map(program =>
-            program.id === programId ? { ...program, featured: !program.featured } : program
-        ));
-    };
-
-    const handleToggleEnrollment = (programId) => {
-        setPrograms(prev => prev.map(program =>
-            program.id === programId ? { ...program, enrolled: !program.enrolled } : program
-        ));
-    };
+    
 
     const showAlert = (message, variant) => {
         setAlert({ show: true, message, variant });
@@ -262,8 +244,7 @@ export default function ProgramManagement() {
     };
 
     return (
-        <div className="h-screen w-full overflow-y-auto p-4 md:p-6">
-            <Outlet />
+        <div className="h-screen w-full  p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
@@ -370,7 +351,7 @@ export default function ProgramManagement() {
                 {/* Programs Content */}
                 {viewMode === 'grid' ? (
                     // Grid View
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-6">
                         {currentPrograms.map(program => (
                             <Card key={program.id} className="border-0 shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
                                 <Card.Body className="p-4">
@@ -380,9 +361,6 @@ export default function ProgramManagement() {
                                                 {getCategoryIcon(program.category)}
                                             </div>
                                         </div>
-                                        {program.featured && (
-                                            <Badge bg="warning" className="text-xs">Featured</Badge>
-                                        )}
                                     </div>
 
                                     <h5 className="font-bold min-h-[2.5rem] text-gray-800 mb-2 line-clamp-2">{program.name}</h5>
@@ -470,7 +448,7 @@ export default function ProgramManagement() {
                     </div>
                 ) : (
                     // List View
-                    <Card className="border-0 shadow-sm">
+                    <Card className="border-0 shadow-sm ">
                         <Card.Body className="p-0">
                             <div className="overflow-x-auto">
                                 <Table hover className="mb-0">
@@ -592,7 +570,7 @@ export default function ProgramManagement() {
 
                 {/* Pagination */}
                 {filteredPrograms.length > 0 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-between py-6 gap-4">
                         <div className="text-sm text-gray-600">
                             Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredPrograms.length)} of {filteredPrograms.length} programs
                         </div>

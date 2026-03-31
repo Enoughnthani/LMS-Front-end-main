@@ -1,6 +1,9 @@
+import { apiFetch } from '@/api/api';
+import RichTextEditor from '@/components/common/RichTextEditor';
+import { PROGRAMS } from '@/utils/apiEndpoint';
 import { X } from 'lucide-react';
 import { Button, Form, Modal, Spinner } from 'react-bootstrap';
-import { FaBook, FaSave, FaPenSquare, FaUpload } from 'react-icons/fa';
+import { FaBook, FaPenSquare, FaSave, FaUpload } from 'react-icons/fa';
 
 export default function ProgramModal({
     show,
@@ -22,7 +25,6 @@ export default function ProgramModal({
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Create preview URL
             const imageUrl = URL.createObjectURL(file);
             setProgramForm(prev => ({
                 ...prev,
@@ -32,10 +34,26 @@ export default function ProgramModal({
         }
     };
 
-    const handleTagsChange = (e) => {
-        const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-        setProgramForm(prev => ({ ...prev, tags }));
+    const handleDescriptionChange = (value) => {
+        setProgramForm(prev => ({ ...prev, description: value }));
     };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+
+            const result = await apiFetch(editingProgram ? `${PROGRAMS}/${editingProgram.id}` : `${PROGRAMS}`, {
+                method: editingProgram ? 'PUT' : 'POST',
+                body: programForm
+            });
+
+            setResponse(result);
+
+        } catch (error) {
+            setResponse({ success: false, message: 'An error occurred while saving the program. Please try again.' });
+        }
+    }
 
     return (
         <Modal show={show} onHide={onHide} size="lg" centered backdrop="static">
@@ -50,16 +68,16 @@ export default function ProgramModal({
             </Modal.Header>
 
             <Modal.Body className="pt-0">
-                <Form>
+                <Form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Form.Group className="md:col-span-2">
-                            <Form.Label>Program Title</Form.Label>
+                            <Form.Label>Program Name</Form.Label>
                             <Form.Control
                                 type="text"
-                                name="title"
-                                value={programForm.title || ''}
+                                name="name"
+                                value={programForm.name || ''}
                                 onChange={handleInputChange}
-                                placeholder="Enter program title"
+                                placeholder="Enter program name"
                                 required
                                 className="border-gray-300"
                             />
@@ -141,10 +159,21 @@ export default function ProgramModal({
                                 required
                                 className="border-gray-300"
                             >
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="draft">Draft</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="INACTIVE">Inactive</option>
+                                <option value="DRAFT">Draft</option>
                             </Form.Select>
+                        </Form.Group>
+
+                        <Form.Group>
+                            <Form.Label>Location</Form.Label>
+                            <Form.Control
+                                name="location"
+                                value={programForm.location || ''}
+                                onChange={handleInputChange}
+                                placeholder='Enter program location'
+                                className="border-gray-300"
+                            />
                         </Form.Group>
 
                         <Form.Group>
@@ -171,53 +200,10 @@ export default function ProgramModal({
                             />
                         </Form.Group>
 
-                        <Form.Group>
-                            <Form.Label>Facilitator</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="facilitator"
-                                value={programForm.facilitator || ''}
-                                onChange={handleInputChange}
-                                placeholder="Enter facilitator name (Optional)"
-                                className="border-gray-300"
-                            />
-                        </Form.Group>
-
-                        <Form.Group className='col-span-2'>
-                            <Form.Label>Location</Form.Label>
-                            <Form.Control
-                                name="location"
-                                value={programForm.location || ''}
-                                onChange={handleInputChange}
-                                placeholder='Enter program location'
-                                className="border-gray-300"
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="md:col-span-2">
-                            <Form.Label>Description</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={3}
-                                name="description"
-                                value={programForm.description || ''}
-                                onChange={handleInputChange}
-                                placeholder="Enter program description"
-                                required
-                                className="border-gray-300"
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="md:col-span-2">
-                            <Form.Label>Tags (comma-separated)</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="tags"
-                                value={programForm.tags?.join(', ') || ''}
-                                onChange={handleTagsChange}
-                                placeholder="e.g., React, JavaScript, Frontend"
-                                className="border-gray-300"
-                            />
+                        <Form.Group className="mb-3 col-span-2">
+                            <Form.Label>Descriptiion</Form.Label>
+                            <RichTextEditor content={programForm?.description} onChange={handleDescriptionChange} />
+                            <Form.Text className="text-muted dark:text-slate-400">Format your text with bold, italic, lists, and links</Form.Text>
                         </Form.Group>
 
 
@@ -271,36 +257,38 @@ export default function ProgramModal({
                             </div>
                         </Form.Group>
                     </div>
+
+
+
+                    <div className="border-t pt-4 flex justify-end gap-2">
+                        <Button
+                            variant="outline-secondary"
+                            onClick={onHide}
+                            disabled={loading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="success"
+                            type='submit'
+                            disabled={loading}
+                            className="flex items-center gap-2"
+                        >
+                            {loading ? (
+                                <>
+                                    <Spinner animation="border" size="sm" />
+                                    {editingProgram ? 'Updating...' : 'Creating...'}
+                                </>
+                            ) : (
+                                <>
+                                    <FaSave />
+                                    {editingProgram ? 'Update Program' : 'Create Program'}
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </Form>
             </Modal.Body>
-
-            <Modal.Footer className="border-t pt-4">
-                <Button
-                    variant="outline-secondary"
-                    onClick={onHide}
-                    disabled={loading}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    variant="success"
-                    onClick={onSave}
-                    disabled={loading || !programForm.title || !programForm.description}
-                    className="flex items-center gap-2"
-                >
-                    {loading ? (
-                        <>
-                            <Spinner animation="border" size="sm" />
-                            {editingProgram ? 'Updating...' : 'Creating...'}
-                        </>
-                    ) : (
-                        <>
-                            <FaSave />
-                            {editingProgram ? 'Update Program' : 'Create Program'}
-                        </>
-                    )}
-                </Button>
-            </Modal.Footer>
         </Modal>
     );
 }
