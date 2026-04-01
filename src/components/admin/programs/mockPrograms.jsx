@@ -162,19 +162,32 @@ export const initialPrograms = [
 ];
 
 export const categories = [
-    { id: 'short-course', label: 'Short Course', icon: 'FaBook', color: 'blue' },
-    { id: 'learnership', label: 'Learnership', icon: 'FaUserTie', color: 'purple' },
-    { id: 'internship', label: 'Internship', icon: 'FaGraduationCap', color: 'green' }
+    { id: 'SHORT_COURSE', label: 'Short Course', icon: 'FaBook', color: 'blue' },
+    { id: 'LEARNERSHIP', label: 'Learnership', icon: 'FaUserTie', color: 'purple' },
+    { id: 'INTERNSHIP', label: 'Internship', icon: 'FaGraduationCap', color: 'green' }
 ];
 
 export const statuses = [
-    { id: 'upcoming', label: 'Upcoming', color: 'warning' },
-    { id: 'active', label: 'Active', color: 'success' },
-    { id: 'ongoing', label: 'Ongoing', color: 'info' },
-    { id: 'completed', label: 'Completed', color: 'secondary' },
-    { id: 'draft', label: 'Draft', color: 'light' }
+    { id: 'NOTSTARTED', label: 'NOT STARTED', color: 'secondary' },
+    { id: 'INPROGRESS', label: 'IN PROGRESS', color: 'success' },
+    { id: 'COMPLETED', label: 'COMPLETED', color: 'secondary' },
 ];
 
-export const types = ['Technical', 'Design', 'Business', 'Marketing', 'Management', 'Executive'];
+export const programTypes = [
+    "ict",
+    "business",
+    "engineering",
+    "healthcare",
+    "education",
+    "finance",
+    "law",
+    "hospitality",
+    "logistics",
+    "construction",
+    "agriculture",
+    "marketing"
+];
+
+//export const types = ['Technical', 'Design', 'Business', 'Marketing', 'Management', 'Executive'];
 export const locations = ['Online', 'On-site', 'Hybrid', 'Remote'];
 export const facilitators = ['Sarah Chen', 'Michael Rodriguez', 'Dr. Lisa Wang', 'Emma Wilson', 'James Brown', 'Alex Johnson', 'David Miller', 'Sophia Garcia'];

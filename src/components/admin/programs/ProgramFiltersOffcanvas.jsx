@@ -1,6 +1,6 @@
 import { Offcanvas, Form, Button } from 'react-bootstrap';
 import { FaFilter, FaTimes } from 'react-icons/fa';
-import { categories, statuses, types } from './mockPrograms';
+import { categories, statuses, programTypes } from './mockPrograms';
 
 export default function ProgramFiltersOffcanvas({ 
     show, 
@@ -101,7 +101,7 @@ export default function ProgramFiltersOffcanvas({
                                 onChange={(e) => setSelectedType(e.target.value)}
                                 className="mb-2"
                             />
-                            {types.map(type => (
+                            {programTypes.map(type => (
                                 <Form.Check
                                     key={type}
                                     type="radio"

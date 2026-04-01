@@ -24,7 +24,7 @@ import {
 } from 'react-icons/fa';
 
 // Import mock data
-import { categories, initialPrograms, statuses } from './mockPrograms';
+import { categories, statuses } from './mockPrograms';
 
 // Import modals
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -32,10 +32,12 @@ import DeleteProgramModal from './DeleteProgramModal';
 import ProgramFiltersOffcanvas from './ProgramFiltersOffcanvas';
 import ProgramModal from './ProgramModal';
 import ViewProgramModal from './ViewModalProgram';
+import { apiFetch } from '@/api/api';
+import { PROGRAMS } from '@/utils/apiEndpoint';
 
 export default function ProgramManagement() {
-    const [programs, setPrograms] = useState(initialPrograms);
-    const [filteredPrograms, setFilteredPrograms] = useState(initialPrograms);
+    const [programs, setPrograms] = useState([]);
+    const [filteredPrograms, setFilteredPrograms] = useState([]);
     const [showViewModal, setShowViewModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showFiltersOffcanvas, setShowFiltersOffcanvas] = useState(false);
@@ -51,25 +53,33 @@ export default function ProgramManagement() {
     const [viewMode, setViewMode] = useState('list');
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [showModal, setShowModal] = useState(false)
+    const [respose, setResponse] = useState(null);
     const navigate = useNavigate();
 
     const [programForm, setProgramForm] = useState({
         name: '',
-        category: 'short-course',
-        type: 'Technical',
+        category: '',
+        type: '',
         description: '',
-        duration: '',
         capacity: 30,
-        status: 'upcoming',
+        status: 'NOTSTARTED',
         startDate: '',
         endDate: '',
-        facilitator: '',
-        price: 0,
-        location: 'Online',
-        tags: [],
-        featured: false,
-        requirements: ''
+        location: '',
     });
+
+    useEffect(() => {
+        getPrograms();
+    }, [])
+
+    const getPrograms = async () => {
+        try {
+            const result = await apiFetch(`${PROGRAMS}`, { method: 'GET', })
+            setPrograms(result?.payload || []);
+        } catch (error) {
+            setResponse({ success: false, message: 'Failed to fetch programs' })
+        }
+    }
 
     const itemsPerPage = viewMode === 'grid' ? 8 : 10;
 
@@ -125,23 +135,7 @@ export default function ProgramManagement() {
     };
 
     const handleAddProgram = () => {
-        setProgramForm({
-            name: '',
-            category: 'short-course',
-            type: 'Technical',
-            description: '',
-            duration: '',
-            capacity: 30,
-            status: 'upcoming',
-            startDate: '',
-            endDate: '',
-            facilitator: '',
-            price: 0,
-            location: 'Online',
-            tags: [],
-            featured: false,
-            requirements: ''
-        });
+        resetForm();
         setEditingProgram(null);
         setShowModal(true);
     };
@@ -152,9 +146,18 @@ export default function ProgramManagement() {
         setShowModal(true);
     };
 
-    const handleViewProgram = (program) => {
-        setSelectedProgram(program);
-        setShowViewModal(true);
+    const resetForm = () => {
+        setProgramForm({
+            name: '',
+            category: '',
+            type: '',
+            description: '',
+            capacity: 30,
+            status: 'NOTSTARTED',
+            startDate: '',
+            endDate: '',
+            location: ''
+        });
     };
 
     const handleSaveProgram = () => {
@@ -183,19 +186,12 @@ export default function ProgramManagement() {
         }, 500);
     };
 
-    const handleDeleteProgram = () => {
-        setLoading(true);
-
-        setTimeout(() => {
-            setPrograms(prev => prev.filter(program => program.id !== selectedProgram.id));
-            showAlert('Program deleted successfully!', 'success');
-            setLoading(false);
-            setShowDeleteModal(false);
-            setSelectedProgram(null);
-        }, 500);
+    const handleDeleteProgram = (program) => {
+        setSelectedProgram(program);
+        setShowDeleteModal(true);
     };
 
-    
+
 
     const showAlert = (message, variant) => {
         setAlert({ show: true, message, variant });
@@ -222,8 +218,16 @@ export default function ProgramManagement() {
     const getStatusBadge = (status) => {
         const statusConfig = statuses.find(s => s.id === status);
         return (
-            <Badge bg={statusConfig?.color || 'secondary'} className="px-3 py-1 rounded-pill w-[90px]">
+            <Badge bg={statusConfig?.color || 'secondary'} className="rounded-md w-[90px]">
                 {statusConfig?.label || status}
+            </Badge>
+        );
+    };
+
+    const getTypeBadge = (type) => {
+        return (
+            <Badge bg={'secondary'} className="rounded-md w-[90px] text-uppercase">
+                {type}
             </Badge>
         );
     };
@@ -235,6 +239,50 @@ export default function ProgramManagement() {
             year: 'numeric'
         });
     };
+
+    const getActions = (program) => {
+        return (
+            <Dropdown>
+                <Dropdown.Toggle
+                    size="lg"
+                    className="w-full z-[9999] bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-2 py-1 rounded-md inline-flex items-center justify-around"
+                >
+                    ACTION
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu className="px-auto min-w-[140px] bg-slate-50 border border-gray-200 rounded-md shadow-lg">
+                    {[
+                        {
+                            label: "VIEW",
+                            event: () => { navigate(`${program?.id}`) },
+                            style: "text-gray-800 hover:bg-gray-700",
+                        },
+
+                        {
+                            label: "EDIT",
+                            event: () => {handleEditProgram(program)},
+                            style: "text-yellow-800 hover:bg-yellow-700",
+                        },
+
+                        {
+                            label: "DELETE",
+                            event: () => { handleDeleteProgram(program) },
+                            style: "text-red-800 hover:bg-red-700",
+                        },
+
+                    ].map((action, idx) => (
+                        <Dropdown.Item
+                            key={idx}
+                            onClick={action?.event}
+                            className={action?.style + ' font-semibold hover:text-slate-50 rounded-md px-4 '}
+                        >
+                            {action?.label}
+                        </Dropdown.Item>
+                    ))}
+                </Dropdown.Menu>
+            </Dropdown>
+        )
+    }
 
     const resetFilters = () => {
         setSelectedCategory('all');
@@ -348,6 +396,7 @@ export default function ProgramManagement() {
                     </Card.Body>
                 </Card>
 
+
                 {/* Programs Content */}
                 {viewMode === 'grid' ? (
                     // Grid View
@@ -371,11 +420,11 @@ export default function ProgramManagement() {
                                                 <FaUsers className="text-xs" /> Learners
                                             </span>
                                             <span className="font-medium">
-                                                {program.learners}/{program.capacity}
+                                                {program.enrolledCount}/{program.capacity}
                                             </span>
                                         </div>
                                         <ProgressBar
-                                            now={(program.learners / program.capacity) * 100}
+                                            now={(program.enrolledCount / program.capacity) * 100}
                                             variant={getCategoryColor(program.category)}
                                             className="h-1.5"
                                         />
@@ -401,46 +450,7 @@ export default function ProgramManagement() {
                                     </div>
 
                                     {/* Action Buttons */}
-
-                                    <Dropdown>
-                                        <Dropdown.Toggle
-                                            size="lg"
-                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-2 py-1 rounded-md inline-flex items-center justify-around"
-                                        >
-                                            ACTION
-                                        </Dropdown.Toggle>
-
-                                        <Dropdown.Menu className="px-auto min-w-[140px] bg-slate-50 border border-gray-200 rounded-md shadow-lg">
-                                            {[
-                                                {
-                                                    label: "VIEW",
-                                                    event: () => { navigate(`${program?.id}`) },
-                                                    style: "text-gray-800 hover:bg-gray-700",
-                                                },
-
-                                                {
-                                                    label: "EDIT",
-                                                    event: () => { },
-                                                    style: "text-yellow-800 hover:bg-yellow-700",
-                                                },
-
-                                                {
-                                                    label: "DELETE",
-                                                    event: () => { },
-                                                    style: "text-red-800 hover:bg-red-700",
-                                                },
-
-                                            ].map((action, idx) => (
-                                                <Dropdown.Item
-                                                    key={idx}
-                                                    onClick={action?.event}
-                                                    className={action?.style + ' font-semibold hover:text-slate-50 rounded-md mx-1 '}
-                                                >
-                                                    {action?.label}
-                                                </Dropdown.Item>
-                                            ))}
-                                        </Dropdown.Menu>
-                                    </Dropdown>
+                                    {getActions(program)}
 
                                 </Card.Body>
                             </Card>
@@ -450,7 +460,7 @@ export default function ProgramManagement() {
                     // List View
                     <Card className="border-0 shadow-sm ">
                         <Card.Body className="p-0">
-                            <div className="overflow-x-auto">
+                            <div className="">
                                 <Table hover className="mb-0">
                                     <thead className="bg-gray-50">
                                         <tr>
@@ -459,6 +469,9 @@ export default function ProgramManagement() {
                                             </th>
                                             <th className="border-0 px-4 py-3 text-gray-700 font-semibold cursor-pointer" onClick={() => handleSort('category')}>
                                                 Category {sortConfig.key === 'category' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            <th className="border-0 px-4 py-3 text-gray-700 font-semibold cursor-pointer" onClick={() => handleSort('type')}>
+                                                Type {sortConfig.key === 'type' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                                             </th>
                                             <th className="border-0 px-4 py-3 text-gray-700 font-semibold cursor-pointer" onClick={() => handleSort('status')}>
                                                 Status {sortConfig.key === 'status' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
@@ -471,10 +484,10 @@ export default function ProgramManagement() {
                                     </thead>
                                     <tbody>
                                         {currentPrograms.map(program => (
-                                            <tr key={program.id} className="hover:bg-red-50/30 border-b border-gray-100">
+                                            <tr onClick={() => navigate(`${program?.id}`)} key={program.id} className="cursor-pointer hover:bg-red-50/30 border-b border-gray-100">
                                                 <td className="p-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`w-10 h-10 bg-${getCategoryColor(program.category)}-100 rounded-lg flex items-center justify-center`}>
+                                                        <div className={`w-10 h-10 bg-${getCategoryColor(program.category)}-100 rounded-md flex items-center justify-center`}>
                                                             <div className={`text-${getCategoryColor(program.category)}-600`}>
                                                                 {getCategoryIcon(program.category)}
                                                             </div>
@@ -487,63 +500,30 @@ export default function ProgramManagement() {
                                                 </td>
                                                 <td className="p-4">
                                                     <Badge bg="light" text="dark" className="border border-gray-200 px-3 py-1">
-                                                        {program.category === 'short-course' ? 'Short Course' :
-                                                            program.category === 'learnership' ? 'Learnership' : 'Internship'}
+                                                        {program.category === 'SHORT_COURSE' ? 'Short Course' :
+                                                            program.category === 'LEARNERSHIP' ? 'Learnership' : 'Internship'}
                                                     </Badge>
                                                 </td>
-                                                <td className="p-4">
+
+                                                <td className="p-4 ">
+                                                    {getTypeBadge(program.type)}
+                                                </td>
+
+                                                <td className="p-4 ">
                                                     {getStatusBadge(program.status)}
                                                 </td>
                                                 <td className="p-4">
                                                     <div>
-                                                        <div className="font-medium">{program.learners}/{program.capacity}</div>
+                                                        <div className="font-medium">{program?.enrolledCount}/{program.capacity}</div>
                                                         <ProgressBar
-                                                            now={(program.learners / program.capacity) * 100}
+                                                            now={(program.enrolledCount) / program.capacity * 100}
                                                             variant={getCategoryColor(program.category)}
                                                             className="h-1 mt-1 w-24"
                                                         />
                                                     </div>
                                                 </td>
-                                                <td className="p-4">
-                                                    <Dropdown className=" inline-block">
-                                                        <Dropdown.Toggle
-                                                            size="sm"
-                                                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-2 py-1 rounded inline-flex items-center focus:outline-none"
-                                                        >
-                                                            ACTION
-                                                        </Dropdown.Toggle>
-
-                                                        <Dropdown.Menu className="px-auto min-w-[140px] bg-slate-50 border border-gray-200 rounded-md shadow-lg">
-                                                            {[
-                                                                {
-                                                                    label: "VIEW",
-                                                                    event: () => { navigate(`${program?.id}`) },
-                                                                    style: "text-gray-800 hover:bg-gray-700",
-                                                                },
-
-                                                                {
-                                                                    label: "EDIT",
-                                                                    event: () => { },
-                                                                    style: "text-yellow-800 hover:bg-yellow-700",
-                                                                },
-
-                                                                {
-                                                                    label: "DELETE",
-                                                                    event: () => { },
-                                                                    style: "text-red-800 hover:bg-red-700",
-                                                                },
-
-                                                            ].map((action, idx) => (
-                                                                <Dropdown.Item
-                                                                    key={idx}
-                                                                    onClick={action?.event}
-                                                                    className={action?.style + ' font-semibold hover:text-slate-50 rounded-md mx-1 '}
-                                                                >
-                                                                    {action?.label}
-                                                                </Dropdown.Item>
-                                                            ))}
-                                                        </Dropdown.Menu>
-                                                    </Dropdown>
+                                                <td onClick={(e)=>e.stopPropagation()} className="p-4">
+                                                    {getActions(program)}
                                                 </td>
                                             </tr>
                                         ))}
@@ -559,7 +539,7 @@ export default function ProgramManagement() {
                                     </div>
                                     <h4 className="text-gray-700 font-medium mb-2">No programs found</h4>
                                     <p className="text-gray-500 mb-4">Try adjusting your filters or add a new program</p>
-                                    <Button variant="danger" onClick={handleAddProgram}>
+                                    <Button variant="primary" onClick={handleAddProgram}>
                                         <FaPlus className="me-2" /> Add First Program
                                     </Button>
                                 </div>
@@ -605,7 +585,7 @@ export default function ProgramManagement() {
                 setProgramForm={setProgramForm}
                 editingProgram={editingProgram}
                 onSave={handleSaveProgram}
-                loading={loading}
+                getPrograms={getPrograms}
             />
 
             <ViewProgramModal
@@ -621,8 +601,8 @@ export default function ProgramManagement() {
                 show={showDeleteModal}
                 onHide={() => setShowDeleteModal(false)}
                 program={selectedProgram}
-                onDelete={handleDeleteProgram}
-                loading={loading}
+                setResponse={setResponse}
+                getPrograms={getPrograms}
             />
 
             <ProgramFiltersOffcanvas

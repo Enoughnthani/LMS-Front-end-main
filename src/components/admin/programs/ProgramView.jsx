@@ -1,528 +1,774 @@
-import { useState, useEffect } from 'react';
-import {
-    Badge,
-    Button,
-    Card,
-    Col,
-    Container,
-    Row,
-    Tab,
-    Tabs,
-    ListGroup,
-    Alert,
-    Spinner
-} from 'react-bootstrap';
+import { apiFetch } from '@/api/api';
+import { BASE_URL, PROGRAMS } from '@/utils/apiEndpoint';
+import { useEffect, useState } from 'react';
 import {
     FaArrowLeft,
-    FaCalendarAlt,
-    FaClock,
-    FaEdit,
-    FaMapMarkerAlt,
-    FaUsers,
-    FaUserTie,
-    FaCheckCircle,
-    FaTimesCircle,
-    FaCertificate,
     FaAward,
-    FaBriefcase,
-    FaTrash,
-    FaEye,
+    FaBuilding,
+    FaCalendarAlt,
+    FaChalkboardTeacher,
     FaChartLine,
     FaDownload,
-    FaEnvelope
+    FaEdit,
+    FaEnvelope,
+    FaEye,
+    FaGraduationCap,
+    FaMapMarkerAlt,
+    FaPlus,
+    FaSearch,
+    FaTimesCircle,
+    FaTrash,
+    FaUserPlus,
+    FaUsers
 } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 
-// Helper function for category color
-const getCategoryColor = (category) => {
-    const colors = {
-        'short-course': 'primary',
-        'learnership': 'success',
-        'internship': 'warning'
-    };
-    return colors[category] || 'secondary';
-};
-
-// Mock data for demonstration
-const initialPrograms = [
-    {
-        id: 1,
-        title: "Web Development Bootcamp",
-        category: "short-course",
-        type: "Technical",
-        description: "Learn full-stack web development from scratch. Master HTML, CSS, JavaScript, React, and Node.js in this comprehensive bootcamp.",
-        duration: "12 weeks",
-        capacity: 50,
-        learners: 35,
-        status: "active",
-        startDate: "2024-03-15",
-        endDate: "2024-06-15",
-        facilitator: "John Doe",
-        price: 1500,
-        location: "Hybrid",
-        tags: ["web", "javascript", "react"],
-        featured: true,
-        requirements: "Basic computer literacy, willingness to learn",
-        learningOutcomes: [
-            "Build responsive websites using HTML5, CSS3, and JavaScript",
-            "Create dynamic web applications with React.js",
-            "Develop RESTful APIs using Node.js and Express",
-            "Work with databases like MongoDB and PostgreSQL",
-            "Deploy applications to cloud platforms"
-        ],
-        schedule: [
-            { title: "Week 1-2: HTML & CSS Fundamentals", description: "Learn the basics of web structure and styling", date: "Mar 15-28" },
-            { title: "Week 3-4: JavaScript Essentials", description: "Master JavaScript programming concepts", date: "Mar 29-Apr 11" },
-            { title: "Week 5-8: React.js Deep Dive", description: "Build interactive UIs with React", date: "Apr 12-May 9" },
-            { title: "Week 9-10: Backend Development", description: "Create server-side applications", date: "May 10-23" },
-            { title: "Week 11-12: Final Project", description: "Build a full-stack application", date: "May 24-Jun 15" }
-        ],
-        facilitatorBio: "John is a senior software engineer with 10+ years of experience in web development. He has trained over 500 students and helped them launch successful careers in tech.",
-        facilitatorExpertise: ["React", "Node.js", "Python", "AWS", "MongoDB"],
-        enrolledStudents: [
-            { id: 1, name: "Sarah Johnson", email: "sarah@example.com", enrollmentDate: "2024-03-01", progress: 75 },
-            { id: 2, name: "Michael Chen", email: "michael@example.com", enrollmentDate: "2024-03-02", progress: 60 },
-            { id: 3, name: "Emily Rodriguez", email: "emily@example.com", enrollmentDate: "2024-03-03", progress: 90 }
-        ]
-    }
-];
-
-const ProgramView = ({ program: propProgram, onEdit, onDelete, getCategoryIcon, getStatusBadge }) => {
+const ProgramViewAdmin = ({ onEdit, onDelete }) => {
     const navigate = useNavigate();
     const { id } = useParams();
-    const [program, setProgram] = useState(propProgram);
-    const [loading, setLoading] = useState(!propProgram);
+    const [program, setProgram] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
     const [error, setError] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-    // Fetch program if not provided as prop
+    // Enrollment modal states
+    const [showEnrollModal, setShowEnrollModal] = useState(false);
+    const [enrollForm, setEnrollForm] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        type: 'learner'
+    });
+
+    // Instructor management states
+    const [showInstructorModal, setShowInstructorModal] = useState(false);
+    const [instructorForm, setInstructorForm] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        expertise: '',
+        bio: ''
+    });
+
+    const [enrolledStudents, setEnrolledStudents] = useState([]);
+    const [instructors, setInstructors] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+
     useEffect(() => {
-        if (!propProgram && id) {
-            fetchProgram();
-        } else if (propProgram) {
-            setProgram(propProgram);
-            setLoading(false);
-        }
-    }, [id, propProgram]);
+        fetchProgram();
+        fetchEnrolledStudents();
+        fetchInstructors();
+    }, [id]);
 
     const fetchProgram = async () => {
         setLoading(true);
-        setError(null);
         try {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            const programData = initialPrograms.find(p => p.id === parseInt(id));
-            
-            if (!programData) {
-                setError('Program not found');
+            const result = await apiFetch(`${PROGRAMS}/${id}`);
+            if (result?.payload) {
+                setProgram(result.payload);
+                // Update enrollForm type based on program category
+                setEnrollForm(prev => ({
+                    ...prev,
+                    type: result.payload?.category === 'INTERNSHIP' ? 'intern' : 'learner'
+                }));
             } else {
-                setProgram(programData);
+                setError('Program not found');
             }
         } catch (error) {
             console.error('Error fetching program:', error);
-            setError('Failed to load program details. Please try again.');
+            setError('Failed to load program details');
         } finally {
             setLoading(false);
         }
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'TBD';
+    const fetchEnrolledStudents = async () => {
         try {
-            return new Date(dateString).toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
+            // Mock API call - replace with actual endpoint
+            const result = await apiFetch(`${PROGRAMS}/${id}/enrollments`);
+            setEnrolledStudents(result?.payload || []);
+        } catch (error) {
+            console.error('Error fetching enrollments:', error);
+        }
+    };
+
+    const fetchInstructors = async () => {
+        try {
+            // Mock API call - replace with actual endpoint
+            const result = await apiFetch(`${PROGRAMS}/${id}/instructors`);
+            setInstructors(result?.payload || []);
+        } catch (error) {
+            console.error('Error fetching instructors:', error);
+        }
+    };
+
+    const handleEnrollStudent = async (e) => {
+        e.preventDefault();
+        try {
+            await apiFetch(`${PROGRAMS}/${id}/enroll`, {
+                method: 'POST',
+                body: JSON.stringify(enrollForm)
+            });
+            setShowEnrollModal(false);
+            fetchEnrolledStudents();
+            setEnrollForm({ 
+                name: '', 
+                email: '', 
+                phone: '', 
+                type: program?.category === 'INTERNSHIP' ? 'intern' : 'learner' 
             });
         } catch (error) {
-            return 'Invalid Date';
+            console.error('Error enrolling student:', error);
         }
+    };
+
+    const handleAddInstructor = async (e) => {
+        e.preventDefault();
+        try {
+            await apiFetch(`${PROGRAMS}/${id}/instructors`, {
+                method: 'POST',
+                body: JSON.stringify(instructorForm)
+            });
+            setShowInstructorModal(false);
+            fetchInstructors();
+            setInstructorForm({ name: '', email: '', phone: '', expertise: '', bio: '' });
+        } catch (error) {
+            console.error('Error adding instructor:', error);
+        }
+    };
+
+    const getCategoryColor = (category) => {
+        const colors = {
+            'SHORT-COURSE': 'from-blue-500 to-blue-600',
+            'LEARNERSHIP': 'from-emerald-500 to-emerald-600',
+            'INTERNSHIP': 'from-sky-500 to-sky-600'
+        };
+        return colors[category] || 'from-gray-500 to-gray-600';
+    };
+
+    const getCategoryBadgeColor = (category) => {
+        const colors = {
+            'SHORT-COURSE': 'bg-blue-100 text-blue-800',
+            'LEARNERSHIP': 'bg-emerald-100 text-emerald-800',
+            'INTERNSHIP': 'bg-amber-100 text-amber-800'
+        };
+        return colors[category] || 'bg-gray-100 text-gray-800';
+    };
+
+    const getStatusColor = (status) => {
+        const colors = {
+            'NOTSTARTED': 'bg-gray-100 text-gray-800',
+            'INPROGRESS': 'bg-blue-100 text-blue-800',
+            'COMPLETED': 'bg-green-100 text-green-800',
+            'CANCELLED': 'bg-red-100 text-red-800'
+        };
+        return colors[status] || 'bg-gray-100 text-gray-800';
+    };
+
+    const getStatusText = (status) => {
+        const texts = {
+            'NOTSTARTED': 'Not Started',
+            'INPROGRESS': 'In Progress',
+            'COMPLETED': 'Completed',
+            'CANCELLED': 'Cancelled'
+        };
+        return texts[status] || status;
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'TBD';
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
     };
 
     const getEnrollmentPercentage = () => {
         if (!program?.capacity) return 0;
-        return (program.learners / program.capacity) * 100;
+        return (program.enrolledCount / program.capacity) * 100;
     };
 
-    const handleExportData = () => {
-        alert('Export functionality would be implemented here');
-    };
-
-    const handleNotifyStudents = () => {
-        alert('Send notification to all enrolled students');
-    };
-
-    // Loading state
     if (loading) {
         return (
-            <Container className="py-5 text-center">
-                <Spinner animation="border" variant="primary" role="status" style={{ width: '3rem', height: '3rem' }}>
-                    <span className="visually-hidden">Loading...</span>
-                </Spinner>
-                <p className="mt-3 text-muted">Loading program details...</p>
-            </Container>
-        );
-    }
-
-    // Error state
-    if (error || !program) {
-        return (
-            <Container className="py-5">
-                <Alert variant="warning" className="shadow-sm">
-                    <Alert.Heading className="h4 mb-3">
-                        {error || 'Program Not Found'}
-                    </Alert.Heading>
-                    <p>
-                        {error || "The program you're looking for doesn't exist or has been removed."}
-                    </p>
-                    <hr />
-                    <div className="d-flex justify-content-end">
-                        <Button variant="outline-warning" onClick={() => navigate('/user/admin/programs')}>
-                            <FaArrowLeft className="me-2" /> Back to Programs
-                        </Button>
-                    </div>
-                </Alert>
-            </Container>
-        );
-    }
-
-    return (
-        <Container fluid className="py-4">
-            {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && (
-                <Alert variant="danger" className="position-fixed top-0 end-0 m-3 shadow" style={{ zIndex: 9999, minWidth: '300px' }}>
-                    <Alert.Heading className="h6 mb-2">Delete Program?</Alert.Heading>
-                    <p className="mb-2">Are you sure you want to delete "{program.title}"? This action cannot be undone.</p>
-                    <div className="d-flex gap-2">
-                        <Button size="sm" variant="danger" onClick={() => onDelete && onDelete(program)}>
-                            Yes, Delete
-                        </Button>
-                        <Button size="sm" variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
-                            Cancel
-                        </Button>
-                    </div>
-                </Alert>
-            )}
-
-            {/* Header with Navigation */}
-            <div className="mb-4">
-                <div className="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                    <Button 
-                        variant="outline-secondary" 
-                        onClick={() => navigate('/user/admin/programs')}
-                        className="mb-3"
-                    >
-                        <FaArrowLeft className="me-2" /> Back to Programs
-                    </Button>
-                    <div className="d-flex gap-2">
-                        <Button 
-                            variant="outline-info" 
-                            onClick={handleExportData}
-                            className="d-flex align-items-center gap-2"
-                        >
-                            <FaDownload /> Export Data
-                        </Button>
-                        <Button 
-                            variant="outline-success" 
-                            onClick={handleNotifyStudents}
-                            className="d-flex align-items-center gap-2"
-                        >
-                            <FaEnvelope /> Notify Students
-                        </Button>
-                        {onEdit && (
-                            <Button 
-                                variant="warning" 
-                                onClick={() => onEdit(program)}
-                                className="d-flex align-items-center gap-2"
-                            >
-                                <FaEdit /> Edit Program
-                            </Button>
-                        )}
-                        {onDelete && (
-                            <Button 
-                                variant="danger" 
-                                onClick={() => setShowDeleteConfirm(true)}
-                                className="d-flex align-items-center gap-2"
-                            >
-                                <FaTrash /> Delete
-                            </Button>
-                        )}
-                    </div>
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                    <p className="mt-4 text-gray-600">Loading program details...</p>
                 </div>
             </div>
+        );
+    }
 
-            {/* Hero Section */}
-            <Card className="border-0 shadow-sm mb-4 overflow-hidden">
-                <div className="position-relative">
-                    <div 
-                        className="bg-gradient" 
-                        style={{ 
-                            height: '200px',
-                            background: `linear-gradient(135deg, ${getCategoryColor(program.category)} 0%, ${getCategoryColor(program.category)}cc 100%)`
-                        }}
-                    >
-                        <div className="position-absolute top-50 start-0 translate-middle-y ms-4">
-                            <div className="bg-white rounded-circle p-3 shadow-lg">
-                                <div className={`text-${getCategoryColor(program.category)}`} style={{ fontSize: '3rem' }}>
-                                    {getCategoryIcon && getCategoryIcon(program.category)}
+    if (error || !program) {
+        return (
+            <div className="min-h-screen bg-gray-50 p-8">
+                <div className="max-w-4xl mx-auto">
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg shadow-sm">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0">
+                                <FaTimesCircle className="h-6 w-6 text-yellow-400" />
+                            </div>
+                            <div className="ml-3">
+                                <h3 className="text-lg font-medium text-yellow-800">
+                                    {error || 'Program Not Found'}
+                                </h3>
+                                <p className="mt-2 text-sm text-yellow-700">
+                                    {error || "The program you're looking for doesn't exist or has been removed."}
+                                </p>
+                                <div className="mt-4">
+                                    <button
+                                        onClick={() => navigate('/user/admin/programs')}
+                                        className="inline-flex items-center px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition"
+                                    >
+                                        <FaArrowLeft className="mr-2" /> Back to Programs
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <Card.Body className="pt-5 mt-4">
-                        <Row className="align-items-start">
-                            <Col lg={8}>
-                                <div className="d-flex flex-wrap align-items-center gap-2 mb-3">
-                                    {getStatusBadge && getStatusBadge(program.status)}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen">
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                <FaTrash className="text-red-600 text-xl" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900">Delete Program?</h3>
+                        </div>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to delete "{program.name}"? This action cannot be undone and will remove all associated data.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => onDelete && onDelete(program)}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                            >
+                                Yes, Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Enroll Student Modal */}
+            {showEnrollModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-gray-900">
+                                Enroll {program.category === 'INTERNSHIP' ? 'Intern' : 'Learner'}
+                            </h3>
+                            <button
+                                onClick={() => setShowEnrollModal(false)}
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                <FaTimesCircle />
+                            </button>
+                        </div>
+                        <form onSubmit={handleEnrollStudent}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Full Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={enrollForm.name}
+                                        onChange={(e) => setEnrollForm({ ...enrollForm, name: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Email Address
+                                    </label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={enrollForm.email}
+                                        onChange={(e) => setEnrollForm({ ...enrollForm, email: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Phone Number
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={enrollForm.phone}
+                                        onChange={(e) => setEnrollForm({ ...enrollForm, phone: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Enrollment Type
+                                    </label>
+                                    <select
+                                        value={enrollForm.type}
+                                        onChange={(e) => setEnrollForm({ ...enrollForm, type: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        <option value={program.category === 'INTERNSHIP' ? 'intern' : 'learner'}>
+                                            {program.category === 'INTERNSHIP' ? 'Intern' : 'Learner'}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="flex gap-3 justify-end mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEnrollModal(false)}
+                                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                >
+                                    Enroll Student
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Instructor/Mentor Modal */}
+            {showInstructorModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-gray-900">
+                                {program.category === 'INTERNSHIP' ? 'Add Mentor' : 'Add Facilitator'}
+                            </h3>
+                            <button
+                                onClick={() => setShowInstructorModal(false)}
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                <FaTimesCircle />
+                            </button>
+                        </div>
+                        <form onSubmit={handleAddInstructor}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Full Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={instructorForm.name}
+                                        onChange={(e) => setInstructorForm({ ...instructorForm, name: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Email Address
+                                    </label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={instructorForm.email}
+                                        onChange={(e) => setInstructorForm({ ...instructorForm, email: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Phone Number
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={instructorForm.phone}
+                                        onChange={(e) => setInstructorForm({ ...instructorForm, phone: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Areas of Expertise
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={instructorForm.expertise}
+                                        onChange={(e) => setInstructorForm({ ...instructorForm, expertise: e.target.value })}
+                                        placeholder="e.g., Java, Python, Web Development"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Bio
+                                    </label>
+                                    <textarea
+                                        rows="3"
+                                        value={instructorForm.bio}
+                                        onChange={(e) => setInstructorForm({ ...instructorForm, bio: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-3 justify-end mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowInstructorModal(false)}
+                                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                >
+                                    {program.category === 'INTERNSHIP' ? 'Add Mentor' : 'Add Facilitator'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+                {/* Header Navigation */}
+                <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <button
+                        onClick={() => navigate('/user/admin/programs')}
+                        className="rounded inline-flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition group"
+                    >
+                        <FaArrowLeft className="group-hover:-translate-x-1 transition" />
+                        Back to Programs
+                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setShowEnrollModal(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm"
+                        >
+                            <FaUserPlus /> Enroll {program.category === 'INTERNSHIP' ? 'Intern' : 'Learner'}
+                        </button>
+                        <button
+                            onClick={() => setShowInstructorModal(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition shadow-sm"
+                        >
+                            <FaChalkboardTeacher /> 
+                            {program.category === 'INTERNSHIP' ? 'Add Mentor' : 'Add Facilitator'}
+                        </button>
+                        {onEdit && (
+                            <button
+                                onClick={() => onEdit(program)}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm"
+                            >
+                                <FaEdit /> Edit Program
+                            </button>
+                        )}
+                        {onDelete && (
+                            <button
+                                onClick={() => setShowDeleteConfirm(true)}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition shadow-sm"
+                            >
+                                <FaTrash /> Delete
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Hero Section */}
+                <div className="relative rounded-2xl overflow-hidden shadow-xl mb-8">
+                    <div className="absolute inset-0">
+                        <img
+                            src={`${BASE_URL}${program.imageBase64}`}
+                            alt={program.name}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div className={`absolute inset-0 bg-gradient-to-r ${getCategoryColor(program.category)} opacity-70`} />
+
+                    <div className="relative px-6 py-12 lg:py-16">
+                        <div className="flex flex-col lg:flex-row gap-8 items-start">
+                            <div className="flex-1 space-y-6">
+                                <div className="flex flex-wrap gap-3">
+                                    <span className={`px-3 py-1.5 rounded-lg text-sm font-medium ${getCategoryBadgeColor(program.category)}`}>
+                                        {program.category}
+                                    </span>
+                                    <span className={`px-3 py-1.5 rounded-lg text-sm font-medium ${getStatusColor(program.status)}`}>
+                                        {getStatusText(program.status)}
+                                    </span>
                                     {program.featured && (
-                                        <Badge bg="warning" className="px-3 py-2">
-                                            <FaAward className="me-1" /> Featured Program
-                                        </Badge>
+                                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-100 text-amber-800">
+                                            <FaAward className="w-3 h-3" /> Featured
+                                        </span>
                                     )}
                                 </div>
-                                <h1 className="display-5 fw-bold mb-3">{program.title}</h1>
-                                <div className="d-flex flex-wrap gap-3 mb-3">
-                                    <div className="d-flex align-items-center gap-2 text-muted">
-                                        <FaUserTie />
-                                        <span>Facilitator: {program.facilitator}</span>
-                                    </div>
-                                    <div className="d-flex align-items-center gap-2 text-muted">
-                                        <FaMapMarkerAlt />
+
+                                <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
+                                    {program.name}
+                                </h1>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="flex items-center gap-2 text-white/90 text-sm">
+                                        <FaMapMarkerAlt className="w-4 h-4" />
                                         <span>{program.location}</span>
                                     </div>
-                                    <div className="d-flex align-items-center gap-2 text-muted">
-                                        <FaClock />
-                                        <span>Duration: {program.duration}</span>
+                                    <div className="flex items-center gap-2 text-white/90 text-sm">
+                                        <FaCalendarAlt className="w-4 h-4" />
+                                        <span>{formatDate(program.startDate)} - {formatDate(program.endDate)}</span>
                                     </div>
-                                    <div className="d-flex align-items-center gap-2 text-muted">
-                                        <FaUsers />
-                                        <span>{program.learners}/{program.capacity} enrolled</span>
+                                    <div className="flex items-center gap-2 text-white/90 text-sm">
+                                        <FaBuilding className="w-4 h-4" />
+                                        <span>Type: {program.type}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-white/90 text-sm">
+                                        <FaUsers className="w-4 h-4" />
+                                        <span>{program.enrolledCount}/{program.capacity} enrolled</span>
                                     </div>
                                 </div>
-                            </Col>
-                            <Col lg={4} className="mt-4 mt-lg-0">
-                                <Card className="bg-light border-0 shadow-sm">
-                                    <Card.Body>
-                                        <div className="text-center mb-3">
-                                            <div className="h2 fw-bold text-primary mb-0">
-                                                {program.price === 0 ? 'Free' : `$${program.price}`}
-                                            </div>
-                                            <div className="text-muted small">Program Fee</div>
-                                        </div>
-                                        <hr className="my-3" />
-                                        <div className="text-center">
-                                            <div className="mb-2">
-                                                <strong>Enrollment Status</strong>
-                                            </div>
-                                            <Badge bg={getEnrollmentPercentage() >= 100 ? 'danger' : 'success'} className="px-3 py-2">
-                                                {getEnrollmentPercentage() >= 100 ? 'Fully Booked' : `${getEnrollmentPercentage().toFixed(0)}% Filled`}
-                                            </Badge>
-                                        </div>
-                                        <div className="small text-muted mt-3 text-center">
-                                            <FaUsers className="me-1" />
-                                            {program.capacity - program.learners} seats remaining
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </Card.Body>
-                </div>
-            </Card>
-
-            {/* Main Content Tabs */}
-            <Tabs
-                activeKey={activeTab}
-                onSelect={(k) => setActiveTab(k)}
-                className="mb-4 border-bottom"
-                fill
-            >
-                <Tab eventKey="overview" title="Overview">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <Row>
-                                <Col lg={8}>
-                                    <h4 className="mb-3">Program Description</h4>
-                                    <p className="text-muted mb-4" style={{ lineHeight: '1.8' }}>
-                                        {program.description}
-                                    </p>
-                                    
-                                    <h4 className="mb-3">What Students Will Learn</h4>
-                                    <ListGroup variant="flush" className="mb-4">
-                                        {program.learningOutcomes?.map((outcome, idx) => (
-                                            <ListGroup.Item key={idx} className="border-0 ps-0 py-2">
-                                                <FaCheckCircle className="text-success me-2" />
-                                                {outcome}
-                                            </ListGroup.Item>
-                                        )) || (
-                                            <p className="text-muted">Learning outcomes will be updated soon.</p>
-                                        )}
-                                    </ListGroup>
-
-                                    <h4 className="mb-3">Requirements</h4>
-                                    <p className="text-muted mb-4">{program.requirements || 'No specific requirements.'}</p>
-                                    
-                                    <h4 className="mb-3">Tags</h4>
-                                    <div className="d-flex flex-wrap gap-2 mb-4">
-                                        {program.tags?.map((tag, idx) => (
-                                            <Badge key={idx} bg="light" text="dark" className="px-3 py-2">
-                                                #{tag}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </Col>
-                                <Col lg={4}>
-                                    <Card className="border-0 bg-light">
-                                        <Card.Body>
-                                            <h5 className="mb-3">Program Details</h5>
-                                            <ListGroup variant="flush">
-                                                <ListGroup.Item className="bg-transparent d-flex justify-content-between px-0 py-2">
-                                                    <span>Start Date:</span>
-                                                    <strong>{formatDate(program.startDate)}</strong>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="bg-transparent d-flex justify-content-between px-0 py-2">
-                                                    <span>End Date:</span>
-                                                    <strong>{formatDate(program.endDate)}</strong>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="bg-transparent d-flex justify-content-between px-0 py-2">
-                                                    <span>Capacity:</span>
-                                                    <strong>{program.capacity} learners</strong>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="bg-transparent d-flex justify-content-between px-0 py-2">
-                                                    <span>Current Enrollment:</span>
-                                                    <strong>{program.learners} learners</strong>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="bg-transparent d-flex justify-content-between px-0 py-2">
-                                                    <span>Location:</span>
-                                                    <strong>{program.location}</strong>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="bg-transparent d-flex justify-content-between px-0 py-2">
-                                                    <span>Program Type:</span>
-                                                    <strong>{program.type}</strong>
-                                                </ListGroup.Item>
-                                            </ListGroup>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            </Row>
-                        </Card.Body>
-                    </Card>
-                </Tab>
-
-                <Tab eventKey="schedule" title="Schedule">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex justify-content-between align-items-center mb-4">
-                                <h4 className="mb-0">Program Schedule</h4>
-                                <Button variant="outline-primary" size="sm">
-                                    <FaEdit className="me-1" /> Edit Schedule
-                                </Button>
                             </div>
-                            {program.schedule?.length > 0 ? (
-                                <div className="timeline">
-                                    {program.schedule.map((item, idx) => (
-                                        <div key={idx} className="mb-4 pb-3 border-bottom">
-                                            <div className="d-flex justify-content-between align-items-start mb-2">
-                                                <h5 className="mb-0">{item.title}</h5>
-                                                <Badge bg="info" pill>
-                                                    <FaCalendarAlt className="me-1" /> {item.date}
-                                                </Badge>
+
+                            {/* Stats Card */}
+                            <div className="w-full lg:w-80">
+                                <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20">
+                                    <div className="text-center space-y-4">
+                                        <div className="text-white/80 text-sm font-medium">Enrollment Status</div>
+                                        <div className={`inline-flex px-4 py-2 rounded-full text-sm font-semibold ${getEnrollmentPercentage() >= 100 ? 'bg-red-500/20 text-red-200' : 'bg-emerald-500/20 text-emerald-200'}`}>
+                                            {getEnrollmentPercentage() >= 100 ? 'Fully Booked' : `${getEnrollmentPercentage().toFixed(0)}% Filled`}
+                                        </div>
+                                        {getEnrollmentPercentage() < 100 && (
+                                            <div className="mt-2">
+                                                <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-emerald-400 rounded-full transition-all duration-500"
+                                                        style={{ width: `${getEnrollmentPercentage()}%` }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <p className="text-muted mb-0">{item.description}</p>
+                                        )}
+                                        <div className="text-white/60 text-xs flex items-center justify-center gap-1">
+                                            <FaUsers className="w-3 h-3" />
+                                            {program.capacity - program.enrolledCount} seats remaining
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Tab Navigation */}
+                <div className="mb-6 border-b border-gray-200">
+                    <nav className="flex gap-6 overflow-x-auto">
+                        {[
+                            { key: 'overview', label: 'Overview' },
+                            {
+                                key: 'mentors',
+                                label: program?.category === 'INTERNSHIP' ? 'Mentors' : 'Facilitators'
+                            },
+                            {
+                                key: 'participants',
+                                label: program?.category === 'INTERNSHIP' ? 'Interns' : 'Learners'
+                            },
+                            { key: 'analytics', label: 'Analytics' }
+                        ].map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setActiveTab(tab.key)}
+                                className={`pb-3 bg-white px-1 text-sm font-medium transition-colors relative ${
+                                    activeTab === tab.key
+                                        ? 'text-blue-600 border-b-2 border-blue-600'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+
+                {/* Tab Content */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                    {/* Overview Tab */}
+                    {activeTab === 'overview' && (
+                        <div className="p-6 lg:p-8">
+                            <div className="grid lg:grid-cols-3 gap-8">
+                                <div className="lg:col-span-2">
+                                    <div
+                                        className="prose prose-blue max-w-none text-gray-600 leading-relaxed"
+                                        dangerouslySetInnerHTML={{ __html: program.description }}
+                                    />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Program Details</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between py-2 border-b border-gray-100">
+                                            <span className="text-gray-500">Start Date</span>
+                                            <span className="font-medium text-gray-900">{formatDate(program.startDate)}</span>
+                                        </div>
+                                        <div className="flex justify-between py-2 border-b border-gray-100">
+                                            <span className="text-gray-500">End Date</span>
+                                            <span className="font-medium text-gray-900">{formatDate(program.endDate)}</span>
+                                        </div>
+                                        <div className="flex justify-between py-2 border-b border-gray-100">
+                                            <span className="text-gray-500">Capacity</span>
+                                            <span className="font-medium text-gray-900">{program.capacity} seats</span>
+                                        </div>
+                                        <div className="flex justify-between py-2 border-b border-gray-100">
+                                            <span className="text-gray-500">Current Enrollment</span>
+                                            <span className="font-medium text-gray-900">{program.enrolledCount} enrolled</span>
+                                        </div>
+                                        <div className="flex justify-between py-2 border-b border-gray-100">
+                                            <span className="text-gray-500">Location</span>
+                                            <span className="font-medium text-gray-900 truncate px-1">{program.location}</span>
+                                        </div>
+                                        <div className="flex justify-between py-2 border-b border-gray-100">
+                                            <span className="text-gray-500">Program Type</span>
+                                            <span className="font-medium text-gray-900">{program.type}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mentors/Facilitators Tab */}
+                    {activeTab === 'mentors' && (
+                        <div className="p-6 lg:p-8">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Program {program.category === 'INTERNSHIP' ? 'Mentors' : 'Facilitators'}
+                                </h3>
+                                <button
+                                    onClick={() => setShowInstructorModal(true)}
+                                    className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                >
+                                    <FaPlus className="w-3 h-3" />
+                                    {program.category === 'INTERNSHIP' ? 'Add Mentor' : 'Add Facilitator'}
+                                </button>
+                            </div>
+                            {instructors.length > 0 ? (
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    {instructors.map((instructor, idx) => (
+                                        <div key={idx} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                                    {instructor.name.charAt(0)}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-semibold text-gray-900">{instructor.name}</h4>
+                                                    <p className="text-sm text-gray-500">{instructor.email}</p>
+                                                    {instructor.phone && (
+                                                        <p className="text-sm text-gray-500 mt-1">{instructor.phone}</p>
+                                                    )}
+                                                    {instructor.expertise && (
+                                                        <div className="mt-2 flex flex-wrap gap-1">
+                                                            {instructor.expertise.split(',').map((skill, i) => (
+                                                                <span key={i} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                                                                    {skill.trim()}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {instructor.bio && (
+                                                        <p className="text-sm text-gray-600 mt-2">{instructor.bio}</p>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-muted text-center py-4">
-                                    No schedule defined. Click "Edit Schedule" to add one.
-                                </p>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Tab>
-
-                <Tab eventKey="facilitator" title="Facilitator">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex justify-content-end mb-3">
-                                <Button variant="outline-primary" size="sm">
-                                    <FaEdit className="me-1" /> Edit Facilitator
-                                </Button>
-                            </div>
-                            <Row>
-                                <Col md={4} className="text-center mb-4 mb-md-0">
-                                    <div className="bg-light rounded-circle d-inline-flex p-4 mb-3">
-                                        <FaUserTie style={{ fontSize: '4rem' }} />
-                                    </div>
-                                    <h5>{program.facilitator}</h5>
-                                    <Badge bg="secondary" className="mt-2">Lead Facilitator</Badge>
-                                </Col>
-                                <Col md={8}>
-                                    <h4 className="mb-3">About the Facilitator</h4>
-                                    <p className="text-muted" style={{ lineHeight: '1.8' }}>
-                                        {program.facilitatorBio || 'Experienced professional with extensive knowledge in this field.'}
+                                <div className="text-center py-12">
+                                    <FaChalkboardTeacher className="text-gray-300 text-5xl mx-auto mb-4" />
+                                    <p className="text-gray-500">No {program.category === 'INTERNSHIP' ? 'mentors' : 'facilitators'} assigned yet</p>
+                                    <p className="text-sm text-gray-400 mt-1">
+                                        Click "{program.category === 'INTERNSHIP' ? 'Add Mentor' : 'Add Facilitator'}" to assign someone to this program
                                     </p>
-                                    <h5 className="mb-2 mt-4">Areas of Expertise</h5>
-                                    <div className="d-flex flex-wrap gap-2">
-                                        {program.facilitatorExpertise?.map((skill, idx) => (
-                                            <Badge key={idx} bg="light" text="dark" className="px-3 py-2">
-                                                {skill}
-                                            </Badge>
-                                        )) || (
-                                            <p className="text-muted">Expertise details coming soon.</p>
-                                        )}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Card.Body>
-                    </Card>
-                </Tab>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
-                <Tab eventKey="students" title="Enrolled Students">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <div className="d-flex justify-content-between align-items-center mb-4">
-                                <h4 className="mb-0">Enrolled Students ({program.learners})</h4>
-                                <Button variant="outline-primary" size="sm">
-                                    <FaDownload className="me-1" /> Export List
-                                </Button>
+                    {/* Participants Tab */}
+                    {activeTab === 'participants' && (
+                        <div className="p-6 lg:p-8">
+                            <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Enrolled {program.category === 'INTERNSHIP' ? 'Interns' : 'Learners'} ({enrolledStudents.length})
+                                </h3>
+                                <div className="flex gap-3">
+                                    <div className="relative">
+                                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search students..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                    </div>
+                                    <button className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                                        <FaDownload className="w-3 h-3" /> Export
+                                    </button>
+                                </div>
                             </div>
-                            {program.enrolledStudents?.length > 0 ? (
-                                <div className="table-responsive">
-                                    <table className="table table-hover">
-                                        <thead className="bg-light">
+                            {enrolledStudents.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50 border-b border-gray-200">
                                             <tr>
-                                                <th>Student Name</th>
-                                                <th>Email</th>
-                                                <th>Enrollment Date</th>
-                                                <th>Progress</th>
-                                                <th>Actions</th>
+                                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Student Name</th>
+                                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Email</th>
+                                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Phone</th>
+                                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Enrollment Date</th>
+                                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Progress</th>
+                                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {program.enrolledStudents.map((student, idx) => (
-                                                <tr key={idx}>
-                                                    <td className="fw-semibold">{student.name}</td>
-                                                    <td>{student.email}</td>
-                                                    <td>{formatDate(student.enrollmentDate)}</td>
-                                                    <td>
-                                                        <div className="d-flex align-items-center gap-2">
-                                                            <div className="progress flex-grow-1" style={{ height: '6px' }}>
-                                                                <div 
-                                                                    className="progress-bar bg-success" 
-                                                                    style={{ width: `${student.progress}%` }}
+                                            {enrolledStudents.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase())).map((student, idx) => (
+                                                <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition">
+                                                    <td className="py-3 px-4 font-medium text-gray-900">{student.name}</td>
+                                                    <td className="py-3 px-4 text-gray-600">{student.email}</td>
+                                                    <td className="py-3 px-4 text-gray-600">{student.phone || '-'}</td>
+                                                    <td className="py-3 px-4 text-gray-600">{formatDate(student.enrollmentDate)}</td>
+                                                    <td className="py-3 px-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                                <div
+                                                                    className="h-full bg-green-500 rounded-full"
+                                                                    style={{ width: `${student.progress || 0}%` }}
                                                                 />
                                                             </div>
-                                                            <span className="small">{student.progress}%</span>
+                                                            <span className="text-xs text-gray-600">{student.progress || 0}%</span>
                                                         </div>
                                                     </td>
-                                                    <td>
-                                                        <Button variant="link" size="sm" className="p-0 me-2">
-                                                            <FaEye />
-                                                        </Button>
-                                                        <Button variant="link" size="sm" className="p-0">
-                                                            <FaEnvelope />
-                                                        </Button>
+                                                    <td className="py-3 px-4">
+                                                        <div className="flex gap-2">
+                                                            <button className="text-blue-600 hover:text-blue-800">
+                                                                <FaEnvelope />
+                                                            </button>
+                                                            <button className="text-gray-600 hover:text-gray-800">
+                                                                <FaEye />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -530,81 +776,52 @@ const ProgramView = ({ program: propProgram, onEdit, onDelete, getCategoryIcon, 
                                     </table>
                                 </div>
                             ) : (
-                                <div className="text-center py-4">
-                                    <FaUsers className="text-muted mb-3" style={{ fontSize: '3rem' }} />
-                                    <p className="text-muted mb-0">No students enrolled yet.</p>
+                                <div className="text-center py-12">
+                                    <FaUsers className="text-gray-300 text-5xl mx-auto mb-4" />
+                                    <p className="text-gray-500">No {program.category === 'INTERNSHIP' ? 'interns' : 'learners'} enrolled yet</p>
+                                    <button
+                                        onClick={() => setShowEnrollModal(true)}
+                                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                    >
+                                        <FaUserPlus /> Enroll First {program.category === 'INTERNSHIP' ? 'Intern' : 'Learner'}
+                                    </button>
                                 </div>
                             )}
-                        </Card.Body>
-                    </Card>
-                </Tab>
+                        </div>
+                    )}
 
-                <Tab eventKey="analytics" title="Analytics">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body>
-                            <h4 className="mb-4">Program Analytics</h4>
-                            <Row className="mb-4">
-                                <Col md={4}>
-                                    <Card className="bg-light border-0 text-center">
-                                        <Card.Body>
-                                            <FaChartLine className="text-primary mb-2" style={{ fontSize: '2rem' }} />
-                                            <h3>{getEnrollmentPercentage().toFixed(0)}%</h3>
-                                            <p className="text-muted mb-0">Enrollment Rate</p>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                                <Col md={4}>
-                                    <Card className="bg-light border-0 text-center">
-                                        <Card.Body>
-                                            <FaUsers className="text-primary mb-2" style={{ fontSize: '2rem' }} />
-                                            <h3>{program.learners}/{program.capacity}</h3>
-                                            <p className="text-muted mb-0">Total Enrolled</p>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                                <Col md={4}>
-                                    <Card className="bg-light border-0 text-center">
-                                        <Card.Body>
-                                            <FaCertificate className="text-primary mb-2" style={{ fontSize: '2rem' }} />
-                                            <h3>0</h3>
-                                            <p className="text-muted mb-0">Completed</p>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            </Row>
-                            <div className="text-center py-3">
-                                <Button variant="outline-primary">
-                                    <FaChartLine className="me-2" /> View Detailed Analytics
-                                </Button>
+                    {/* Analytics Tab */}
+                    {activeTab === 'analytics' && (
+                        <div className="p-6 lg:p-8">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Program Analytics</h3>
+                            <div className="grid md:grid-cols-3 gap-6 mb-8">
+                                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 text-center">
+                                    <FaChartLine className="text-blue-600 text-3xl mx-auto mb-3" />
+                                    <div className="text-2xl font-bold text-gray-900">{getEnrollmentPercentage().toFixed(0)}%</div>
+                                    <p className="text-sm text-gray-600 mt-1">Enrollment Rate</p>
+                                </div>
+                                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 text-center">
+                                    <FaUsers className="text-green-600 text-3xl mx-auto mb-3" />
+                                    <div className="text-2xl font-bold text-gray-900">{program.enrolledCount}/{program.capacity}</div>
+                                    <p className="text-sm text-gray-600 mt-1">Total Enrolled</p>
+                                </div>
+                                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 text-center">
+                                    <FaGraduationCap className="text-purple-600 text-3xl mx-auto mb-3" />
+                                    <div className="text-2xl font-bold text-gray-900">0</div>
+                                    <p className="text-sm text-gray-600 mt-1">Completed</p>
+                                </div>
                             </div>
-                        </Card.Body>
-                    </Card>
-                </Tab>
-            </Tabs>
-
-            <style jsx>{`
-                .timeline {
-                    position: relative;
-                    padding-left: 20px;
-                }
-                
-                .timeline::before {
-                    content: '';
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    bottom: 0;
-                    width: 2px;
-                    background: linear-gradient(to bottom, #0d6efd, #0dcaf0);
-                }
-                
-                .bg-gradient {
-                    background-size: cover;
-                    background-position: center;
-                }
-            `}</style>
-        </Container>
+                            <div className="text-center pt-4">
+                                <button className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                    <FaChartLine /> View Detailed Analytics Report
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 };
 
-export default ProgramView;
+export default ProgramViewAdmin;

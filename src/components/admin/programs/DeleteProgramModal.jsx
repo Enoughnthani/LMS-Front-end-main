@@ -1,8 +1,28 @@
+import { apiFetch } from '@/api/api';
+import { PROGRAMS } from '@/utils/apiEndpoint';
+import { useState } from 'react';
 import { Button, Modal, Spinner } from 'react-bootstrap';
 import { FaTrash } from 'react-icons/fa';
 
-export default function DeleteProgramModal({ show, onHide, program, onDelete, loading }) {
+export default function DeleteProgramModal({ show, onHide, program, setResponse,getPrograms }) {
     if (!program) return null;
+
+    const [loading, setLoading] = useState(false);
+
+    const onDelete = async () => {
+        setLoading(true);
+
+        try {
+            const result = await apiFetch(`${PROGRAMS}/${program.id}`, { method: 'DELETE' });
+            setResponse(result)
+            getPrograms();
+            onHide();
+        } catch (error) {
+            setResponse({ success: false, message: 'Failed to delete program. Please try again.' });
+        }finally{
+            setLoading(false);
+        }
+    }
 
     return (
         <Modal show={show} onHide={onHide} centered size="sm">
@@ -15,7 +35,7 @@ export default function DeleteProgramModal({ show, onHide, program, onDelete, lo
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FaTrash className="text-red-600 text-2xl" />
                 </div>
-                <h5 className="font-bold text-gray-800 mb-2">Delete {program?.title}?</h5>
+                <h5 className="font-bold text-gray-800 mb-2">Delete {program?.name}?</h5>
                 <p className="text-gray-600">
                     This action cannot be undone. All data associated with this program will be permanently deleted.
                 </p>

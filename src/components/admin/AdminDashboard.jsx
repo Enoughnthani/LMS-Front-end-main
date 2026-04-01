@@ -72,7 +72,6 @@ export default function AdminDashboard() {
             { icon: <FaChartLine />, label: "Dashboard", alert: true, path: '/user/admin' },
             { icon: <FaUsers />, label: "Users", alert: false, path: '/user/admin/users' },
             { icon: <FaBook />, label: "Programs", alert: false, path: '/user/admin/programs' },
-            { icon: <FaUserPlus />, label: "Enrollments", path: '/user/admin/enrollments' },
             { icon: <FaCog />, label: "Settings", alert: false, path: '/user/admin/settings' },
             { icon: <FaBell />, label: "Notifications", alert: false, path: '/user/admin/notifications' },
             { icon: <FaQuestionCircle />, label: "Help", alert: false, path: '/user/admin/help' },

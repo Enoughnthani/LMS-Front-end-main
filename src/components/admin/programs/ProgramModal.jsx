@@ -4,6 +4,9 @@ import { PROGRAMS } from '@/utils/apiEndpoint';
 import { X } from 'lucide-react';
 import { Button, Form, Modal, Spinner } from 'react-bootstrap';
 import { FaBook, FaPenSquare, FaSave, FaUpload } from 'react-icons/fa';
+import { programTypes } from './mockPrograms';
+import { useState } from 'react';
+import ResponseMessage from '@/components/common/ResponseMessage';
 
 export default function ProgramModal({
     show,
@@ -11,9 +14,12 @@ export default function ProgramModal({
     programForm,
     setProgramForm,
     editingProgram,
-    onSave,
-    loading
+    getPrograms,
 }) {
+
+    const [loading, setLoading] = useState(false)
+    const [response, setResponse] = useState(null);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setProgramForm(prev => ({
@@ -26,11 +32,18 @@ export default function ProgramModal({
         const file = e.target.files[0];
         if (file) {
             const imageUrl = URL.createObjectURL(file);
-            setProgramForm(prev => ({
-                ...prev,
-                imageFile: file,
-                imageBlob: imageUrl
-            }));
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+
+                setProgramForm(prev => ({
+                    ...prev,
+                    imageBase64: reader.result,
+                    imageBlob: imageUrl
+                }));
+            }
+
+            reader.readAsDataURL(file);
         }
     };
 
@@ -43,15 +56,19 @@ export default function ProgramModal({
 
         try {
 
+            setLoading(true);
             const result = await apiFetch(editingProgram ? `${PROGRAMS}/${editingProgram.id}` : `${PROGRAMS}`, {
                 method: editingProgram ? 'PUT' : 'POST',
                 body: programForm
             });
 
             setResponse(result);
+            getPrograms();
 
         } catch (error) {
             setResponse({ success: false, message: 'An error occurred while saving the program. Please try again.' });
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -68,9 +85,13 @@ export default function ProgramModal({
             </Modal.Header>
 
             <Modal.Body className="pt-0">
+
+                <ResponseMessage setResponse={setResponse} response={response} />
+
                 <Form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Form.Group className="md:col-span-2">
+
+                        <Form.Group >
                             <Form.Label>Program Name</Form.Label>
                             <Form.Control
                                 type="text"
@@ -93,9 +114,9 @@ export default function ProgramModal({
                                 className="border-gray-300"
                             >
                                 <option value="">Select Category</option>
-                                <option value="internship">Internship</option>
-                                <option value="course">Short Course</option>
-                                <option value="workshop">Learnership</option>
+                                <option value="INTERNSHIP">Internship</option>
+                                <option value="SHORT_COURSE">Short Course</option>
+                                <option value="LEARNERSHIP">Learnership</option>
                             </Form.Select>
                         </Form.Group>
 
@@ -109,33 +130,14 @@ export default function ProgramModal({
                                 className="border-gray-300"
                             >
                                 <option value="">Select Field</option>
-                                <option value="ict">ICT</option>
-                                <option value="business">Business</option>
-                                <option value="engineering">Engineering</option>
-                                <option value="healthcare">Healthcare</option>
-                                <option value="education">Education</option>
-                                <option value="finance">Finance</option>
-                                <option value="law">Law</option>
-                                <option value="hospitality">Hospitality</option>
-                                <option value="logistics">Logistics</option>
-                                <option value="construction">Construction</option>
-                                <option value="agriculture">Agriculture</option>
-                                <option value="marketing">Marketing</option>
+                                {programTypes.map((type) => (
+                                    <option key={type} value={type}>
+                                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                                    </option>
+                                ))}
                             </Form.Select>
                         </Form.Group>
 
-                        <Form.Group>
-                            <Form.Label>Duration</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="duration"
-                                value={programForm.duration || ''}
-                                onChange={handleInputChange}
-                                placeholder="e.g., 8 weeks, 3 months"
-                                required
-                                className="border-gray-300"
-                            />
-                        </Form.Group>
 
                         <Form.Group>
                             <Form.Label>Capacity</Form.Label>
@@ -159,9 +161,9 @@ export default function ProgramModal({
                                 required
                                 className="border-gray-300"
                             >
-                                <option value="ACTIVE">Active</option>
-                                <option value="INACTIVE">Inactive</option>
-                                <option value="DRAFT">Draft</option>
+                                <option value="NOTSTARTED">Not Started</option>
+                                <option value="INPROGRESS">In Progress</option>
+                                <option value="COMPLETED">Completed</option>
                             </Form.Select>
                         </Form.Group>
 
@@ -208,7 +210,7 @@ export default function ProgramModal({
 
 
                         {/* Image Upload Section */}
-                        <Form.Group className="md:col-span-2">
+                        <Form.Group className="col-span-2">
                             <Form.Label>Program Image</Form.Label>
                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
                                 <input
