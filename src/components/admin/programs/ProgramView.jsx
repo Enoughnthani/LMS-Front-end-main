@@ -1,5 +1,5 @@
 import { apiFetch } from '@/api/api';
-import { BASE_URL, PROGRAMS } from '@/utils/apiEndpoint';
+import { BASE_URL, PROGRAMS, USERS } from '@/utils/apiEndpoint';
 import { useEffect, useState } from 'react';
 import {
     FaArrowLeft,
@@ -19,7 +19,14 @@ import {
     FaTimesCircle,
     FaTrash,
     FaUserPlus,
-    FaUsers
+    FaUsers,
+    FaFilter,
+    FaUserGraduate,
+    FaUser,
+    FaVenusMars,
+    FaEnvelope as FaEnvelopeIcon,
+    FaPhone,
+    FaIdCard
 } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -34,11 +41,19 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
 
     // Enrollment modal states
     const [showEnrollModal, setShowEnrollModal] = useState(false);
-    const [enrollForm, setEnrollForm] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        type: 'learner'
+    const [allLearners, setAllLearners] = useState([]);
+    const [filteredLearners, setFilteredLearners] = useState([]);
+    const [learnerSearchTerm, setLearnerSearchTerm] = useState('');
+    const [loadingLearners, setLoadingLearners] = useState(false);
+    const [enrolledLearnerIds, setEnrolledLearnerIds] = useState([]);
+    const [enrollingId, setEnrollingId] = useState(null);
+    
+    // Filter states
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState({
+        gender: '',
+        status: '',
+        searchBy: 'name' // 'name', 'email', 'idNo'
     });
 
     // Instructor management states
@@ -67,11 +82,6 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
             const result = await apiFetch(`${PROGRAMS}/${id}`);
             if (result?.payload) {
                 setProgram(result.payload);
-                // Update enrollForm type based on program category
-                setEnrollForm(prev => ({
-                    ...prev,
-                    type: result.payload?.category === 'INTERNSHIP' ? 'intern' : 'learner'
-                }));
             } else {
                 setError('Program not found');
             }
@@ -85,9 +95,12 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
 
     const fetchEnrolledStudents = async () => {
         try {
-            // Mock API call - replace with actual endpoint
+            // Replace with your actual endpoint to get enrolled learners for this program
             const result = await apiFetch(`${PROGRAMS}/${id}/enrollments`);
-            setEnrolledStudents(result?.payload || []);
+            const enrolled = result?.payload || [];
+            setEnrolledStudents(enrolled);
+            const enrolledIds = enrolled.map(student => student.learnerId || student.id);
+            setEnrolledLearnerIds(enrolledIds);
         } catch (error) {
             console.error('Error fetching enrollments:', error);
         }
@@ -103,23 +116,106 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
         }
     };
 
-    const handleEnrollStudent = async (e) => {
-        e.preventDefault();
+    const fetchAllLearners = async () => {
+        setLoadingLearners(true);
         try {
+            // Fetch learners based on program category
+            const endpoint = program?.category === 'INTERNSHIP' ? '/interns' : '/learners';
+            const result = await apiFetch(`${USERS}${endpoint}`);
+            if (result?.payload) {
+                setAllLearners(result.payload);
+                setFilteredLearners(result.payload);
+            }
+        } catch (error) {
+            console.error('Error fetching learners:', error);
+        } finally {
+            setLoadingLearners(false);
+        }
+    };
+
+    // Open enrollment modal and fetch learners
+    const openEnrollModal = () => {
+        setShowEnrollModal(true);
+        fetchAllLearners();
+        setLearnerSearchTerm('');
+        setFilters({ gender: '', status: '', searchBy: 'name' });
+        setShowFilters(false);
+    };
+
+    // Filter and search learners
+    useEffect(() => {
+        let filtered = [...allLearners];
+        
+        // Apply search
+        if (learnerSearchTerm) {
+            filtered = filtered.filter(learner => {
+                const searchLower = learnerSearchTerm.toLowerCase();
+                switch (filters.searchBy) {
+                    case 'email':
+                        return learner.email?.toLowerCase().includes(searchLower);
+                    case 'idNo':
+                        return learner.idNo?.toLowerCase().includes(searchLower);
+                    default:
+                        return learner.firstname?.toLowerCase().includes(searchLower) ||
+                               learner.lastname?.toLowerCase().includes(searchLower) ||
+                               `${learner.firstname} ${learner.lastname}`.toLowerCase().includes(searchLower);
+                }
+            });
+        }
+        
+        // Apply gender filter
+        if (filters.gender) {
+            filtered = filtered.filter(learner => learner.gender === filters.gender);
+        }
+        
+        // Apply status filter
+        if (filters.status) {
+            filtered = filtered.filter(learner => learner.status === filters.status);
+        }
+        
+        setFilteredLearners(filtered);
+    }, [learnerSearchTerm, filters, allLearners]);
+
+    const handleEnroll = async (learner) => {
+        setEnrollingId(learner.id);
+        try {
+            const enrollmentData = {
+                programId: program.id,
+                learnerId: learner.id,
+                type: program?.category === 'INTERNSHIP' ? 'intern' : 'learner'
+            };
+            
             await apiFetch(`${PROGRAMS}/${id}/enroll`, {
                 method: 'POST',
-                body: JSON.stringify(enrollForm)
+                body: enrollmentData
             });
-            setShowEnrollModal(false);
-            fetchEnrolledStudents();
-            setEnrollForm({ 
-                name: '', 
-                email: '', 
-                phone: '', 
-                type: program?.category === 'INTERNSHIP' ? 'intern' : 'learner' 
+            
+            // Update local states
+            setEnrolledLearnerIds([...enrolledLearnerIds, learner.id]);
+            const newEnrolledStudent = {
+                id: learner.id,
+                name: `${learner.firstname} ${learner.lastname}`,
+                email: learner.email,
+                phone: learner.contactNumber,
+                enrollmentDate: new Date().toISOString(),
+                progress: 0
+            };
+            setEnrolledStudents([...enrolledStudents, newEnrolledStudent]);
+            
+            // Update program enrolled count
+            setProgram({
+                ...program,
+                enrolledCount: program.enrolledCount + 1
             });
+            
+            // Show success message (optional)
+            alert(`${learner.firstname} ${learner.lastname} has been enrolled successfully!`);
+            
         } catch (error) {
-            console.error('Error enrolling student:', error);
+            console.error('Error enrolling learner:', error);
+            alert('Failed to enroll learner. Please try again.');
+        } finally {
+            setEnrollingId(null);
         }
     };
 
@@ -266,89 +362,253 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
                 </div>
             )}
 
-            {/* Enroll Student Modal */}
+            {/* Enroll Modal - Updated Version */}
             {showEnrollModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-bold text-gray-900">
-                                Enroll {program.category === 'INTERNSHIP' ? 'Intern' : 'Learner'}
-                            </h3>
+                    <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+                        {/* Modal Header */}
+                        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">
+                                    Enroll {program.category === 'INTERNSHIP' ? 'Interns' : 'Learners'}
+                                </h3>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    Select from existing {program.category === 'INTERNSHIP' ? 'interns' : 'learners'} to enroll in this program
+                                </p>
+                            </div>
                             <button
                                 onClick={() => setShowEnrollModal(false)}
-                                className="text-gray-400 hover:text-gray-600"
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
                             >
-                                <FaTimesCircle />
+                                <FaTimesCircle className="text-xl" />
                             </button>
                         </div>
-                        <form onSubmit={handleEnrollStudent}>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Full Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={enrollForm.name}
-                                        onChange={(e) => setEnrollForm({ ...enrollForm, name: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
+
+                        {/* Search and Filters Bar */}
+                        <div className="p-6 border-b border-gray-200 bg-gray-50">
+                            <div className="flex flex-wrap gap-4">
+                                {/* Search Input */}
+                                <div className="flex-1 min-w-[200px]">
+                                    <div className="relative">
+                                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            placeholder={`Search by ${filters.searchBy === 'name' ? 'name' : filters.searchBy === 'email' ? 'email' : 'ID number'}...`}
+                                            value={learnerSearchTerm}
+                                            onChange={(e) => setLearnerSearchTerm(e.target.value)}
+                                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email Address
-                                    </label>
-                                    <input
-                                        type="email"
-                                        required
-                                        value={enrollForm.email}
-                                        onChange={(e) => setEnrollForm({ ...enrollForm, email: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Phone Number
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        value={enrollForm.phone}
-                                        onChange={(e) => setEnrollForm({ ...enrollForm, phone: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Enrollment Type
-                                    </label>
-                                    <select
-                                        value={enrollForm.type}
-                                        onChange={(e) => setEnrollForm({ ...enrollForm, type: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    >
-                                        <option value={program.category === 'INTERNSHIP' ? 'intern' : 'learner'}>
-                                            {program.category === 'INTERNSHIP' ? 'Intern' : 'Learner'}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="flex gap-3 justify-end mt-6">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowEnrollModal(false)}
-                                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+
+                                {/* Search By Dropdown */}
+                                <select
+                                    value={filters.searchBy}
+                                    onChange={(e) => setFilters({ ...filters, searchBy: e.target.value })}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                 >
-                                    Cancel
-                                </button>
+                                    <option value="name">Search by Name</option>
+                                    <option value="email">Search by Email</option>
+                                    <option value="idNo">Search by ID Number</option>
+                                </select>
+
+                                {/* Filter Toggle Button */}
                                 <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg transition ${
+                                        showFilters ? 'bg-blue-50 border-blue-300 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                    }`}
                                 >
-                                    Enroll Student
+                                    <FaFilter /> Filters
+                                    {(filters.gender || filters.status) && (
+                                        <span className="ml-1 w-2 h-2 bg-blue-600 rounded-full"></span>
+                                    )}
                                 </button>
                             </div>
-                        </form>
+
+                            {/* Advanced Filters */}
+                            {showFilters && (
+                                <div className="mt-4 flex flex-wrap gap-4 pt-4 border-t border-gray-200">
+                                    <div className="flex-1 min-w-[150px]">
+                                        <label className="block text-xs font-medium text-gray-700 mb-1">Gender</label>
+                                        <select
+                                            value={filters.gender}
+                                            onChange={(e) => setFilters({ ...filters, gender: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                        >
+                                            <option value="">All Genders</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex-1 min-w-[150px]">
+                                        <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                                        <select
+                                            value={filters.status}
+                                            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                        >
+                                            <option value="">All Status</option>
+                                            <option value="ACTIVE">Active</option>
+                                            <option value="INACTIVE">Inactive</option>
+                                            <option value="SUSPENDED">Suspended</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-end">
+                                        <button
+                                            onClick={() => setFilters({ gender: '', status: '', searchBy: 'name' })}
+                                            className="px-3 py-2 text-sm text-red-600 hover:text-red-700"
+                                        >
+                                            Clear Filters
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Learners List */}
+                        <div className="flex-1 overflow-y-auto p-6">
+                            {loadingLearners ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+                                </div>
+                            ) : filteredLearners.length > 0 ? (
+                                <div className="grid gap-3">
+                                    {filteredLearners.map((learner) => {
+                                        const isEnrolled = enrolledLearnerIds.includes(learner.id);
+                                        const isEnrolling = enrollingId === learner.id;
+                                        
+                                        return (
+                                            <div
+                                                key={learner.id}
+                                                className={`flex items-center justify-between p-4 border rounded-xl transition-all ${
+                                                    isEnrolled ? 'bg-gray-50 border-gray-200' : 'hover:shadow-md border-gray-200 hover:border-blue-200'
+                                                }`}
+                                            >
+                                                <div className="flex items-start gap-4 flex-1">
+                                                    {/* Avatar */}
+                                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                                                        {learner.firstname?.charAt(0)}{learner.lastname?.charAt(0)}
+                                                    </div>
+                                                    
+                                                    {/* Learner Info */}
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                            <h4 className="font-semibold text-gray-900">
+                                                                {learner.firstname} {learner.lastname}
+                                                            </h4>
+                                                            <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                                                {learner.role?.join(', ')}
+                                                            </span>
+                                                            {learner.status === 'ACTIVE' ? (
+                                                                <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
+                                                            ) : (
+                                                                <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full">Inactive</span>
+                                                            )}
+                                                        </div>
+                                                        
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
+                                                            <div className="flex items-center gap-2">
+                                                                <FaEnvelopeIcon className="w-3 h-3" />
+                                                                <span>{learner.email}</span>
+                                                            </div>
+                                                            {learner.contactNumber && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <FaPhone className="w-3 h-3" />
+                                                                    <span>{learner.contactNumber}</span>
+                                                                </div>
+                                                            )}
+                                                            {learner.gender && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <FaVenusMars className="w-3 h-3" />
+                                                                    <span>{learner.gender}</span>
+                                                                </div>
+                                                            )}
+                                                            {learner.idNo && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <FaIdCard className="w-3 h-3" />
+                                                                    <span>{learner.idNo}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        
+                                                        {learner.dob && (
+                                                            <p className="text-xs text-gray-400 mt-1">
+                                                                DOB: {formatDate(learner.dob)}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Action Button */}
+                                                <div className="ml-4">
+                                                    {isEnrolled ? (
+                                                        <button
+                                                            disabled
+                                                            className="px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed flex items-center gap-2"
+                                                        >
+                                                            <FaUserPlus /> Enrolled
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleEnroll(learner)}
+                                                            disabled={isEnrolling}
+                                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 disabled:opacity-50"
+                                                        >
+                                                            {isEnrolling ? (
+                                                                <>
+                                                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                                                    Enrolling...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <FaUserPlus /> Enroll
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <FaUsers className="text-gray-300 text-5xl mx-auto mb-4" />
+                                    <p className="text-gray-500 mb-2">No {program.category === 'INTERNSHIP' ? 'interns' : 'learners'} found</p>
+                                    <p className="text-sm text-gray-400 mb-4">
+                                        {learnerSearchTerm || filters.gender || filters.status 
+                                            ? "Try adjusting your search or filters" 
+                                            : "No users available for enrollment"}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer with Create User Button */}
+                        <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+                            <button
+                                onClick={() => {
+                                    setShowEnrollModal(false);
+                                    navigate('/user/admin/user-management/create', { 
+                                        state: { 
+                                            userType: program?.category === 'INTERNSHIP' ? 'intern' : 'learner',
+                                            returnTo: `/user/admin/programs/${id}`
+                                        } 
+                                    });
+                                }}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                            >
+                                <FaUserPlus /> Create New {program.category === 'INTERNSHIP' ? 'Intern' : 'Learner'}
+                            </button>
+                            <button
+                                onClick={() => setShowEnrollModal(false)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -449,6 +709,7 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
                 </div>
             )}
 
+            {/* Rest of your existing component JSX remains the same */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
                 {/* Header Navigation */}
                 <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
@@ -461,7 +722,7 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
                     </button>
                     <div className="flex gap-3">
                         <button
-                            onClick={() => setShowEnrollModal(true)}
+                            onClick={openEnrollModal}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm"
                         >
                             <FaUserPlus /> Enroll {program.category === 'INTERNSHIP' ? 'Intern' : 'Learner'}
@@ -492,7 +753,7 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
                     </div>
                 </div>
 
-                {/* Hero Section */}
+                {/* Hero Section - Keep your existing hero section code */}
                 <div className="relative rounded-2xl overflow-hidden shadow-xl mb-8">
                     <div className="absolute inset-0">
                         <img
@@ -603,7 +864,7 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
                     </nav>
                 </div>
 
-                {/* Tab Content */}
+                {/* Tab Content - Keep your existing tab content */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
                     {/* Overview Tab */}
                     {activeTab === 'overview' && (
@@ -780,7 +1041,7 @@ const ProgramViewAdmin = ({ onEdit, onDelete }) => {
                                     <FaUsers className="text-gray-300 text-5xl mx-auto mb-4" />
                                     <p className="text-gray-500">No {program.category === 'INTERNSHIP' ? 'interns' : 'learners'} enrolled yet</p>
                                     <button
-                                        onClick={() => setShowEnrollModal(true)}
+                                        onClick={openEnrollModal}
                                         className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                                     >
                                         <FaUserPlus /> Enroll First {program.category === 'INTERNSHIP' ? 'Intern' : 'Learner'}
