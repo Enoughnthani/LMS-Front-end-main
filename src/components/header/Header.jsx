@@ -28,23 +28,12 @@ export default function Header() {
 
 
                     <Button
-                        variant="success"
                         onClick={() => navigate('login')}
                         className="flex font-medium gap-2 items-center justify-center"
                     >
 
                         <LogIn size={20} />
                         Login
-                    </Button>
-
-
-
-                    <Button
-                        onClick={() => navigate('register')}
-                        className="flex font-medium gap-2 items-center justify-center"
-                    >
-                        <BsPersonAdd />
-                        Register
                     </Button>
                 </div>
             </div>

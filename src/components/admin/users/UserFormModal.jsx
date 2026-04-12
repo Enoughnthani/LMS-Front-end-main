@@ -7,6 +7,7 @@ import { Alert, Button, Form, Modal, Spinner } from 'react-bootstrap';
 import { FaEnvelope, FaSave, FaUserPlus } from 'react-icons/fa';
 import { useTopLoader } from '../../../contexts/TopLoaderContext';
 import { isValidSouthAfricanID } from "../../../utils/validateIdNo.js";
+import { useApiResponse } from '@/contexts/ApiResponseContext';
 
 export default function UserFormModal({
     show,
@@ -23,6 +24,7 @@ export default function UserFormModal({
     const [showPassword, setShowPassword] = useState(false);
     const [roleRequired, setRoleRequired] = useState(false);
     const { start, complete } = useTopLoader();
+    const { showResponse } = useApiResponse()
 
     const roles = ['ADMIN', 'PROGRAM_MANAGER', 'FACILITATOR', 'MENTOR', 'INTERN', 'LEARNER', 'ASSESSOR', 'MODERATOR'];
 
@@ -95,16 +97,6 @@ export default function UserFormModal({
         }
 
         setUserForm({ ...userForm, [name]: value });
-
-        if (name === "idNo") {
-            if (!isValidSouthAfricanID(value)) {
-                setResponse({ success: false, message: "Invalid id number." });
-                setInvalidIdno(true);
-            } else {
-                setResponse(null);
-                setInvalidIdno(false);
-            }
-        }
     };
 
     const handleSubmit = async (e) => {
@@ -138,8 +130,13 @@ export default function UserFormModal({
             });
 
             setResponse(result);
+            showResponse(result)
+
             await getUsers();
-            handleClose();
+
+            if (result?.success) {
+                handleClose();
+            }
 
 
         } catch (error) {

@@ -45,17 +45,9 @@ export default function AdminDashboard() {
     getUsers();
   }, []);
 
-  async function handleLogout() {
-    try {
-      let resp = await logout();
-      navigate("/", { replace: true });
-    } catch (error) {
-      setResponse({ success: false, mesage: "An error occured." });
-    }
-  }
 
   return (
-    <div className="min-h-screen  flex text-gray-800">
+    <div className="min-h-screen flex text-gray-800">
 
       <aside className="hidden md:block min-w-[16rem] bg-white shadow-md border !border-gray-200 py-6 px-1.5 ">
         <div className="flex mx-2 items-center gap-3">
@@ -71,7 +63,6 @@ export default function AdminDashboard() {
           {[
             { icon: <FaChartLine />, label: "Dashboard", alert: true, path: '/user/admin' },
             { icon: <FaUsers />, label: "Users", alert: false, path: '/user/admin/users' },
-            { icon: <FaBook />, label: "Programs", alert: false, path: '/user/admin/programs' },
             { icon: <FaCog />, label: "Settings", alert: false, path: '/user/admin/settings' },
             { icon: <FaBell />, label: "Notifications", alert: false, path: '/user/admin/notifications' },
             { icon: <FaQuestionCircle />, label: "Help", alert: false, path: '/user/admin/help' },
@@ -92,7 +83,7 @@ export default function AdminDashboard() {
         </ul>
 
         <Button
-          onClick={handleLogout}
+          onClick={logout}
           variant="outline-danger"
           className="flex items-center justify-center mt-4 w-full gap-2 
              border-red-300 hover:border-red-600 

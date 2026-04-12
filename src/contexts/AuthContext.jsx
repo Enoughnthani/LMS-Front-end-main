@@ -131,7 +131,7 @@ export const AuthProvider = ({ children }) => {
 
       document.cookie = "JSESSIONID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       document.cookie = "remember-me=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      return resp || { success: true, message: "Logout Successful" }
+      navigate('/', { replace: true });
     } catch (error) {
     } finally {
       setUser(null);
@@ -148,6 +148,7 @@ export const AuthProvider = ({ children }) => {
       register,
       logout,
       checkAuth,
+      setUser,
       isAuthenticated: !!user
     }}>
       {children}

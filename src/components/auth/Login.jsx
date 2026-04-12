@@ -1,11 +1,13 @@
 import { BookOpen, LogIn } from "lucide-react";
 import { useState } from "react";
-import { Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 import { useTopLoader } from "../../contexts/TopLoaderContext.jsx";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import PasswordInput from "../../components/auth/PasswordInput";
 import MessageAlert from "../../components/auth/MessageAlert";
+import logo from "@/resources/logo.png";
+import { ROUTES } from "@/utils/routes.js";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -15,7 +17,7 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const { start, complete } = useTopLoader();
     const { login } = useAuth();
-    
+
     const [formData, setForm] = useState({
         email: "",
         password: "",
@@ -30,12 +32,12 @@ export default function Login() {
     async function handleSubmit(e) {
         setLoading(true);
         e.preventDefault();
-        
+
         if (e.currentTarget.checkValidity() === false) {
             e.stopPropagation();
             setLoading(false);
             setValidated(true);
-            let emptyKey = Object.keys(formData).find(key => 
+            let emptyKey = Object.keys(formData).find(key =>
                 (["email", "password"].includes(key)) && formData[key].trim() === ""
             );
             emptyKey = emptyKey === "email" ? "email address" : emptyKey;
@@ -49,14 +51,14 @@ export default function Login() {
             form.append('email', formData?.email);
             form.append('password', formData?.password);
             form.append('remember-me', formData?.rememberMe);
-            
+
             const result = await login({ "form": form });
             setResponse(result);
-            
+
             if (result?.success) {
                 setForm({ email: "", password: "", rememberMe: false });
                 setTimeout(() => setResponse(null), 15000);
-                
+
                 const url = getDashboardPath(result?.payload?.role[0]);
                 navigate(url);
             }
@@ -76,18 +78,23 @@ export default function Login() {
             case "ASSESSOR": return "/user/assessor";
             case "MODERATOR": return "/user/moderator";
             case "MENTOR": return "/user/mentor";
+            case "PROGRAM_MANAGER": return "/user/program-manager";
             default: return "/user/intern";
         }
     }
 
     return (
-        <div style={{backgroundImage:"url(https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)"}} className="min-h-screen bg-gradient-to-r from-slate-100 to-white flex items-center justify-center bg-center bg-cover py-4">
+        <div style={{ backgroundImage: "url(https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)" }} className="min-h-screen bg-gradient-to-r from-slate-100 to-white flex items-center justify-center bg-center bg-cover py-4">
             <div className="bg-white mt-[4rem] p-8 rounded-lg w-[95%] lg:w-[40%] mx-auto">
                 {/* Header */}
                 <div className="text-center mb-6">
-                    <div className="mx-auto w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-4">
-                        <BookOpen className="w-8 h-8 text-white" />
+
+                    <div className="flex items-center justify-center  space-x-3 mb-3">
+                        <div className=" p-2 rounded w-[200px]">
+                            <img src={logo} alt="LMS Logo" />
+                        </div>
                     </div>
+
                     <h1 className="text-3xl font-bold text-black">Welcome Back</h1>
                     <p className="text-gray-600">Sign in to your LMS account</p>
                 </div>
@@ -130,30 +137,25 @@ export default function Login() {
                             label="Remember me"
                             checked={formData?.rememberMe}
                             onChange={handleChange}
-                            className="text-gray-700"
+                            className="text-gray-700 cursor-pointer"
                         />
                     </div>
 
                     {/* Submit Button */}
-                    <button
+                    <Button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 flex justify-center items-center gap-2 transition-all disabled:opacity-50"
+                        variant="success"
+                        className="w-full  text-white py-3 rounded-lg flex justify-center items-center gap-2 transition-all disabled:opacity-50"
                     >
                         <LogIn className="w-5 h-5" />
                         {loading ? "Signing in..." : "Sign In"}
-                    </button>
+                    </Button>
 
                     {/* Footer Links */}
                     <div className="text-center space-y-2">
-                        <div className="text-sm text-gray-500">
-                            Don't have an account?{" "}
-                            <Link to="/register" className="text-red-600 hover:underline">
-                                Register here
-                            </Link>
-                        </div>
                         <div className="text-sm">
-                            <Link to="/forgot-password" className="text-red-600 hover:underline">
+                            <Link to="/forgot-password" className="text-sky-600 hover:underline">
                                 Forgot Password?
                             </Link>
                         </div>

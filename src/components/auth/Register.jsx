@@ -8,6 +8,8 @@ import { CREATE_ACCOUNT } from "@/utils/apiEndpoint.js";
 import PasswordInput from "./PasswordInput.jsx";
 import MessageAlert from "./MessageAlert.jsx";
 import { apiFetch } from "@/api/api.js";
+import logo from "@/resources/logo.png";
+
 
 export default function Register() {
     const navigate = useNavigate();
@@ -93,7 +95,7 @@ export default function Register() {
             const result = await apiFetch(CREATE_ACCOUNT, {
                 method: "POST",
                 body: formData,
-                redirectErrors:false
+                redirectErrors: false
             });
 
             setResponse(result);
@@ -109,7 +111,7 @@ export default function Register() {
                     confirmPassword: "",
                     role: ["LEARNER"]
                 });
-                
+
                 setTimeout(() => {
                     setResponse(null);
                     navigate("/login");
@@ -124,12 +126,14 @@ export default function Register() {
     }
 
     return (
-        <div style={{backgroundImage:"url(https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)"}} className="min-h-screen bg-gradient-to-r from-slate-100 to-white flex items-center justify-center bg-cover bg-center py-4">
+        <div style={{ backgroundImage: "url(https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)" }} className="min-h-screen bg-gradient-to-r from-slate-100 to-white flex items-center justify-center bg-cover bg-center py-4">
             <div className="bg-white mt-[4rem] p-8 rounded-lg w-[95%] lg:w-[50%] mx-auto shadow-lg">
                 {/* Header */}
                 <div className="text-center mb-6">
-                    <div className="mx-auto w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-4">
-                        <BookOpen className="w-8 h-8 text-white" />
+                    <div className="flex items-center justify-center  space-x-3 mb-3">
+                        <div className=" p-2 rounded w-[200px]">
+                            <img src={logo} alt="LMS Logo" />
+                        </div>
                     </div>
                     <h1 className="text-3xl font-bold text-black">Create an Account</h1>
                     <p className="text-gray-600">Register to start your learning journey</p>

@@ -1,35 +1,28 @@
 import { apiFetch } from '@/api/api';
 import ResponseMessage from '@/components/common/ResponseMessage';
+import { getRoleIcon } from '@/components/common/RoleContent';
+import RoleContent from '@/components/common/RoleContent';
 import { USERS } from '@/utils/apiEndpoint';
-import { AlertCircle, CheckCircle, PenSquareIcon } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   Badge,
   Button,
   Card,
   Dropdown,
   Form,
   InputGroup,
-  Modal,
   Pagination,
-  Spinner,
   Table
 } from 'react-bootstrap';
 import {
-  FaBookOpen,
   FaChalkboardTeacher,
   FaClipboardCheck,
-  FaCrown,
   FaDownload,
-  FaEnvelope,
-  FaGavel,
   FaGraduationCap,
   FaHistory,
   FaKey,
-  FaSave,
   FaSearch,
-  FaSeedling,
   FaShieldAlt,
   FaTrash,
   FaUpload,
@@ -43,13 +36,13 @@ import { FiMail, FiUser } from 'react-icons/fi';
 import { useTopLoader } from '../../../contexts/TopLoaderContext';
 import { formatLastLogin } from '../../../utils/formatLastLogin.js';
 import { readableDate } from '../../../utils/readableDate.js';
-import { isValidSouthAfricanID } from "../../../utils/validateIdNo.js";
 import BulkDeleteModal from './BulkDeleteModal';
+import BulkUploadModal from './BulkUploadModal';
 import DeleteUserModal from './DeleteUserModal';
 import RoleManagerModal from './RoleManagerModal';
-import UserProfileOffcanvas from './UserProfileOffcanvas';
-import BulkUploadModal from './BulkUploadModal';
 import UserFormModal from './UserFormModal';
+import UserProfileOffcanvas from './UserProfileOffcanvas';
+import { useApiResponse } from '@/contexts/ApiResponseContext';
 
 export default function UserManagement() {
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -72,11 +65,12 @@ export default function UserManagement() {
   const [roleRequired, setRoleRequired] = useState(false);
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const [bulkFile, setBulkFile] = useState(null);
-  const itemsPerPage = 20;
+  const itemsPerPage = 80;
   const [users, setUsers] = useState(null);
   const [showModal, setShowModal] = useState(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
   const [roleManager, setShowRoleManager] = useState(false);
+  const { showResponse } = useApiResponse()
 
   const [userForm, setUserForm] = useState({
     firstname: "",
@@ -92,12 +86,11 @@ export default function UserManagement() {
 
   const roles = ['ADMIN', 'PROGRAM_MANAGER', 'FACILITATOR', 'MENTOR', 'INTERN', 'LEARNER', 'ASSESSOR', 'MODERATOR'];
 
-  // ========== FETCH USERS ==========
   async function getUsers() {
     try {
       start();
       const result = await apiFetch(USERS);
-      setUsers(result);
+      setUsers(result?.payload || []);
     } catch (e) {
       setResponse({ success: false, message: "An error has occurred." });
     } finally {
@@ -109,8 +102,6 @@ export default function UserManagement() {
     getUsers();
   }, [roleManager]);
 
-
-  // ========== FILTER AND SEARCH ==========
   useEffect(() => {
     let result = users;
 
@@ -155,56 +146,6 @@ export default function UserManagement() {
   };
 
 
-  // ========== CREATE/UPDATE USER ==========
-  async function handleRegister(e) {
-    setLoading(true);
-    e.preventDefault();
-    start();
-
-    if (e.currentTarget.checkValidity() === false) {
-      e.stopPropagation();
-      setLoading(false);
-      setValidated(true);
-      setTimeout(() => {
-        complete();
-      }, 1500);
-      return;
-    }
-
-    if (userForm.role.length === 0) {
-      setResponse({ success: false, message: "Please select at least one role." });
-      complete();
-      setLoading(false);
-      setRoleRequired(true);
-      return;
-    }
-
-    try {
-      const result = await apiFetch(USERS, {
-        method: "POST",
-        body: JSON.stringify(userForm)
-      });
-
-      setResponse(result);
-      if (result?.success) {
-        getUsers();
-        resetForm();
-        setTimeout(() => {
-          setResponse(null);
-        }, 15000);
-      }
-    } catch (error) {
-      setResponse({ success: false, message: "An error occurred. Please try again." });
-    } finally {
-      complete();
-      setLoading(false);
-    }
-  }
-
-
-
-
-
   // Bulk Role Assign
   const handleBulkRoleAssign = async (role) => {
     start();
@@ -218,6 +159,7 @@ export default function UserManagement() {
       });
 
       setResponse(result);
+      showResponse(result)
 
       if (result?.success) {
         setBulkSelection([]);
@@ -242,6 +184,7 @@ export default function UserManagement() {
         })
       });
       setResponse(result)
+      showResponse(result)
 
       if (result?.success) {
         setBulkSelection([]);
@@ -278,8 +221,6 @@ export default function UserManagement() {
         : [...prev, userId]
     );
   };
-
-
 
   const resetForm = () => {
     setUserForm({
@@ -331,6 +272,8 @@ export default function UserManagement() {
       })
 
       setResponse(result);
+      showResponse(result)
+
       getUsers();
 
     } catch (error) {
@@ -346,6 +289,8 @@ export default function UserManagement() {
       })
 
       setResponse(result);
+      showResponse(result)
+
       getUsers();
 
     } catch (error) {
@@ -353,30 +298,7 @@ export default function UserManagement() {
     }
   }
 
-  const getRoleIcon = (role, size = 14) => {
-    const iconProps = {
-      size,
-      className: 'transition-transform group-hover:scale-110'
-    };
-    switch (role?.toUpperCase()) {
-      case 'ADMIN':
-        return <FaCrown {...iconProps} className="text-amber-500" />;
-      case 'FACILITATOR':
-        return <FaChalkboardTeacher {...iconProps} className="text-blue-500" />;
-      case 'MENTOR':
-        return <FaUserGraduate {...iconProps} className="text-purple-500" />;
-      case 'INTERN':
-        return <FaSeedling {...iconProps} className="text-green-500" />;
-      case 'LEARNER':
-        return <FaBookOpen {...iconProps} className="text-indigo-500" />;
-      case 'ASSESSOR':
-        return <FaClipboardCheck {...iconProps} className="text-orange-500" />;
-      case 'MODERATOR':
-        return <FaGavel {...iconProps} className="text-red-500" />;
-      default:
-        return <FiUser {...iconProps} className="text-gray-400" />;
-    }
-  };
+
 
   return (
     <div className="h-screen w-full overflow-y-auto  p-6 flex flex-col">
@@ -582,8 +504,9 @@ export default function UserManagement() {
               <tbody className="divide-y divide-slate-100">
                 {currentUsers?.map((user, key) => (
                   <tr
+                    onClick={() => { setShowUserDetails(true); setUserForm(user) }}
                     key={key}
-                    className="group transition-colors duration-200 hover:bg-rose-50/40"
+                    className="group cursor-pointer transition-colors duration-200 hover:bg-rose-50/40"
                   >
                     <td className="px-4 py-4 align-middle">
                       <Form.Check
@@ -611,44 +534,11 @@ export default function UserManagement() {
                     <td className='text-xs text-center  align-middle'>
                       <span className={(user?.active ? 'bg-green-600' : 'bg-red-600') + ' p-2 rounded text-white font-semibold'}>{user?.status}</span>
                     </td>
-                    <td className="px-4 py-4 align-middle">
-                      <div className="flex items-center gap-1">
-                        {user?.role && user.role.length > 0 ? (
-                          <>
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-rose-50 text-rose-700 border border-rose-100 ring-1 ring-rose-100/50">
-                              {getRoleIcon(user.role[0])}
-                              {user.role[0]}
-                            </span>
-                            {user.role.length > 1 && (
-                              <Dropdown align="end">
-                                <Dropdown.Toggle
-                                  as="span"
-                                  className="cursor-pointer inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-white text-slate-600 hover:bg-white hover:text-slate-800 transition-colors border-0"
-                                >
-                                  +{user.role.length - 1}
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu className="p-2 min-w-[160px] border border-slate-200 rounded-lg mt-1">
-                                  {user.role.slice(1).map((r, idx) => (
-                                    <Dropdown.Item
-                                      key={idx}
-                                      className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 rounded-md hover:bg-white transition-colors"
-                                      disabled
-                                    >
-                                      {getRoleIcon(r)}
-                                      <span>{r}</span>
-                                    </Dropdown.Item>
-                                  ))}
-                                </Dropdown.Menu>
-                              </Dropdown>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-slate-400 text-sm italic">No role assigned</span>
-                        )}
-                      </div>
+                    <td className='text-xs text-center  align-middle'>
+                      <RoleContent roles={user.role} />
                     </td>
                     <td className="px-4 py-4 align-middle">
-                      <Dropdown className=" inline-block">
+                      <Dropdown onClick={(e) => e.stopPropagation()} className=" inline-block">
                         <Dropdown.Toggle
                           size="sm"
                           className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-2 py-1 rounded inline-flex items-center focus:outline-none"
@@ -792,7 +682,7 @@ export default function UserManagement() {
         getRoleIcon={getRoleIcon}
         loading={loading}
         setResponse={setResponse}
-         getUsers={getUsers}
+        getUsers={getUsers}
       />
 
 

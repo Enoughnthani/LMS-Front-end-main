@@ -12,4 +12,5 @@ export const ROUTES = {
   ACCESSOR: "/user/assessor",
   MODERATOR: "/user/moderator",
   INTERN: "/user/intern",
+  PROGRAM_MANGER:'/user/program-manager'
 };

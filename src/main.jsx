@@ -9,6 +9,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
+import { ApiResponseProvider } from './contexts/ApiResponseContext';
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
@@ -16,10 +17,10 @@ createRoot(document.getElementById('root')).render(
       <ThemeProvider>
         <TopLoaderProvider>
           <AuthProvider>
-            <ResponseProvider>
+            <ApiResponseProvider>
                 <ScrollToTop />
                 <App />
-            </ResponseProvider>
+            </ApiResponseProvider>
           </AuthProvider>
         </TopLoaderProvider>
       </ThemeProvider>

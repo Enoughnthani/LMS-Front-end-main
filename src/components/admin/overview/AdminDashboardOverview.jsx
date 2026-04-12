@@ -1,71 +1,105 @@
 // components/AdminDashboardOverview.jsx
 import { Badge, Button, Card, Placeholder, ProgressBar } from "react-bootstrap";
 import {
+  FaBan,
   FaBook,
+  FaBriefcase,
   FaBullhorn,
   FaCalendarAlt,
   FaCertificate,
   FaChalkboardTeacher,
   FaCheckCircle,
+  FaEdit,
+  FaPlusCircle,
+  FaTrash,
+  FaUser,
   FaUserPlus,
   FaUsers
 } from "react-icons/fa";
 import { FiClock, FiTarget, FiTrendingUp } from "react-icons/fi";
 import { GiAchievement } from "react-icons/gi";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/api/api";
+import { ADMIN } from "@/utils/apiEndpoint";
+import { User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function AdminDashboardOverview({ 
-  users, 
-  visible, 
-  user, 
+export default function AdminDashboardOverview({
+  users,
+  visible,
+  user,
   handleMenuItemClick,
   setStep,
-  setShowModal 
+  setShowModal
 }) {
-  const activities = [
-    {
-      icon: <FaUserPlus className="text-red-500" />,
-      text: "New intern account created",
-      time: "2 mins ago",
-      user: "John Doe",
-      category: "User"
-    },
-    {
-      icon: <FaChalkboardTeacher className="text-amber-500" />,
-      text: "Mentor assigned to 'React Basics'",
-      time: "15 mins ago",
-      user: "Sarah Chen",
-      category: "Assignment"
-    },
-    {
-      icon: <FaBook className="text-red-500" />,
-      text: 'Course "Advanced Java" published',
-      time: "1 hour ago",
-      user: "System",
-      category: "Course"
-    },
-    {
-      icon: <FaCheckCircle className="text-emerald-500" />,
-      text: 'Intern completed final project assessment',
-      time: "2 hours ago",
-      user: "Alex Johnson",
-      category: "Completion"
-    },
-    {
-      icon: <FaCertificate className="text-red-500" />,
-      text: "Internship certification batch generated",
-      time: "3 hours ago",
-      user: "Maria Garcia",
-      category: "Certification"
-    },
-  ];
 
-  const upcomingEvents = [
-    { title: "React Bootcamp Workshop", date: "Tomorrow, 10:00 AM", type: "Workshop", priority: "high" },
-    { title: "Internship Kickoff", date: "Mar 25, 2:00 PM", type: "Orientation", priority: "medium" },
-    { title: "Mentor Matching Session", date: "Mar 28, 11:00 AM", type: "Matching", priority: "high" },
-    { title: "Progress Review", date: "Apr 1, 3:00 PM", type: "Review", priority: "medium" },
-  ];
+  const [response, setResponse] = useState(null)
+  const [stats, setStats] = useState(null)
+  const [activities, setActivities] = useState([])
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    getStats()
+    getActivities()
+  }, [])
+
+
+
+  async function getStats() {
+    try {
+
+      const result = await apiFetch(`${ADMIN}/stats`)
+      setResponse(result)
+
+      if (result?.success) {
+        setStats(result?.payload)
+      }
+
+    } catch (e) {
+      setResponse({ success: false, message: "An error occured while fetching stats." })
+    }
+  }
+
+  async function getActivities() {
+    try {
+      const result = await apiFetch(`${ADMIN}/activities`)
+      setResponse(result)
+
+      if (result?.success) {
+        setActivities(result?.payload)
+      }
+
+    } catch (e) {
+      setResponse({ success: false, message: "An error occured while fetching activities." })
+    }
+  }
+
+  const getNewActivitiesCount = () => {
+    const last24Hours = new Date();
+    last24Hours.setHours(last24Hours.getHours() - 24);
+
+    return activities.filter(activity =>
+      new Date(activity.createdAt) > last24Hours
+    ).length;
+  };
+
+  const formatRelativeTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} min${diffInMinutes > 1 ? 's' : ''} ago`;
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+
+    return date.toLocaleDateString();
+  };
+
 
   return (
     <main className="flex-1 p-6 overflow-y-auto h-screen">
@@ -98,53 +132,40 @@ export default function AdminDashboardOverview({
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {[
-          { title: "Total Users", value: users?.length || 0, icon: <FaUsers className="text-xl" />, color: "from-red-500 to-red-600", change: "+8%", trend: "up" },
-          { title: "Total Programs", value: "84", icon: <FaBook className="text-xl" />, color: "from-red-400 to-red-500", change: "+12%", trend: "up" },
-          { title: "Active Learnerships", value: "18", icon: <FaChalkboardTeacher className="text-xl" />, color: "from-red-400 to-red-500", change: "+3", trend: "up" },
-          { title: "Active Internships", value: "24", icon: <FaBook className="text-xl" />, color: "from-red-600 to-red-700", change: "4 new", trend: "up" },
+          { title: "Total Users", value: stats?.totalUsers || 0, icon: <FaUsers className="w-8 h-8" />, color: "blue", bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", gradient: "from-blue-500 to-indigo-600" },
+          { title: "Total Programs", value: stats?.totalPrograms || 0, icon: <FaBook className="w-8 h-8" />, color: "cyan", bg: "bg-cyan-50", border: "border-cyan-200", text: "text-cyan-600", gradient: "from-cyan-400 to-blue-500" },
+          { title: "Active Learnerships", value: stats?.totalActiveLearnerships || 0, icon: <FaChalkboardTeacher className="w-8 h-8" />, color: "emerald", bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-600", gradient: "from-emerald-500 to-teal-600" },
+          { title: "Active Internships", value: stats?.totalActiveInternships || 0, icon: <FaBriefcase className="w-8 h-8" />, color: "orange", bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-600", gradient: "from-orange-500 to-rose-600" },
+          { title: "Active Short Courses", value: stats?.totalActiveShortCourses || 0, icon: <FaCertificate className="w-8 h-8" />, color: "violet", bg: "bg-violet-50", border: "border-violet-200", text: "text-violet-600", gradient: "from-violet-500 to-fuchsia-600" },
         ].map((stat, index) => (
           <Card
             key={index}
-            className=" hover:shadow-md transition-shadow overflow-hidden border-b-4 border-slate-500 h-full transition-transform duration-300 ease-in-out hover:-translate-y-2 cursor-pointer"
+            className={`group relative overflow-hidden bg-white border ${stat.border} rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 ease-out hover:-translate-y-1 cursor-pointer`}
           >
-            <Card.Body className="p-5 flex flex-col">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <p className="text-gray-500 text-sm font-medium mb-2">
-                    {stat.title}
-                  </p>
+            {/* Hover background */}
+            <div className={`absolute inset-0 ${stat.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
-                  <h2 className="text-3xl font-bold text-gray-800">
-                    {stat.value}
-                  </h2>
+            <Card.Body className="relative p-6 flex flex-col items-center text-center">
+              {/* Title - Top */}
+              <p className={`text-xs font-semibold uppercase tracking-wider ${stat.text} mb-4`}>
+                {stat.title}
+              </p>
 
-                  <span
-                    className={`text-sm ${stat.trend === "up" ? "text-red-600" : "text-green-600"
-                      } font-medium flex items-center gap-1`}
-                  >
-                    <FiTrendingUp />
-                    {stat.change}
-                  </span>
-                </div>
-
-                <div
-                  className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-lg flex items-center justify-center text-white `}
-                >
-                  {stat.icon}
-                </div>
+              {/* Icon - Middle */}
+              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${stat.gradient} shadow-lg shadow-${stat.color}-500/30 flex items-center justify-center text-white mb-4 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}>
+                {stat.icon}
               </div>
 
-              <div className="mt-auto">
-                <ProgressBar
-                  now={75 + index * 5}
-                  variant="danger"
-                  className="rounded"
-                />
-              </div>
+              {/* Value - Bottom */}
+              <h2 className="text-3xl font-bold text-gray-900 tabular-nums">
+                {stat.value.toLocaleString()}
+              </h2>
             </Card.Body>
+
+            {/* Bottom accent line */}
+            <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.gradient} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left`} />
           </Card>
         ))}
       </div>
@@ -154,62 +175,141 @@ export default function AdminDashboardOverview({
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Recent Activity */}
-          <Card className="border-0 h-full  border-t-4 border-red-500">
-            <Card.Header className="bg-white border-0 py-4 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <h5 className="font-bold text-gray-800">Recent Activity</h5>
-                <Badge bg="danger" pill className="px-2">5 New</Badge>
-              </div>
-              <Button variant="link" size="sm" className="text-red-600 p-0 font-medium">
-                View All →
-              </Button>
-            </Card.Header>
-            <Card.Body className="pt-0">
-              <div className="space-y-4">
-                {activities.map((act, idx) => (
-                  <div key={idx} className="flex items-start gap-4 p-4 hover:bg-red-50/30 rounded-lg transition-colors border-l-4 border-red-100 hover:border-red-300">
-                    <div className={`w-10 h-10 ${act.category === 'Certification' ? 'bg-red-100' : 'bg-gray-50'} rounded-lg flex items-center justify-center`}>
-                      {act.icon}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-800">{act.text}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <Badge bg="light" text="dark" className="border border-gray-200 text-xs">{act.category}</Badge>
-                        <span className="text-sm text-gray-500">{act.user}</span>
-                        <span className="text-xs text-gray-400">•</span>
-                        <span className="text-xs text-gray-500 flex items-center gap-1"><FiClock />{act.time}</span>
+          {activities?.length > 0 &&
+            <Card className="border-0 h-full border-t-4 border-blue-500">
+              <Card.Header className="bg-white border-0 py-4 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <h5 className="font-bold text-gray-800">Recent Activity</h5>
+                  <Badge bg="primary" pill className="px-2">{getNewActivitiesCount()} New</Badge>
+                </div>
+                <Button
+                  onClick={() => navigate('activities', { state: { activities: activities } })}
+                  variant="link" size="sm" className="text-blue-600 p-0 font-medium">
+                  View All →
+                </Button>
+              </Card.Header>
+              <Card.Body className="pt-0">
+                <div className="space-y-4">
+                  {activities.slice(0, 3).map((act, idx) => {
+                    // Get styles based on actionType
+                    const getActionStyles = (actionType) => {
+                      switch (actionType?.toUpperCase()) {
+                        case 'ACTIVATED':
+                          return {
+                            bg: 'bg-emerald-50',
+                            border: 'border-emerald-200 hover:border-emerald-400',
+                            text: 'text-emerald-700',
+                            iconBg: 'bg-emerald-100',
+                            icon: <FaCheckCircle className="text-emerald-500 text-lg" />,
+                            badge: 'bg-emerald-100 text-emerald-700'
+                          };
+                        case 'DEACTIVATED':
+                          return {
+                            bg: 'bg-red-50',
+                            border: 'border-red-200 hover:border-red-400',
+                            text: 'text-red-700',
+                            iconBg: 'bg-red-100',
+                            icon: <FaBan className="text-red-500 text-lg" />,
+                            badge: 'bg-red-100 text-red-700'
+                          };
+                        case 'CREATE':
+                        case 'CREATED':
+                          return {
+                            bg: 'bg-green-50',
+                            border: 'border-green-200 hover:border-green-400',
+                            text: 'text-green-700',
+                            iconBg: 'bg-green-100',
+                            icon: <FaPlusCircle className="text-green-500 text-lg" />,
+                            badge: 'bg-green-100 text-green-700'
+                          };
+                        case 'DELETE':
+                        case 'DELETED':
+                          return {
+                            bg: 'bg-red-50',
+                            border: 'border-red-200 hover:border-red-400',
+                            text: 'text-red-700',
+                            iconBg: 'bg-red-100',
+                            icon: <FaTrash className="text-red-500 text-lg" />,
+                            badge: 'bg-red-100 text-red-700'
+                          };
+                        case 'UPDATE':
+                        case 'UPDATED':
+                          return {
+                            bg: 'bg-amber-50',
+                            border: 'border-amber-200 hover:border-amber-400',
+                            text: 'text-amber-700',
+                            iconBg: 'bg-amber-100',
+                            icon: <FaEdit className="text-amber-500 text-lg" />,
+                            badge: 'bg-amber-100 text-amber-700'
+                          };
+                        default:
+                          return {
+                            bg: 'bg-gray-50',
+                            border: 'border-gray-200 hover:border-gray-400',
+                            text: 'text-gray-700',
+                            iconBg: 'bg-gray-100',
+                            icon: <FaUser className="text-gray-500 text-lg" />,
+                            badge: 'bg-gray-100 text-gray-700'
+                          };
+                      }
+                    };
+
+                    const styles = getActionStyles(act.actionType);
+
+                    return (
+                      <div
+                        key={act.id || idx}
+                        className={`flex items-start gap-4 p-4 ${styles.bg} rounded-lg transition-all duration-300 border-l-4 ${styles.border} hover:shadow-md`}
+                      >
+                        <div className={`w-10 h-10 ${styles.iconBg} rounded-lg flex items-center justify-center`}>
+                          {styles.icon}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${styles.badge}`}>
+                              {act.actionType}
+                            </span>
+                          </div>
+                          <p className={`font-medium ${styles.text}`}>{act.description}</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-sm text-gray-600">{act.firstname} {act.lastname}</span>
+                            <span className="text-xs text-gray-400">•</span>
+                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                              <FiClock size={12} />
+                              {formatRelativeTime(act.createdAt)}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    {act.category === 'Certification' && <GiAchievement className="text-2xl text-red-500" />}
-                  </div>
-                ))}
-              </div>
-            </Card.Body>
-          </Card>
+                    );
+                  })}
+                </div>
+              </Card.Body>
+            </Card>
+          }
         </div>
 
         {/* Right Column */}
         <div className="space-y-6">
           {/* Quick Actions */}
-          <Card className="border-0  border-t-4 border-red-500">
+          <Card className="border-0  border-t-4 border-blue-500">
             <Card.Header className="bg-white border-0 py-4 flex items-center gap-2">
-              <FiTarget className="text-red-500" />
+              <FiTarget className="text-blue-500" />
               <h5 className="font-bold text-gray-800">Quick Actions</h5>
             </Card.Header>
             <Card.Body className="pt-0 space-y-3">
               {[
-                { icon: <FaUserPlus />, label: "Create User", variant: "outline-danger", event: () => { setStep(1); setShowModal(true) } },
-                { icon: <FaBook />, label: "Create Program", variant: "outline-danger", event: () => { setStep(2); setShowModal(true) } },
-                { icon: <FaBullhorn />, label: "Send Announcement", variant: "outline-danger" },
+                { icon: <FaUserPlus />, label: "Create User", variant: "outline-primary", event: () => { setStep(1); setShowModal(true) } },
+                { icon: <FaBullhorn />, label: "Send Announcement", variant: "outline-primary" },
               ].map((action, idx) => (
-                <Button 
-                  onClick={action.event} 
-                  key={idx} 
-                  variant={action.variant} 
+                <Button
+                  onClick={action.event}
+                  key={idx}
+                  variant={action.variant}
                   className="w-full d-flex align-items-center gap-3 p-3 text-left border text-slate-700 hover:!text-slate-50 hover: transition-all"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
-                    <span className="text-red-600">{action.icon}</span>
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <span className="text-blue-600">{action.icon}</span>
                   </div>
                   <span className="font-medium">{action.label}</span>
                 </Button>
@@ -217,32 +317,7 @@ export default function AdminDashboardOverview({
             </Card.Body>
           </Card>
 
-          {/* Upcoming Events */}
-          <Card className="border-0  border-t-4 border-amber-500">
-            <Card.Header className="bg-white border-0 py-4 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <FaCalendarAlt className="text-red-500" />
-                <h5 className="font-bold text-gray-800">Upcoming Events</h5>
-              </div>
-              <Badge bg="light" text="dark" className="border border-gray-200">{upcomingEvents.length} Events</Badge>
-            </Card.Header>
-            <Card.Body className="pt-0 space-y-4">
-              {upcomingEvents.map((event, idx) => (
-                <div key={idx} className={`p-3 border rounded-lg transition-colors ${event.priority === 'high' ? 'border-red-200 bg-red-50/50 hover:bg-red-50' : 'border-amber-100 bg-amber-50/30 hover:bg-amber-50'}`}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-gray-800">{event.title}</p>
-                      <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">
-                        <FiClock className={event.priority === 'high' ? 'text-red-500' : 'text-amber-500'} />
-                        {event.date}
-                      </p>
-                    </div>
-                    <Badge bg={event.priority === 'high' ? "danger" : "warning"}>{event.type}</Badge>
-                  </div>
-                </div>
-              ))}
-            </Card.Body>
-          </Card>
+
         </div>
       </div>
     </main>

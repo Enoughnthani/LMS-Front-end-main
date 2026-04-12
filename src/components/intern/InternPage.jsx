@@ -11,8 +11,8 @@ const RoleSwitcher = ({ currentRole, availableRoles, onRoleChange }) => {
       </Dropdown.Toggle>
       <Dropdown.Menu>
         {availableRoles.map(role => (
-          <Dropdown.Item 
-            key={role} 
+          <Dropdown.Item
+            key={role}
             onClick={() => onRoleChange(role)}
             active={role === currentRole}
           >
@@ -26,21 +26,19 @@ const RoleSwitcher = ({ currentRole, availableRoles, onRoleChange }) => {
 
 const InternPage = () => {
   const [key, setKey] = useState('reports');
-  
+
   // Mock user data
   const [user] = useState({
     name: 'Alex Morgan',
     availableRoles: ['Facilitator', 'Assessor', 'Moderator', 'Mentor', 'Intern']
   });
-  
+
   const [currentRole, setCurrentRole] = useState('Intern');
 
   const handleRoleChange = (newRole) => {
     setCurrentRole(newRole);
-    // In a real app, you would navigate to the new role page
-    console.log(`Switching to ${newRole} role`);
   };
-  
+
   const recentReports = [
     { id: 1, week: 'Week 1', submitted: '2024-03-01', status: 'approved', feedback: 'Good work!' },
     { id: 2, week: 'Week 2', submitted: '2024-03-08', status: 'pending', feedback: null },
@@ -68,7 +66,7 @@ const InternPage = () => {
           <h1 className="h3 mb-0 text-gray-800">Welcome, {user.name}</h1>
           <p className="text-muted small mb-0">Intern Dashboard</p>
         </div>
-        <RoleSwitcher 
+        <RoleSwitcher
           currentRole={currentRole}
           availableRoles={user.availableRoles}
           onRoleChange={handleRoleChange}
@@ -154,8 +152,8 @@ const InternPage = () => {
                   <Card.Body>
                     <h6 className="text-muted small">Total Hours</h6>
                     <p className="h4 mb-3">{progressData.totalHours}/{progressData.requiredHours}</p>
-                    <ProgressBar 
-                      now={(progressData.totalHours / progressData.requiredHours) * 100} 
+                    <ProgressBar
+                      now={(progressData.totalHours / progressData.requiredHours) * 100}
                       variant="primary"
                     />
                   </Card.Body>
@@ -166,8 +164,8 @@ const InternPage = () => {
                   <Card.Body>
                     <h6 className="text-muted small">Reports Submitted</h6>
                     <p className="h4 mb-3">{progressData.reportsSubmitted}/{progressData.totalReports}</p>
-                    <ProgressBar 
-                      now={(progressData.reportsSubmitted / progressData.totalReports) * 100} 
+                    <ProgressBar
+                      now={(progressData.reportsSubmitted / progressData.totalReports) * 100}
                       variant="info"
                     />
                   </Card.Body>
@@ -178,8 +176,8 @@ const InternPage = () => {
                   <Card.Body>
                     <h6 className="text-muted small">Competencies Achieved</h6>
                     <p className="h4 mb-3">{progressData.competenciesAchieved}/{progressData.totalCompetencies}</p>
-                    <ProgressBar 
-                      now={(progressData.competenciesAchieved / progressData.totalCompetencies) * 100} 
+                    <ProgressBar
+                      now={(progressData.competenciesAchieved / progressData.totalCompetencies) * 100}
                       variant="success"
                     />
                   </Card.Body>
