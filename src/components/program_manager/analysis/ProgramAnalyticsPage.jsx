@@ -289,7 +289,7 @@ const ProgramAnalyticsPage = () => {
 
     // Role distribution
     const roleData = program.programStaff?.reduce((acc, staff) => {
-      staff.assignedRoles?.forEach(role => {
+      staff.assignedRoles[program.id]?.forEach(role => {
         acc[role] = (acc[role] || 0) + 1;
       });
       return acc;

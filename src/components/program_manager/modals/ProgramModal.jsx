@@ -276,7 +276,7 @@ export default function ProgramModal({
                             onClick={onHide}
                             disabled={loading}
                         >
-                            Cancel
+                            Close
                         </Button>
                         <Button
                             variant="success"

@@ -13,6 +13,9 @@ import InternalError from "@/exceptions/InternalError.jsx";
 import PageNotFound from "@/exceptions/PageNotFound.jsx";
 import { ROUTES } from "@/utils/routes";
 import { Container } from "react-bootstrap";
+import AdminActivities from "./components/admin/activities/AdminActivities";
+import HelpPage from "./components/admin/Help/HelpPage";
+import NotificationPage from "./components/admin/notifications/NotificationPage";
 import AdminDashboardOverview from "./components/admin/overview/AdminDashboardOverview";
 import Login from "./components/auth/Login";
 import Layout from "./components/common/Layout";
@@ -23,12 +26,11 @@ import MentorLearnerView from "./components/mentor/view/MentorLearnerView";
 import MentorProgramView from "./components/mentor/view/MentorProgramView";
 import ModeratorLearnerView from "./components/moderator/view/ModeratorLearnerView";
 import ModeratorProgramView from "./components/moderator/view/ModeratorProgramView";
+import ProgramAnalyticsPage from "./components/program_manager/analysis/ProgramAnalyticsPage";
 import ProfilePage from "./components/program_manager/profile/ProfilePage";
 import ProgramManagement from "./components/program_manager/ProgramManagement";
-import ProgramAnalyticsPage from "./components/program_manager/tabs/ProgramAnalyticsPage";
 import ProgramView from "./components/program_manager/view/ProgramView";
 import StaffDashboard from "./components/staff/StaffDashboard";
-import AdminActivities from "./components/admin/activities/AdminActivities";
 
 export default function App() {
 
@@ -128,6 +130,8 @@ export default function App() {
           <Route path="users" element={<UserManagement />} />
           <Route path="settings" element={<AdminProfile />} />
           <Route path="activities" element={<AdminActivities />} />
+          <Route path="notifications" element={<NotificationPage />} />
+          <Route path="help" element={<HelpPage />} />
         </Route>
 
       </Routes>

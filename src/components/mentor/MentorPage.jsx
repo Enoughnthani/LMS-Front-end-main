@@ -20,6 +20,7 @@ import {
   Settings
 } from "lucide-react"
 import { Button, Dropdown, Badge, Spinner } from "react-bootstrap"
+import LogoImage from '../common/LogoImage';
 
 export default function MentorDashboard() {
   const [selectedProgram, setSelectedProgram] = useState(null);
@@ -105,21 +106,11 @@ export default function MentorDashboard() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-slate-200 ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-2 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center ">
-                <Magnet className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg p-0 m-0 font-bold text-slate-900 leading-tight">
-                  Mentor Dashboard
-                </h1>
-                <p className="text-xs p-0 m-0 text-slate-500">
-                  Welcome back, <span className="text-indigo-600 font-medium">{user?.firstname} {user?.lastname}</span>
-                </p>
-              </div>
+              <LogoImage />
             </div>
 
             {/* Right: Actions */}
@@ -174,36 +165,38 @@ export default function MentorDashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
+        <div className="mb-4 bg-red-600 rounded text-gray-600 p-2 bg-white border">
+          <h1 className="text-lg p-0 m-0 font-bold leading-tight">
+            Mentor Dashboard
+          </h1>
+          <p className="text-xs p-0 m-0 text-slate-500">
+            Welcome back, <span className="text-gray-600 font-medium">{user?.firstname} {user?.lastname}</span>
+          </p>
+        </div>
 
-        <div className="relative rounded-lg  p-8 text-white mb-8 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-700"></div>
+        <div className="relative rounded-lg bg-white text-gray-600 p-8 mb-8 overflow-hidden">
+          <div className="absolute inset-0 "></div>
           <div className="relative z-10">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Mentor Dashboard</h1>
-            <p className="text-lg text-blue-100">
+            <p className="text-lg ">
               Manage learner reports, review programmes, and track progress.
             </p>
 
 
             <div className="flex flex-wrap gap-6 mt-6">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <Briefcase className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{programs.length}</p>
-                  <p className="text-xs text-blue-100">Programmes</p>
-                </div>
+              <div className="flex flex-col p-2 rounded border justify-center items-center gap-2">
+                <Briefcase className="w-5 h-5 " />
+                <p className="text-2xl font-bold">{programs.length}</p>
+                <p className="text-xs ">Programmes</p>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <Users className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">
-                    {programs.reduce((acc, p) => acc + (p.enrolledCount || 0), 0)}
-                  </p>
-                  <p className="text-xs text-blue-100">Total Learners</p>
-                </div>
+
+
+              <div className="flex flex-col border p-2 rounded items-center gap-2">
+                <Users className="w-5 h-5 " />
+
+                <p className="text-2xl font-bold">
+                  {programs.reduce((acc, p) => acc + (p.enrolledCount || 0), 0)}
+                </p>
+                <p className="text-xs">Total Interns</p>
               </div>
             </div>
           </div>

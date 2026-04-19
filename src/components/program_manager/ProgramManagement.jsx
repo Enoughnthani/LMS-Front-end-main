@@ -34,6 +34,7 @@ import ProgramModal from './modals/ProgramModal';
 import ViewProgramModal from './modals/ViewModalProgram';
 import { LogOut, Settings, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import LogoImage from '../common/LogoImage';
 
 export default function ProgramManagement() {
     const [programs, setPrograms] = useState([]);
@@ -301,8 +302,9 @@ export default function ProgramManagement() {
                         {/* Left Section: Title & Welcome */}
                         <div className="space-y-3">
                             <div>
+                                <LogoImage />
+
                                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-2">
-                                    <FaBook className="text-green-600" />
                                     Programs Management
                                 </h1>
                                 <p className="text-gray-600 mt-1 text-sm md:text-base">

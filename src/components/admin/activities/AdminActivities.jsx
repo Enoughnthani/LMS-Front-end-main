@@ -128,26 +128,25 @@ const AdminActivities = () => {
     <div className="h-screen overflow-y-auto bg-slate-50 flex-1">
       {/* Header */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button 
-                onClick={() => navigate(-1)} 
-                className="flex items-center gap-2  border-slate-200 text-slate-600" 
+        <div className="max-w-7xl mx-auto px-6 py-2">
+          <div className="flex flex-col gap-2 justify-between">
+            <div>
+              <Button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2  border-slate-200 text-slate-600"
                 variant="outline-secondary"
               >
                 <ArrowLeft size={18} />
                 <span className="text-sm font-medium">Back</span>
               </Button>
+            </div>
+
+            <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-xl font-semibold text-slate-900">Activity Log</h1>
                 <p className="text-sm text-slate-500">Track all user activities and system events</p>
               </div>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all text-sm font-medium">
-              <FiDownload size={16} />
-              Export
-            </button>
           </div>
         </div>
       </div>
@@ -222,8 +221,8 @@ const AdminActivities = () => {
                   key={action}
                   onClick={() => setFilterAction(action)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterAction === action
-                      ? 'bg-slate-900 text-white shadow-sm'
-                      : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
                     }`}
                 >
                   {action === 'ALL' ? 'All' : action.charAt(0) + action.slice(1).toLowerCase()}
@@ -304,8 +303,8 @@ const AdminActivities = () => {
                       key={page}
                       onClick={() => setCurrentPage(page)}
                       className={`min-w-[36px] px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${currentPage === page
-                          ? 'bg-slate-900 text-white'
-                          : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                         }`}
                     >
                       {page}

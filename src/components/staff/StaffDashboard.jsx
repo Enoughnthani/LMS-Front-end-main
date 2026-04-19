@@ -2,32 +2,29 @@ import { apiFetch } from "@/api/api"
 import { useAuth } from "@/contexts/AuthContext"
 import { BASE_URL, ME } from "@/utils/apiEndpoint"
 import {
-    LayoutDashboard,
-    ClipboardCheck,
-    Users,
+    ArrowRight,
+    Bell,
+    BookOpen,
     Calendar,
+    CheckCircle2,
+    ChevronDown,
+    ClipboardCheck,
+    Clock,
+    FileText,
     GraduationCap,
+    LayoutDashboard,
     LogOut,
     MapPin,
-    ChevronDown,
-    Bell,
     Search,
-    ArrowRight,
-    FileText,
-    Clock,
-    CheckCircle2,
-    UserCheck,
-    BookOpen,
-    Award,
-    Briefcase,
-    User,
+    Settings,
     User2,
-    Settings2,
-    Settings
+    UserCheck,
+    Users
 } from "lucide-react"
-import { useEffect, useState, useMemo } from "react"
-import { Button, Card, Dropdown, Badge, Spinner } from "react-bootstrap"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useEffect, useMemo, useState } from "react"
+import { Badge, Button, Card, Dropdown, Spinner } from "react-bootstrap"
+import { useLocation, useNavigate } from "react-router-dom"
+import LogoImage from "../common/LogoImage"
 
 // Role configuration object
 const ROLE_CONFIG = {
@@ -193,21 +190,10 @@ export default function StaffDashboard() {
         <div className="min-h-screen bg-slate-50">
             {/* Header */}
             <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        {/* Left: Logo & Title */}
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-md">
-                                <HeaderIcon className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-lg p-0 m-0 font-bold text-slate-900 leading-tight">
-                                    {config.title}
-                                </h1>
-                                <p className="text-xs p-0 m-0 text-slate-500">
-                                    Welcome back, <span className="text-indigo-600 font-medium">{user?.firstname} {user?.lastname}</span>
-                                </p>
-                            </div>
+                <div className="mx-auto">
+                    <div className="flex mx-4 justify-between items-center h-16">
+                        <div className="flex items-center  gap-3">
+                            <LogoImage />
                         </div>
 
                         {/* Right: Actions */}
@@ -294,7 +280,17 @@ export default function StaffDashboard() {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Compact Stats */}
+
+                <div className="mb-4 bg-red-600 rounded p-2 bg-white border">
+                    <h1 className="text-lg p-0 m-0 font-bold text-slate-900 leading-tight">
+                        {config.title}
+                    </h1>
+                    <p className="text-xs p-0 m-0 text-slate-500">
+                        Welcome back, <span className="text-indigo-600 font-medium">{user?.firstname} {user?.lastname}</span>
+                    </p>
+                </div>
+
+
                 <div className="grid grid-cols-3 gap-3 mb-6">
                     {config.stats.map((stat) => {
                         const colors = COLOR_MAP[stat.color]

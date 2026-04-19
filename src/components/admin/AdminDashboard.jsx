@@ -19,6 +19,7 @@ import {
 } from "react-icons/fa";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTopLoader } from "../../contexts/TopLoaderContext";
+import LogoImage from "../common/LogoImage";
 
 export default function AdminDashboard() {
   const [step, setStep] = useState(0);
@@ -50,52 +51,37 @@ export default function AdminDashboard() {
     <div className="min-h-screen flex text-gray-800">
 
       <aside className="hidden md:block min-w-[16rem] bg-white shadow-md border !border-gray-200 py-6 px-1.5 ">
-        <div className="flex mx-2 items-center gap-3">
-          <div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
-              B & T LMS
-            </h2>
-            <p className="text-xs text-gray-500">Learnerships & Internships</p>
-          </div>
+        <div className="flex mx-2 items-center gap-3 pb-4">
+         <LogoImage/>
         </div>
 
-        <ul>
+        <ul className="p-1">
           {[
-            { icon: <FaChartLine />, label: "Dashboard", alert: true, path: '/user/admin' },
-            { icon: <FaUsers />, label: "Users", alert: false, path: '/user/admin/users' },
-            { icon: <FaCog />, label: "Settings", alert: false, path: '/user/admin/settings' },
-            { icon: <FaBell />, label: "Notifications", alert: false, path: '/user/admin/notifications' },
-            { icon: <FaQuestionCircle />, label: "Help", alert: false, path: '/user/admin/help' },
-          ].map((item, idx) => (
-            <li
-              onClick={() => navigate(item.path)}
-              key={idx}
-              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${location.pathname === item.path
-                ? "bg-gradient-to-r from-red-50 to-red-50/50 text-red-600 border-l-4 border-red-600 font-semibold"
-                : "text-gray-600 hover:bg-red-50/30 hover:text-red-600"
-                }`}
-            >
-              <span className="text-lg">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-              {item.alert && <div className="ml-auto w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>}
-            </li>
-          ))}
+            { icon: <FaChartLine />, label: "Dashboard", path: '/user/admin' },
+            { icon: <FaUsers />, label: "Users", path: '/user/admin/users' },
+            { icon: <FaCog />, label: "Settings", path: '/user/admin/settings' },
+            { icon: <FaBell />, label: "Notifications", path: '/user/admin/notifications' },
+            { icon: <FaQuestionCircle />, label: "Help", path: '/user/admin/help' },
+            { icon: <LogOut />, label: "Logout", event: logout },
+          ].map((item, idx) => {
+            const isLogout = item.label === "Logout";
+            return (
+              <li
+                onClick={() => { isLogout ? item.event() : navigate(item.path) }}
+                key={idx}
+                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${isLogout
+                  ? "text-red-600 hover:bg-red-50 hover:text-red-700 mt-0 border-t border-gray-200"
+                  : location.pathname === item.path
+                    ? "bg-gradient-to-r from-green-50 to-green-50/50 text-green-800 border-l-4 border-green-800 font-semibold"
+                    : "text-gray-600 hover:bg-green-50/30 hover:text-green-800"
+                  }`}
+              >
+                <span className="text-lg">{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </li>
+            );
+          })}
         </ul>
-
-        <Button
-          onClick={logout}
-          variant="outline-danger"
-          className="flex items-center justify-center mt-4 w-full gap-2 
-             border-red-300 hover:border-red-600 
-             text-red-600 hover:text-white 
-             hover:bg-gradient-to-r hover:from-red-600 hover:to-red-700
-             transition-all duration-300 
-             py-2.5 rounded-lg font-medium
-              hover:shadow-md"
-        >
-          <LogOut className="group-hover:scale-110 transition-transform" />
-          Logout
-        </Button>
       </aside>
 
       <Outlet />
