@@ -514,6 +514,7 @@ export default function UserManagement() {
                         className="accent-rose-600"
                         checked={bulkSelection.includes(user.id)}
                         onChange={() => handleBulkSelect(user.id)}
+                        onClick={(e) => e.stopPropagation()}
                       />
                     </td>
                     <td className="px-4 py-4 align-middle">

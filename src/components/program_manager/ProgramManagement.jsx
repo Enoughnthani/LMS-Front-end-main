@@ -339,30 +339,39 @@ export default function ProgramManagement() {
                     </div>
 
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                         {categories.map((category, idx) => {
                             const count = programs.filter(p => p.category === category.id).length;
                             const activeCount = programs.filter(p => p.category === category.id && p.status === 'active').length;
                             return (
-                                <Card key={idx} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                                    <Card.Body className="p-4">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-sm text-gray-600">{category.label}</p>
-                                                <h3 className="text-2xl font-bold text-gray-800">{count}</h3>
-                                            </div>
-                                            <div className={`w-12 h-12 bg-${category.color}-100 rounded-lg flex items-center justify-center`}>
-                                                <div className={`text-${category.color}-600 text-xl`}>
+                                <Card
+                                    key={idx}
+                                    className="border-0 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+                                >
+                                    <Card.Body className="p-3">
+                                        <div className="flex flex-col items-center justify-center space-y-1.5">
+                                            {/* Icon */}
+                                            <div className={`w-10 h-10 bg-${category.color}-100 rounded-xl flex items-center justify-center`}>
+                                                <div className={`text-${category.color}-600 text-lg`}>
                                                     {getCategoryIcon(category.id)}
                                                 </div>
                                             </div>
+
+                                            {/* Category Label */}
+                                            <p className="text-xs font-medium text-gray-500 text-center">
+                                                {category.label}
+                                            </p>
+
+                                            {/* Count */}
+                                            <h3 className="text-xl font-bold text-gray-800">
+                                                {count}
+                                            </h3>
+
+                                            {/* Active count */}
+                                            <p className="text-[10px] text-gray-400">
+                                                {activeCount} active
+                                            </p>
                                         </div>
-                                        <ProgressBar
-                                            now={(activeCount / count) * 100 || 0}
-                                            className="mt-2 h-1.5"
-                                            variant={category.color}
-                                        />
-                                        <p className="text-xs text-gray-500 mt-1">{activeCount} active</p>
                                     </Card.Body>
                                 </Card>
                             );

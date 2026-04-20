@@ -77,6 +77,14 @@ const RoleManagerModal = ({ show, setShow, user }) => {
     }
   }
 
+  useEffect(() => {
+    let t = setTimeout(() => {
+      setResponse(null)
+    }, 5000);
+
+    return () => clearTimeout(t)
+  }, [response])
+
   return (
     <Modal
       show={show}

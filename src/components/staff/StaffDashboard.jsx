@@ -232,37 +232,39 @@ export default function StaffDashboard() {
                             </div>
 
                             {/* Role Switcher */}
-                            <Dropdown>
-                                <Dropdown.Toggle
-                                    variant="light"
-                                    className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition-all font-medium text-slate-700 text-sm"
-                                >
-                                    <span className="w-1.5 h-1.5 rounded-sm bg-teal-500"></span>
-                                    {currentRole}
-                                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                                </Dropdown.Toggle>
+                            {getUserRoles().length > 1 &&
+                                <Dropdown>
+                                    <Dropdown.Toggle
+                                        variant="light"
+                                        className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition-all font-medium text-slate-700 text-sm"
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-sm bg-teal-500"></span>
+                                        {currentRole}
+                                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                                    </Dropdown.Toggle>
 
-                                <Dropdown.Menu className="mt-2 p-1.5 border border-slate-200 shadow-lg rounded-lg bg-white min-w-[180px]">
-                                    <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                        Switch Role
-                                    </div>
-                                    {getUserRoles().map((role) => (
-                                        <Dropdown.Item
-                                            key={role}
-                                            eventKey={role}
-                                            onClick={() => handleSwitchRole(role)}
-                                            className={`rounded-md px-3 py-2 flex items-center gap-3 transition-colors text-sm ${currentRole === role
-                                                ? "bg-indigo-50 text-indigo-700 font-semibold"
-                                                : "text-slate-700 hover:bg-slate-50"
-                                                }`}
-                                        >
-                                            <div className={`w-1.5 h-1.5 rounded-sm ${currentRole === role ? 'bg-indigo-500' : 'bg-slate-300'}`} />
-                                            {role}
-                                            {currentRole === role && <span className="ml-auto text-[10px] bg-indigo-100 px-2 py-0.5 rounded text-indigo-700">Active</span>}
-                                        </Dropdown.Item>
-                                    ))}
-                                </Dropdown.Menu>
-                            </Dropdown>
+                                    <Dropdown.Menu className="mt-2 p-1.5 border border-slate-200 shadow-lg rounded-lg bg-white min-w-[180px]">
+                                        <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                            Switch Role
+                                        </div>
+                                        {getUserRoles().map((role) => (
+                                            <Dropdown.Item
+                                                key={role}
+                                                eventKey={role}
+                                                onClick={() => handleSwitchRole(role)}
+                                                className={`rounded-md px-3 py-2 flex items-center gap-3 transition-colors text-sm ${currentRole === role
+                                                    ? "bg-indigo-50 text-indigo-700 font-semibold"
+                                                    : "text-slate-700 hover:bg-slate-50"
+                                                    }`}
+                                            >
+                                                <div className={`w-1.5 h-1.5 rounded-sm ${currentRole === role ? 'bg-indigo-500' : 'bg-slate-300'}`} />
+                                                {role}
+                                                {currentRole === role && <span className="ml-auto text-[10px] bg-indigo-100 px-2 py-0.5 rounded text-indigo-700">Active</span>}
+                                            </Dropdown.Item>
+                                        ))}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                                }
 
                             {/* Logout */}
                             <Button
