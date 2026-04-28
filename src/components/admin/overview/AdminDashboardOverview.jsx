@@ -1,11 +1,13 @@
 // components/AdminDashboardOverview.jsx
-import { Badge, Button, Card, Placeholder, ProgressBar } from "react-bootstrap";
+import { apiFetch } from "@/api/api";
+import { ADMIN } from "@/utils/apiEndpoint";
+import { useEffect, useState } from "react";
+import { Badge, Button, Card, Placeholder } from "react-bootstrap";
 import {
   FaBan,
   FaBook,
   FaBriefcase,
   FaBullhorn,
-  FaCalendarAlt,
   FaCertificate,
   FaChalkboardTeacher,
   FaCheckCircle,
@@ -16,13 +18,7 @@ import {
   FaUserPlus,
   FaUsers
 } from "react-icons/fa";
-import { FiClock, FiTarget, FiTrendingUp } from "react-icons/fi";
-import { GiAchievement } from "react-icons/gi";
-import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
-import { apiFetch } from "@/api/api";
-import { ADMIN } from "@/utils/apiEndpoint";
-import { User } from "lucide-react";
+import { FiClock, FiTarget } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboardOverview({

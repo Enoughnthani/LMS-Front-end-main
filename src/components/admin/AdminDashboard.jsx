@@ -2,19 +2,13 @@
 import { apiFetch } from "@/api/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { GETUSERS } from "@/utils/apiEndpoint";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "react-bootstrap";
 import {
   FaBell,
-  FaBook,
   FaChartLine,
   FaCog,
-  FaDatabase,
-  FaHistory,
   FaQuestionCircle,
-  FaShieldAlt,
-  FaUserPlus,
   FaUsers
 } from "react-icons/fa";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -22,29 +16,10 @@ import { useTopLoader } from "../../contexts/TopLoaderContext";
 import LogoImage from "../common/LogoImage";
 
 export default function AdminDashboard() {
-  const [step, setStep] = useState(0);
-  const [response, setResponse] = useState(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { start, complete, visible } = useTopLoader();
-  const [users, setUsers] = useState(null);
   const location = useLocation()
 
-  async function getUsers() {
-    try {
-      let result = await apiFetch(GETUSERS);
-      setUsers(result);
-    } catch (error) {
-      setResponse({ success: false, message: "An error has accoured while fetching data" });
-    } finally {
-      complete();
-    }
-  }
-
-  useEffect(() => {
-    start();
-    getUsers();
-  }, []);
 
 
   return (

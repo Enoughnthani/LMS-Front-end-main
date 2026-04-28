@@ -10,7 +10,7 @@ export const LearnerDashboard = () => {
   const { user, setUser, logout } = useAuth()
   const navigate = useNavigate()
 
-  // Mock enrolled modules data with images
+
   const initialModules = [
     {
       id: 1,
@@ -143,7 +143,7 @@ export const LearnerDashboard = () => {
 
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-800">My Courses</h2>
-            <button className="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">View All →</button>
+            <button className="bg-transparent text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">View All →</button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">

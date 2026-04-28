@@ -34,7 +34,7 @@ import ProgramLayout from "./components/program_manager/layout/ProgramLayout";
 import ProgramManagementOverview from "./components/program_manager/overview/ProgramManagementOverview";
 import ProgramManagerProfile from "./components/program_manager/profile/ProgramManagerProfile";
 import ProfilePage from "./components/common/ProfilePage";
-import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
+import  CourseViewPage  from "./components/learner/course_view/CourseViewPage";
 
 export default function App() {
 
@@ -60,7 +60,13 @@ export default function App() {
         >
           <Route index element={<LearnerDashboard />} />
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="course-view/:id" element={<CourseViewPage />} />
+          <Route path="course-view/:id" element={<CourseViewPage />} >
+            <Route index element={<CourseContentPage />} />
+             
+            
+            <Route path="assessment" element={<CourseAssessmentPage/>} />
+            <Route path="discussion" element={<CourseDiscussionPage/>} />
+          </Route>
         </Route>
 
         <Route path={ROUTES.FACILITATOR} element={
