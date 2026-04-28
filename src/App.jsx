@@ -27,10 +27,14 @@ import MentorProgramView from "./components/mentor/view/MentorProgramView";
 import ModeratorLearnerView from "./components/moderator/view/ModeratorLearnerView";
 import ModeratorProgramView from "./components/moderator/view/ModeratorProgramView";
 import ProgramAnalyticsPage from "./components/program_manager/analysis/ProgramAnalyticsPage";
-import ProfilePage from "./components/program_manager/profile/ProfilePage";
 import ProgramManagement from "./components/program_manager/ProgramManagement";
 import ProgramView from "./components/program_manager/view/ProgramView";
 import StaffDashboard from "./components/staff/StaffDashboard";
+import ProgramLayout from "./components/program_manager/layout/ProgramLayout";
+import ProgramManagementOverview from "./components/program_manager/overview/ProgramManagementOverview";
+import ProgramManagerProfile from "./components/program_manager/profile/ProgramManagerProfile";
+import ProfilePage from "./components/common/ProfilePage";
+import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
 
 export default function App() {
 
@@ -55,6 +59,8 @@ export default function App() {
           }
         >
           <Route index element={<LearnerDashboard />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="course-view/:id" element={<CourseViewPage />} />
         </Route>
 
         <Route path={ROUTES.FACILITATOR} element={
@@ -112,13 +118,14 @@ export default function App() {
 
         <Route path={ROUTES.PROGRAM_MANGER} element={
           <ProtectedRoute role="PROGRAM_MANAGER">
-            <Layout />
+            <ProgramLayout />
           </ProtectedRoute>
         }>
-          <Route index element={<ProgramManagement />} />
-          <Route path="program/:id" element={<ProgramView />} />
+          <Route index element={<ProgramManagementOverview />} />
+          <Route path="programs" element={<ProgramManagement />} />
+          <Route path="programs/:id" element={<ProgramView />} />
           <Route path="program/analytics/:id" element={<ProgramAnalyticsPage />} />
-          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile" element={<ProgramManagerProfile />} />
         </Route>
 
         <Route path={ROUTES.ADMIN} element={

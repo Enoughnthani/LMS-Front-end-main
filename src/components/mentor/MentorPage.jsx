@@ -174,33 +174,7 @@ export default function MentorDashboard() {
           </p>
         </div>
 
-        <div className="relative rounded-lg bg-white text-gray-600 p-8 mb-8 overflow-hidden">
-          <div className="absolute inset-0 "></div>
-          <div className="relative z-10">
-            <p className="text-lg ">
-              Manage learner reports, review programmes, and track progress.
-            </p>
-
-
-            <div className="flex flex-wrap gap-6 mt-6">
-              <div className="flex flex-col p-2 rounded border justify-center items-center gap-2">
-                <Briefcase className="w-5 h-5 " />
-                <p className="text-2xl font-bold">{programs.length}</p>
-                <p className="text-xs ">Programmes</p>
-              </div>
-
-
-              <div className="flex flex-col border p-2 rounded items-center gap-2">
-                <Users className="w-5 h-5 " />
-
-                <p className="text-2xl font-bold">
-                  {programs.reduce((acc, p) => acc + (p.enrolledCount || 0), 0)}
-                </p>
-                <p className="text-xs">Total Interns</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        
 
         {/* Programmes Section */}
         <div className="bg-white rounded-lg  p-6">

@@ -182,11 +182,15 @@ export default function AdminDashboardOverview({
                   <h5 className="font-bold text-gray-800">Recent Activity</h5>
                   <Badge bg="primary" pill className="px-2">{getNewActivitiesCount()} New</Badge>
                 </div>
-                <Button
-                  onClick={() => navigate('activities', { state: { activities: activities } })}
-                  variant="link" size="sm" className="text-blue-600 p-0 font-medium">
-                  View All →
-                </Button>
+
+                {activities?.length > 3 &&
+                  <Button
+                    onClick={() => navigate('activities', { state: { activities: activities } })}
+                    variant="link" size="sm" className="text-blue-600 p-0 font-medium">
+                    View All →
+                  </Button>
+                }
+
               </Card.Header>
               <Card.Body className="pt-0">
                 <div className="space-y-4">

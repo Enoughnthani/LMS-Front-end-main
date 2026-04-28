@@ -348,7 +348,7 @@ const ProgramAnalyticsPage = () => {
 
   if (!program) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+      <div className="overflow-y-auto h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <AuroraBackground />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -377,7 +377,7 @@ const ProgramAnalyticsPage = () => {
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
 
   return (
-    <div className="min-h-screen  relative">
+    <div className="overflow-y-auto h-screen  relative">
 
 
       {/* Enhanced Header with Glass Effect */}

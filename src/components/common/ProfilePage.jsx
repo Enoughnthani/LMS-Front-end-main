@@ -15,7 +15,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-export default function AdminProfile() {
+export default function ProfilePage() {
     const { user } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -84,8 +84,19 @@ export default function AdminProfile() {
     };
 
     return (
-        <div className="w-full overflow-y-auto bg-gradient-to-b from-slate-50 to-white h-screen p-2">
-            <div className="max-w-5xl mx-auto">
+        <div className="w-full overflow-y-auto bg-gradient-to-b from-slate-50 to-white h-screen p-6">
+            <div className="max-w-4xl mx-auto">
+                {/* Back Button - Outside Card */}
+                <button
+                    onClick={()=>navigate(-1)}
+                    className="group p-2 rounded  flex items-center gap-2 mb-4 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 group-hover:border-gray-300 group-hover:shadow-sm transition-all">
+                        <FaArrowLeft size={12} />
+                    </div>
+                    <span className="text-sm font-medium">Back</span>
+                </button>
+
                 {/* Header Card */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
                     <div className="p-6 border-b border-gray-200">

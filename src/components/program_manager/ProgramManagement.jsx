@@ -302,8 +302,6 @@ export default function ProgramManagement() {
                         {/* Left Section: Title & Welcome */}
                         <div className="space-y-3">
                             <div>
-                                <LogoImage />
-
                                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-2">
                                     Programs Management
                                 </h1>
@@ -311,71 +309,30 @@ export default function ProgramManagement() {
                                     Manage short courses, learnership programs, and internships
                                 </p>
                             </div>
-
-                            <div className="bg-gray-50 px-4 py-2 rounded-lg inline-block">
-                                <span className="text-gray-700 font-medium">
-                                    Welcome {user?.firstname} {user?.lastname}
-                                </span>
-                            </div>
                         </div>
 
-                        {/* Right Section: User Actions */}
-                        <div className="flex items-center gap-3 md:justify-end">
-                            <div
-                                onClick={() => navigate('profile')}
-                                className="cursor-pointer relative border border-gray-300 p-2.5 flex justify-center items-center rounded-full bg-white hover:bg-gray-50 transition-colors cursor-pointer">
-                                <User className="text-gray-600" size={20} />
-                                <Settings className='animate-spin absolute bottom-0 right-0' size={15} />
-                            </div>
-
+                        <div className="flex gap-3 ms-auto">
                             <Button
-                                onClick={logout}
-                                variant='outline-danger'
-                                className="flex items-center justify-center gap-2 ">
-                                <LogOut size={18} />
-                                Logout
+                                variant="outline-secondary"
+                                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                                className="flex items-center gap-2"
+                            >
+                                {viewMode === 'grid' ? 'List View' : 'Grid View'}
+                            </Button>
+                            <Button
+                                variant="outline-secondary"
+                                onClick={() => setShowFiltersOffcanvas(true)}
+                                className="flex items-center gap-2"
+                            >
+                                <FaFilter /> Filters
+                            </Button>
+                            <Button
+                                onClick={handleAddProgram}
+                                className="flex items-center gap-2"
+                            >
+                                <FaPlus /> Add Program
                             </Button>
                         </div>
-                    </div>
-
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {categories.map((category, idx) => {
-                            const count = programs.filter(p => p.category === category.id).length;
-                            const activeCount = programs.filter(p => p.category === category.id && p.status === 'active').length;
-                            return (
-                                <Card
-                                    key={idx}
-                                    className="border-0 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
-                                >
-                                    <Card.Body className="p-3">
-                                        <div className="flex flex-col items-center justify-center space-y-1.5">
-                                            {/* Icon */}
-                                            <div className={`w-10 h-10 bg-${category.color}-100 rounded-xl flex items-center justify-center`}>
-                                                <div className={`text-${category.color}-600 text-lg`}>
-                                                    {getCategoryIcon(category.id)}
-                                                </div>
-                                            </div>
-
-                                            {/* Category Label */}
-                                            <p className="text-xs font-medium text-gray-500 text-center">
-                                                {category.label}
-                                            </p>
-
-                                            {/* Count */}
-                                            <h3 className="text-xl font-bold text-gray-800">
-                                                {count}
-                                            </h3>
-
-                                            {/* Active count */}
-                                            <p className="text-[10px] text-gray-400">
-                                                {activeCount} active
-                                            </p>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            );
-                        })}
                     </div>
                 </div>
 
@@ -392,28 +349,7 @@ export default function ProgramManagement() {
                 )}
 
                 <div className='my-2 flex'>
-                    <div className="flex gap-3 ms-auto">
-                        <Button
-                            variant="outline-secondary"
-                            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                            className="flex items-center gap-2"
-                        >
-                            {viewMode === 'grid' ? 'List View' : 'Grid View'}
-                        </Button>
-                        <Button
-                            variant="outline-secondary"
-                            onClick={() => setShowFiltersOffcanvas(true)}
-                            className="flex items-center gap-2"
-                        >
-                            <FaFilter /> Filters
-                        </Button>
-                        <Button
-                            onClick={handleAddProgram}
-                            className="flex items-center gap-2"
-                        >
-                            <FaPlus /> Add Program
-                        </Button>
-                    </div>
+
                 </div>
 
                 {/* Search Bar */}
@@ -528,7 +464,7 @@ export default function ProgramManagement() {
                                     </thead>
                                     <tbody>
                                         {currentPrograms.map(program => (
-                                            <tr onClick={() => navigate(`program/${program?.id}`)} key={program.id} className="cursor-pointer hover:bg-red-50/30 border-b border-gray-100">
+                                            <tr onClick={() => navigate(`${program?.id}`)} key={program.id} className="cursor-pointer hover:bg-red-50/30 border-b border-gray-100">
                                                 <td className="p-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`w-10 h-10 bg-${getCategoryColor(program.category)}-100 rounded-md flex items-center justify-center`}>
