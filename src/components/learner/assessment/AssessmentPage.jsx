@@ -1,7 +1,11 @@
 import { Accordion, Badge, Button } from 'react-bootstrap';
 import { FaClipboardList, FaFlask, FaChartLine, FaGraduationCap, FaCalendarAlt, FaCheckCircle, FaRegCircle } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 export default function AssessmentPage() {
+
+  const navigate = useNavigate()
+
   const assessments = {
     formative: [
       { id: 1, unitStandard: '14933', title: "React Basics", status: "completed", dueDate: '2026-03-10', score: "85%" },
@@ -45,7 +49,7 @@ export default function AssessmentPage() {
             {item.score}
           </Badge>
         ) : (
-          <Button size="sm" variant="primary" className="rounded-md w-full p-0">
+          <Button onClick={()=>navigate(`${item?.title}`)} size="sm" variant="primary" className="rounded-md w-full p-0">
             Start
           </Button>
         )}

@@ -19,26 +19,29 @@ import NotificationPage from "./components/admin/notifications/NotificationPage"
 import AdminDashboardOverview from "./components/admin/overview/AdminDashboardOverview";
 import Login from "./components/auth/Login";
 import Layout from "./components/common/Layout";
+import ProfilePage from "./components/common/ProfilePage";
 import FacilitatorProgramView from "./components/facilitator/view/FacilitatorProgramView";
 import InternPage from "./components/intern/InternPage";
+import CourseAnnouncementPage from "./components/learner/anouncement/CourseAnnouncementPage";
+import AssessmentDetailPage from "./components/learner/assessment/AssessmentDetailPage";
+import AssessmentPage from "./components/learner/assessment/AssessmentPage";
+import ContentPage from "./components/learner/content/ContentPage";
+import PreviewPage from "./components/learner/content/preview/PreviewPage";
+import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
+import DiscussionPage from "./components/learner/discussion/DiscussionPage";
 import MentorPage from "./components/mentor/MentorPage";
-import MentorLearnerView from "./components/mentor/view/MentorLearnerView";
+import InternsList from "./components/mentor/view/InternsList";
 import MentorProgramView from "./components/mentor/view/MentorProgramView";
 import ModeratorLearnerView from "./components/moderator/view/ModeratorLearnerView";
 import ModeratorProgramView from "./components/moderator/view/ModeratorProgramView";
 import ProgramAnalyticsPage from "./components/program_manager/analysis/ProgramAnalyticsPage";
-import ProgramManagement from "./components/program_manager/ProgramManagement";
-import ProgramView from "./components/program_manager/view/ProgramView";
-import StaffDashboard from "./components/staff/StaffDashboard";
 import ProgramLayout from "./components/program_manager/layout/ProgramLayout";
 import ProgramManagementOverview from "./components/program_manager/overview/ProgramManagementOverview";
 import ProgramManagerProfile from "./components/program_manager/profile/ProgramManagerProfile";
-import ProfilePage from "./components/common/ProfilePage";
-import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
-import ContentPage from "./components/learner/content/ContentPage";
-import AssessmentPage from "./components/learner/assessment/AssessmentPage";
-import DiscussionPage from "./components/learner/discussion/DiscussionPage";
-import CourseAnnouncementPage from "./components/learner/anouncement/CourseAnnouncementPage";
+import ProgramManagement from "./components/program_manager/ProgramManagement";
+import ProgramView from "./components/program_manager/view/ProgramView";
+import StaffDashboard from "./components/staff/StaffDashboard";
+import InternReports from "./components/mentor/view/InternReports";
 
 export default function App() {
 
@@ -66,10 +69,12 @@ export default function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="course-view/:id" element={<CourseViewPage />} >
 
-            <Route index element={<CourseAnnouncementPage/>}/>
-            <Route path="content" element={<ContentPage/>}/>
-            <Route path="assessment" element={<AssessmentPage/>}/>
-            <Route path="discussion" element={<DiscussionPage/>}/>
+            <Route index element={<CourseAnnouncementPage />} />
+            <Route path="content" element={<ContentPage />} />
+            <Route path="content/preview/:name" element={<PreviewPage />} />
+            <Route path="assessment" element={<AssessmentPage />} />
+            <Route path="assessment/:title" element={<AssessmentDetailPage />} />
+            <Route path="discussion" element={<DiscussionPage />} />
 
           </Route>
         </Route>
@@ -122,8 +127,12 @@ export default function App() {
         } >
 
           <Route index element={<MentorPage />} />
-          <Route path="program-view/:id" element={<MentorProgramView />} />
-          <Route path="intern-view/:internId" element={<MentorLearnerView />} />
+          <Route path="program-view/:id" element={<MentorProgramView />} >
+            <Route index element={<InternsList />} />
+            <Route path="intern/:id" element={<InternReports />} />
+          </Route>
+
+
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 

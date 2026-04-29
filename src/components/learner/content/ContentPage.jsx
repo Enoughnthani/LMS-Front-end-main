@@ -1,11 +1,13 @@
 import { FaFolder, FaFileAlt, FaArrowLeft, FaDownload, FaEye, FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint, FaVideo, FaExternalLinkAlt } from 'react-icons/fa';
 import { useState } from 'react';
-import { Card } from 'react-bootstrap';
-import { Folder, FolderOpen } from 'lucide-react';
+import { Button, Card } from 'react-bootstrap';
+import { ArrowLeft, ArrowRight, ChevronRight, Download, Eye, Folder, FolderOpen } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function ContentPage() {
   const [currentPath, setCurrentPath] = useState([]);
   const [currentFolder, setCurrentFolder] = useState(null);
+  const navigate = useNavigate()
 
   // Folder structure with resources
   const fileSystem = {
@@ -126,22 +128,21 @@ export default function ContentPage() {
         <div className="flex items-center gap-2 mb-6 text-sm">
           <button
             onClick={handleBackClick}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${!currentFolder
+            className={`bg-transparent flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${!currentFolder
               ? 'opacity-50 cursor-not-allowed text-gray-400'
               : 'hover:bg-gray-200 text-gray-700'
               }`}
             disabled={!currentFolder}
           >
-            <FaArrowLeft size={14} /> Back
+            <ArrowLeft size={19} /> Back
           </button>
 
           <div className="flex items-center gap-2 text-gray-600">
-            <span className="text-gray-400">📍</span>
-            <span className="font-medium">Content Library</span>
+            <span className="font-medium text-gray-500">Content Library</span>
             {currentPath.map((path, index) => (
               <span key={index} className="flex items-center gap-2">
-                <span className="text-gray-400">›</span>
-                <span className="text-gray-700">{path}</span>
+                <ChevronRight size={19} />
+                <span className="text-gray-500 font-medium">{path}</span>
               </span>
             ))}
           </div>
@@ -154,7 +155,7 @@ export default function ContentPage() {
             {content.map((folder) => (
               <div className='cursor-pointer'>
                 <div
-                  onClick={()=>handleFolderClick(folder)}
+                  onClick={() => handleFolderClick(folder)}
                   className='flex items-center rounded flex-col'
                 >
                   <FaFolder size={100} className='text-amber-300' />
@@ -200,23 +201,32 @@ export default function ContentPage() {
                       </div>
                     </div>
 
-                   
+
                     <div className="flex gap-2">
                       {item.type === 'link' ? (
-                        <button onClick={()=>window.open('https://www.wikipedia.org/','_blank')} className="px-4 py-2 bg-cyan-50 text-cyan-600 rounded-xl text-sm font-medium hover:bg-cyan-100 transition flex items-center gap-2">
+                        <button onClick={() => window.open('https://www.wikipedia.org/', '_blank')} className="px-4 py-2 bg-cyan-50 text-cyan-600 rounded-xl text-sm font-medium hover:bg-cyan-100 transition flex items-center gap-2">
                           <FaExternalLinkAlt size={12} /> Visit
                         </button>
-                      ) : item.downloadable ? (
-                        <button
-                          onClick={(e) => handleDownload(item, e)}
-                          className="px-4 py-2 bg-green-50 text-green-600 rounded-xl text-sm font-medium hover:bg-green-100 transition flex items-center gap-2"
-                        >
-                          <FaDownload size={12} /> Download
-                        </button>
                       ) : (
-                        <button className="px-4 py-2 bg-purple-50 text-purple-600 rounded-xl text-sm font-medium hover:bg-purple-100 transition flex items-center gap-2">
-                          <FaEye size={12} /> Preview
-                        </button>
+                        <div className='grid grid-cols-2 gap-2'>
+                          <Button
+                            onClick={(e) => handleDownload(item, e)}
+                            variant='success'
+                            size='sm'
+                            className='font-semibold flex items-center gap-1'
+                          >
+                            <Download size={18} /> Download
+                          </Button>
+
+                          <Button
+                            size='sm'
+                            className="text-white font-semibold flex items-center gap-1"
+                            variant='warning'
+                            onClick={() => navigate(`preview/${item?.name}`, { state: { file: item } })}
+                          >
+                            <Eye size={18} /> Preview
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>
