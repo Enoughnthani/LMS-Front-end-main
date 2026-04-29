@@ -10,7 +10,7 @@ export const LearnerDashboard = () => {
   const { user, setUser, logout } = useAuth()
   const navigate = useNavigate()
 
-  // Mock enrolled modules data with images
+
   const initialModules = [
     {
       id: 1,

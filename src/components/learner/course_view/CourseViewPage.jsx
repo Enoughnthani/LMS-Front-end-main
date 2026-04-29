@@ -51,40 +51,78 @@ export const CourseViewPage = () => {
 
 
     return (
-        <div className="min-h-screen flex text-gray-800">
+        <div className="min-h-screen bg-slate-50">
+            {/* Skip to main content link */}
+            <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:p-3 focus:rounded-lg focus:shadow-lg">
+                Skip to main content
+            </a>
 
-            <aside className="hidden md:block min-w-[16rem] bg-white shadow-md border !border-gray-200 py-6 px-1.5 ">
-                <div className="flex mx-2 items-center gap-3 pb-4">
-                    <LogoImage onClick={()=>navigate('/user/learner')} />
+            {/* Course Title Bar */}
+            <div className="bg-white border-b border-slate-200 py-4 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-full">
+                    <h1 className="text-xl font-semibold text-slate-800">WORK-INTEGRATED LEARNING (2026/1)</h1>
                 </div>
+            </div>
 
-                <ul className="p-1">
-                    {[
-                        { icon: <Home />, label: "Home", path: '/user/learner' },
-                        { icon: <Megaphone />, label: "Anoucement", path: '' },
-                        { icon: <FaBook />, label: "Content", path: 'content' },
-                        { icon: <FaClipboardList />, label: "Assessment", path: 'assessment' },
-                        { icon: <FaComments />, label: "Discussion", path: 'discussion' },
-                    ].map((item, idx) => {
-                        const isLogout = item.label === "Logout";
-                        return (
-                            <li
-                                onClick={() => { isLogout ? item.event() : navigate(item.path) }}
-                                key={idx}
-                                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${isLogout
-                                    ? "text-red-600 hover:bg-red-50 hover:text-red-700 mt-0 border-t border-gray-200"
-                                    : location.pathname === item.path
-                                        ? "bg-gradient-to-r from-green-50 to-green-50/50 text-green-800 border-l-4 border-green-800 font-semibold"
-                                        : "text-gray-600 hover:bg-green-50/30 hover:text-green-800"
+            {/* Main Layout with Sidebar */}
+            <div className="flex flex-col lg:flex-row">
+                {/* Sidebar Navigation */}
+                <aside className="lg:w-64 bg-white border-r border-slate-200 min-h-screen">
+                    <nav className="py-4">
+                        {/* Course Home */}
+                        <div className="px-3 mb-2">
+                            <button
+                                onClick={() => setActiveSection('home')}
+                                className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeSection === 'home'
+                                    ? 'bg-slate-100 text-slate-900'
+                                    : 'text-slate-600 hover:bg-slate-50'
                                     }`}
                             >
-                                <span className="text-lg">{item.icon}</span>
-                                <span className="font-medium">{item.label}</span>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </aside>
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                                Course Home
+                            </button>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-slate-100 my-3"></div>
+
+                        {/* Main Navigation Items */}
+                        <div className="px-3 space-y-1">
+                            {navItems.map((item) => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setActiveSection(item.id)}
+                                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeSection === item.id
+                                        ? 'bg-slate-100 text-slate-900'
+                                        : 'text-slate-600 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    {item.icon}
+                                    {item.name}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Divider for Course Tools */}
+                        <div className="border-t border-slate-100 my-3">
+                            <div className="px-3 pt-3">
+                                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Course Tools</h3>
+                            </div>
+                        </div>
+
+                        {/* More Tools */}
+                        <div className="px-3 space-y-1">
+                            <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-md transition-colors">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                                More
+                            </button>
+                        </div>
+                    </nav>
+                </aside>
 
             <Outlet />
         </div>
