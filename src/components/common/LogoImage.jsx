@@ -1,11 +1,11 @@
 import React from 'react'
 import logoImage from "@/resources/logo.png"
 
-export default function LogoImage() {
+export default function LogoImage({onClick}) {
 
 
     return (
-        <div>
+        <div onClick={onClick} className='cursor-pointer'>
             <img src={logoImage} className='object-contain' />
         </div>
     )

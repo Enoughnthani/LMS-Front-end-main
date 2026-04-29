@@ -294,8 +294,8 @@ export default function ProgramManagement() {
     };
 
     return (
-        <div className="h-screen w-full  p-4 md:p-6">
-            <div className="max-w-7xl mx-auto">
+        <div className="h-screen w-full p-2">
+            <div className="max-w-7xl mx-auto h-full flex flex-col">
                 {/* Header */}
                 <div className="mb-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-start">
@@ -438,9 +438,9 @@ export default function ProgramManagement() {
                     </div>
                 ) : (
                     // List View
-                    <Card className="border-0 shadow-sm ">
+                    <Card className="border-0 shadow-sm p-1 rounded-lg">
                         <Card.Body className="p-0">
-                            <div className="">
+                            <div>
                                 <Table hover className="mb-0">
                                     <thead className="bg-gray-50">
                                         <tr>
@@ -511,7 +511,7 @@ export default function ProgramManagement() {
                                 </Table>
                             </div>
 
-                            {/* Empty State */}
+                        
                             {filteredPrograms.length === 0 && (
                                 <div className="text-center py-12">
                                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -530,7 +530,7 @@ export default function ProgramManagement() {
 
                 {/* Pagination */}
                 {filteredPrograms.length > 0 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between py-6 gap-4">
+                    <div className="mt-auto flex flex-col sm:flex-row items-center justify-between py-6 gap-4">
                         <div className="text-sm text-gray-600">
                             Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredPrograms.length)} of {filteredPrograms.length} programs
                         </div>

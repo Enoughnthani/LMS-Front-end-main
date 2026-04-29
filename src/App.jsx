@@ -35,6 +35,10 @@ import ProgramManagementOverview from "./components/program_manager/overview/Pro
 import ProgramManagerProfile from "./components/program_manager/profile/ProgramManagerProfile";
 import ProfilePage from "./components/common/ProfilePage";
 import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
+import ContentPage from "./components/learner/content/ContentPage";
+import AssessmentPage from "./components/learner/assessment/AssessmentPage";
+import DiscussionPage from "./components/learner/discussion/DiscussionPage";
+import CourseAnnouncementPage from "./components/learner/anouncement/CourseAnnouncementPage";
 
 export default function App() {
 
@@ -60,7 +64,14 @@ export default function App() {
         >
           <Route index element={<LearnerDashboard />} />
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="course-view/:id" element={<CourseViewPage />} />
+          <Route path="course-view/:id" element={<CourseViewPage />} >
+
+            <Route index element={<CourseAnnouncementPage/>}/>
+            <Route path="content" element={<ContentPage/>}/>
+            <Route path="assessment" element={<AssessmentPage/>}/>
+            <Route path="discussion" element={<DiscussionPage/>}/>
+
+          </Route>
         </Route>
 
         <Route path={ROUTES.FACILITATOR} element={
