@@ -34,6 +34,7 @@ export default function EnrollmentModal({ show, setShow, program }) {
             if (result?.payload) {
                 setUsers(result.payload);
                 setFilteredLearners(result.payload);
+                console.log(result.payload)
             }
         } catch {
             setResponse({ success: false, message: "Failed to fetch users" });

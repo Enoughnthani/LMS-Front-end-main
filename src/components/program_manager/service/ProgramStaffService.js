@@ -12,8 +12,6 @@ export const handleStaffOperation = async (endpoint, { programId, userId, role, 
     const method = isAssigned ? 'DELETE' : 'POST';
     const action = isAssigned ? '/remove' : '/assign';
 
-    console.log(isAssigned)
-
     try {
         return apiFetch(`${endpoint}${action}`, {
             method: method,
@@ -29,7 +27,6 @@ export const handleStaffOperation = async (endpoint, { programId, userId, role, 
 };
 
 export const isAssigned = (user, program, selectedRole) => {
-    console.log(user)
     return user?.assignedRoles[program.id]?.includes(selectedRole.toUpperCase());
 
 }

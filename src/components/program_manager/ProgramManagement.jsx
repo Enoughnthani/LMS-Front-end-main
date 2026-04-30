@@ -8,7 +8,6 @@ import {
     Form,
     InputGroup,
     Pagination,
-    Popover,
     ProgressBar,
     Table
 } from 'react-bootstrap';
@@ -24,17 +23,13 @@ import {
     FaUserTie
 } from 'react-icons/fa';
 
-import { categories, statuses } from './utils/constants';
 import { apiFetch } from '@/api/api';
 import { PROGRAMS } from '@/utils/apiEndpoint';
 import { useNavigate } from 'react-router-dom';
 import DeleteProgramModal from './modals/DeleteProgramModal';
 import ProgramFiltersOffcanvas from './modals/ProgramFiltersOffcanvas';
-import ProgramModal from './modals/ProgramModal';
 import ViewProgramModal from './modals/ViewModalProgram';
-import { LogOut, Settings, User } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import LogoImage from '../common/LogoImage';
+import { categories, statuses } from './utils/constants';
 
 export default function ProgramManagement() {
     const [programs, setPrograms] = useState([]);
@@ -42,37 +37,29 @@ export default function ProgramManagement() {
     const [showViewModal, setShowViewModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showFiltersOffcanvas, setShowFiltersOffcanvas] = useState(false);
-    const [editingProgram, setEditingProgram] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [selectedType, setSelectedType] = useState('all');
     const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
     const [currentPage, setCurrentPage] = useState(1);
-    const [loading, setLoading] = useState(false);
     const [alert, setAlert] = useState({ show: false, message: '', variant: 'success' });
-    const [viewMode, setViewMode] = useState('list');
-    const [selectedProgram, setSelectedProgram] = useState(null);
-    const [showModal, setShowModal] = useState(false)
-    const [respose, setResponse] = useState(null);
-    const { user, logout } = useAuth()
-    const navigate = useNavigate();
-
-    const [programForm, setProgramForm] = useState({
-        name: '',
-        category: '',
-        type: '',
-        description: '',
-        capacity: 30,
-        status: 'NOT_STARTED',
-        startDate: '',
-        endDate: '',
-        location: '',
+    const [viewMode, setViewMode] = useState(() => {
+        return localStorage.getItem("viewMode") || "list";
     });
+    const [selectedProgram, setSelectedProgram] = useState(null);
+    const [respose, setResponse] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         getPrograms();
     }, [])
+
+    const toggleViewMode = () => {
+        const newMode = viewMode === "grid" ? "list" : "grid";
+        setViewMode(newMode);
+        localStorage.setItem("viewMode", newMode);
+    };
 
     const getPrograms = async () => {
         try {
@@ -85,7 +72,6 @@ export default function ProgramManagement() {
 
     const itemsPerPage = viewMode === 'grid' ? 8 : 10;
 
-    // Filter and search programs
     useEffect(() => {
         let result = programs;
 
@@ -137,68 +123,20 @@ export default function ProgramManagement() {
     };
 
     const handleAddProgram = () => {
-        resetForm();
-        setEditingProgram(null);
-        setShowModal(true);
+        navigate('new')
     };
 
     const handleEditProgram = (program) => {
-        setProgramForm({ ...program });
-        setEditingProgram(program);
-        setShowModal(true);
+        navigate(`${program?.id}/edit`, { state: { program } })
     };
 
-    const resetForm = () => {
-        setProgramForm({
-            name: '',
-            category: '',
-            type: '',
-            description: '',
-            capacity: 30,
-            status: 'NOT_STARTED',
-            startDate: '',
-            endDate: '',
-            location: ''
-        });
-    };
 
-    const handleSaveProgram = () => {
-        setLoading(true);
-
-        setTimeout(() => {
-            if (editingProgram) {
-                setPrograms(prev => prev.map(program =>
-                    program.id === editingProgram.id ? { ...programForm, id: editingProgram.id } : program
-                ));
-                showAlert('Program updated successfully!', 'success');
-            } else {
-                const newProgram = {
-                    ...programForm,
-                    id: programs.length + 1,
-                    learners: 0,
-                    rating: 0,
-                    enrolled: false
-                };
-                setPrograms(prev => [...prev, newProgram]);
-                showAlert('Program created successfully!', 'success');
-            }
-
-            setLoading(false);
-            setShowModal(false);
-        }, 500);
-    };
 
     const handleDeleteProgram = (program) => {
         setSelectedProgram(program);
         setShowDeleteModal(true);
     };
 
-
-
-    const showAlert = (message, variant) => {
-        setAlert({ show: true, message, variant });
-        setTimeout(() => setAlert({ show: false, message: '', variant: 'success' }), 3000);
-    };
 
     const getCategoryIcon = (category) => {
         const cat = categories.find(c => c.id === category);
@@ -234,17 +172,9 @@ export default function ProgramManagement() {
         );
     };
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        });
-    };
-
     const getActions = (program) => {
         return (
-            <Dropdown>
+            <Dropdown onClick={(e) => e.stopPropagation()} className="ms-auto">
                 <Dropdown.Toggle
                     size="lg"
                     className="w-full z-[9999] bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-2 py-1 rounded-md inline-flex items-center justify-around"
@@ -256,7 +186,7 @@ export default function ProgramManagement() {
                     {[
                         {
                             label: "VIEW",
-                            event: () => { navigate(`program/${program?.id}`) },
+                            event: () => { navigate(`${program?.id}`) },
                             style: "text-gray-800 hover:bg-gray-700",
                         },
 
@@ -286,6 +216,10 @@ export default function ProgramManagement() {
         )
     }
 
+    function handleProgramClick(program) {
+        navigate(`${program?.id}`)
+    }
+
     const resetFilters = () => {
         setSelectedCategory('all');
         setSelectedStatus('all');
@@ -294,7 +228,7 @@ export default function ProgramManagement() {
     };
 
     return (
-        <div className="h-screen w-full p-2">
+        <div className="h-screen w-full p-3">
             <div className="max-w-7xl mx-auto h-full flex flex-col">
                 {/* Header */}
                 <div className="mb-8">
@@ -314,7 +248,7 @@ export default function ProgramManagement() {
                         <div className="flex gap-3 ms-auto">
                             <Button
                                 variant="outline-secondary"
-                                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                                onClick={toggleViewMode}
                                 className="flex items-center gap-2"
                             >
                                 {viewMode === 'grid' ? 'List View' : 'Grid View'}
@@ -382,7 +316,7 @@ export default function ProgramManagement() {
                     // Grid View
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-6">
                         {currentPrograms.map(program => (
-                            <Card key={program.id} className="border-0 shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
+                            <Card onClick={() => handleProgramClick(program)} key={program.id} className="cursor-pointer border-0 shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
                                 <Card.Body className="p-4">
                                     <div className="flex justify-between items-start mb-3">
                                         <div className={`w-10 h-10 bg-${getCategoryColor(program.category)}-100 rounded-lg flex items-center justify-center`}>
@@ -397,7 +331,7 @@ export default function ProgramManagement() {
                                     <div className="space-y-3 mb-4">
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="text-gray-500 flex items-center gap-1">
-                                                <FaUsers className="text-xs" /> Learners
+                                                <FaUsers className="text-xs" /> {program?.category === 'INTERNSHIP' ? 'Interns' : 'Learners'}
                                             </span>
                                             <span className="font-medium">
                                                 {program.enrolledCount}/{program.capacity}
@@ -430,7 +364,9 @@ export default function ProgramManagement() {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    {getActions(program)}
+                                    <div className='w-32 me-auto'>
+                                        {getActions(program)}
+                                    </div>
 
                                 </Card.Body>
                             </Card>
@@ -464,7 +400,7 @@ export default function ProgramManagement() {
                                     </thead>
                                     <tbody>
                                         {currentPrograms.map(program => (
-                                            <tr onClick={() => navigate(`${program?.id}`)} key={program.id} className="cursor-pointer hover:bg-red-50/30 border-b border-gray-100">
+                                            <tr onClick={() => handleProgramClick(program)} key={program.id} className="cursor-pointer hover:bg-red-50/30 border-b border-gray-100">
                                                 <td className="p-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`w-10 h-10 bg-${getCategoryColor(program.category)}-100 rounded-md flex items-center justify-center`}>
@@ -511,7 +447,7 @@ export default function ProgramManagement() {
                                 </Table>
                             </div>
 
-                        
+
                             {filteredPrograms.length === 0 && (
                                 <div className="text-center py-12">
                                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -556,18 +492,6 @@ export default function ProgramManagement() {
                     </div>
                 )}
             </div>
-
-            {/* Modals and Offcanvas */}
-            <ProgramModal
-                show={showModal}
-                onHide={() => setShowModal(false)}
-                programForm={programForm}
-                setProgramForm={setProgramForm}
-                editingProgram={editingProgram}
-                onSave={handleSaveProgram}
-                getPrograms={getPrograms}
-                resetForm={resetForm}
-            />
 
             <ViewProgramModal
                 show={showViewModal}

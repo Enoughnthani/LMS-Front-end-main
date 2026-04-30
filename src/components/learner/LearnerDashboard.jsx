@@ -7,9 +7,10 @@ import { useNavigate } from 'react-router-dom';
 
 export const LearnerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("")
-  const { user, setUser, logout } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
+  console.log(user)
 
   const initialModules = [
     {
@@ -133,6 +134,7 @@ export const LearnerDashboard = () => {
         <div>
 
           <div className='bg-white mb-4 p-3 rounded  font-bold text-muted'>
+            <h4 className='text-black font-bold'>Learner Dashboard</h4>
             <p className='m-0'>Welcome {user?.firstname} {user?.lastname}</p>
           </div>
 

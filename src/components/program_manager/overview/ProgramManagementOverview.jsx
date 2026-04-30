@@ -149,7 +149,7 @@ export default function ProgramManagementOverview() {
             </p>
           </div>
           <button
-            onClick={() => navigate('/programs/new')}
+            onClick={() => navigate('programs/new')}
             className="inline-flex items-center gap-2 bg-white text-gray-900 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-100 transition-colors duration-200"
           >
             <FaPlus className="text-xs" />

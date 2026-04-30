@@ -42,6 +42,8 @@ import ProgramManagement from "./components/program_manager/ProgramManagement";
 import ProgramView from "./components/program_manager/view/ProgramView";
 import StaffDashboard from "./components/staff/StaffDashboard";
 import InternReports from "./components/mentor/view/InternReports";
+import ProgramOverview from "./components/mentor/overview/ProgramOverview";
+import ProgramForm from "./components/program_manager/program_form/ProgramForm";
 
 export default function App() {
 
@@ -127,9 +129,10 @@ export default function App() {
         } >
 
           <Route index element={<MentorPage />} />
-          <Route path="program-view/:id" element={<MentorProgramView />} >
-            <Route index element={<InternsList />} />
-            <Route path="intern/:id" element={<InternReports />} />
+          <Route path="program-view/:programId" element={<MentorProgramView />} >
+            <Route index element={<ProgramOverview />} />
+            <Route path='interns' element={<InternsList />} />
+            <Route path="interns/:internId" element={<InternReports />} />
           </Route>
 
 
@@ -146,6 +149,8 @@ export default function App() {
           <Route path="programs/:id" element={<ProgramView />} />
           <Route path="program/analytics/:id" element={<ProgramAnalyticsPage />} />
           <Route path="profile" element={<ProgramManagerProfile />} />
+          <Route path="programs/new" element={<ProgramForm />} />
+          <Route path="programs/:id/edit" element={<ProgramForm />} />
         </Route>
 
         <Route path={ROUTES.ADMIN} element={

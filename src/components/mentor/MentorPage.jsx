@@ -1,25 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { useNavigate } from 'react-router-dom';
+import { apiFetch } from "@/api/api";
 import { useAuth } from '@/contexts/AuthContext';
-import { apiFetch } from "@/api/api"
-import { ME, BASE_URL } from "@/utils/apiEndpoint"
+import { BASE_URL, ME } from "@/utils/apiEndpoint";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import {
-  Users,
-  LogOut,
   Bell,
-  Search,
-  ChevronDown,
-  UserCircle,
-  MapPin,
-  Calendar,
   Briefcase,
+  Calendar,
+  ChevronDown,
   GraduationCap,
-  Magnet,
+  LogOut,
+  MapPin,
+  Search,
+  Settings,
   User2,
-  Settings
-} from "lucide-react"
-import { Button, Dropdown, Badge, Spinner } from "react-bootstrap"
+  Users
+} from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Badge, Button, Spinner } from "react-bootstrap";
+import { useNavigate } from 'react-router-dom';
 import LogoImage from '../common/LogoImage';
 
 export default function MentorDashboard() {
@@ -174,7 +172,7 @@ export default function MentorDashboard() {
           </p>
         </div>
 
-        
+
 
         {/* Programmes Section */}
         <div className="bg-white rounded-lg  p-6">
@@ -216,7 +214,9 @@ export default function MentorDashboard() {
               {filteredPrograms.map((program) => (
                 <div
                   key={program.id}
-                  onClick={() => navigate(`program-view/${program.id}`, { state: { program: program } })}
+                  onClick={() => navigate(`program-view/${program.id}`, {
+                    state: { program }
+                  })}
                   className={`group relative rounded-3xl overflow-hidden transition-all duration-300 cursor-pointer  hover:scale-[1.02] ${selectedProgram?.id === program.id ? "ring-4 ring-blue-500" : ""}`}
                   style={{ height: '320px' }}
                 >
