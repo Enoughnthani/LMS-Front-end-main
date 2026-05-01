@@ -7,11 +7,14 @@ import {
   FaEdit,
   FaTrash,
   FaUser,
-  FaUserPlus
+  FaUserPlus,
+  FaUsers,
+  FaUserTag,
+  FaSyncAlt,
+  FaPlusCircle
 } from 'react-icons/fa';
 import {
   FiActivity, FiChevronLeft, FiChevronRight,
-  FiDownload,
   FiSearch
 } from 'react-icons/fi';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -24,52 +27,93 @@ const AdminActivities = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAction, setFilterAction] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const navigate = useNavigate()
 
-  // Unified action styles - using only slate/gray + single blue accent
   const getActionStyles = (actionType) => {
-    const baseClasses = {
-      iconBg: 'bg-slate-100',
-      badge: 'bg-slate-100 text-slate-700 border border-slate-200'
-    };
-
     switch (actionType?.toUpperCase()) {
       case 'ACTIVATED':
         return {
-          ...baseClasses,
-          icon: <FaCheckCircle className="text-blue-600" size={16} />,
-          badgeText: 'Activated'
+          bg: 'bg-emerald-50',
+          border: 'border-emerald-200 hover:border-emerald-400',
+          text: 'text-emerald-700',
+          iconBg: 'bg-emerald-100',
+          icon: <FaCheckCircle className="text-emerald-500 text-lg" />,
+          badge: 'bg-emerald-100 text-emerald-700'
         };
       case 'DEACTIVATED':
         return {
-          ...baseClasses,
-          icon: <FaBan className="text-slate-500" size={16} />,
-          badgeText: 'Deactivated'
-        };
-      case 'UPDATED':
-        return {
-          ...baseClasses,
-          icon: <FaEdit className="text-blue-600" size={16} />,
-          badgeText: 'Updated'
+          bg: 'bg-rose-50',
+          border: 'border-rose-200 hover:border-rose-400',
+          text: 'text-rose-700',
+          iconBg: 'bg-rose-100',
+          icon: <FaBan className="text-rose-500 text-lg" />,
+          badge: 'bg-rose-100 text-rose-700'
         };
       case 'CREATED':
         return {
-          ...baseClasses,
-          icon: <FaUserPlus className="text-blue-600" size={16} />,
-          badgeText: 'Created'
+          bg: 'bg-green-50',
+          border: 'border-green-200 hover:border-green-400',
+          text: 'text-green-700',
+          iconBg: 'bg-green-100',
+          icon: <FaPlusCircle className="text-green-500 text-lg" />,
+          badge: 'bg-green-100 text-green-700'
         };
       case 'DELETED':
+      case 'BULK_DELETE':
         return {
-          ...baseClasses,
-          icon: <FaTrash className="text-slate-500" size={16} />,
-          badgeText: 'Deleted'
+          bg: 'bg-red-50',
+          border: 'border-red-200 hover:border-red-400',
+          text: 'text-red-700',
+          iconBg: 'bg-red-100',
+          icon: <FaTrash className="text-red-500 text-lg" />,
+          badge: 'bg-red-100 text-red-700'
+        };
+      case 'UPDATED':
+        return {
+          bg: 'bg-amber-50',
+          border: 'border-amber-200 hover:border-amber-400',
+          text: 'text-amber-700',
+          iconBg: 'bg-amber-100',
+          icon: <FaEdit className="text-amber-500 text-lg" />,
+          badge: 'bg-amber-100 text-amber-700'
+        };
+      case 'ROLE_ASSIGN':
+      case 'BULK_ROLE_ASSIGN':
+        return {
+          bg: 'bg-purple-50',
+          border: 'border-purple-200 hover:border-purple-400',
+          text: 'text-purple-700',
+          iconBg: 'bg-purple-100',
+          icon: <FaUserTag className="text-purple-500 text-lg" />,
+          badge: 'bg-purple-100 text-purple-700'
+        };
+      case 'BULK_CREATE':
+        return {
+          bg: 'bg-teal-50',
+          border: 'border-teal-200 hover:border-teal-400',
+          text: 'text-teal-700',
+          iconBg: 'bg-teal-100',
+          icon: <FaUsers className="text-teal-500 text-lg" />,
+          badge: 'bg-teal-100 text-teal-700'
+        };
+      case 'BULK_STATUS_UPDATE':
+        return {
+          bg: 'bg-indigo-50',
+          border: 'border-indigo-200 hover:border-indigo-400',
+          text: 'text-indigo-700',
+          iconBg: 'bg-indigo-100',
+          icon: <FaSyncAlt className="text-indigo-500 text-lg" />,
+          badge: 'bg-indigo-100 text-indigo-700'
         };
       default:
         return {
-          ...baseClasses,
-          icon: <FaUser className="text-slate-400" size={16} />,
-          badgeText: actionType || 'Unknown'
+          bg: 'bg-gray-50',
+          border: 'border-gray-200 hover:border-gray-400',
+          text: 'text-gray-700',
+          iconBg: 'bg-gray-100',
+          icon: <FaUser className="text-gray-500 text-lg" />,
+          badge: 'bg-gray-100 text-gray-700'
         };
     }
   };
@@ -104,6 +148,7 @@ const AdminActivities = () => {
   // Filter and search activities
   const filteredActivities = activities.filter(activity => {
     const matchesSearch = activity.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activity.message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       `${activity.firstname} ${activity.lastname}`.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesAction = filterAction === 'ALL' || activity.actionType === filterAction;
     return matchesSearch && matchesAction;
@@ -119,218 +164,218 @@ const AdminActivities = () => {
   // Statistics
   const stats = {
     total: activities.length,
+    created: activities.filter(a => a.actionType === 'CREATED').length,
+    updated: activities.filter(a => a.actionType === 'UPDATED').length,
+    deleted: activities.filter(a => a.actionType === 'DELETED' || a.actionType === 'BULK_DELETE').length,
     activated: activities.filter(a => a.actionType === 'ACTIVATED').length,
     deactivated: activities.filter(a => a.actionType === 'DEACTIVATED').length,
-    updated: activities.filter(a => a.actionType === 'UPDATED').length
+    roleAssignments: activities.filter(a => a.actionType === 'ROLE_ASSIGN' || a.actionType === 'BULK_ROLE_ASSIGN').length
   };
 
+  // Get unique action types for filters
+  const actionTypes = ['ALL', ...new Set(activities.map(a => a.actionType))];
+
   return (
-    <div className="h-screen overflow-y-auto bg-slate-50 flex-1">
+    <div className="h-screen overflow-y-auto bg-gray-50 flex-1">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-6 py-2">
-          <div className="flex flex-col gap-2 justify-between">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex flex-col gap-3">
             <div>
               <Button
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-2  border-slate-200 text-slate-600"
+                className="flex items-center gap-2 border-gray-200 text-gray-600"
                 variant="outline-secondary"
+                size="sm"
               >
-                <ArrowLeft size={18} />
+                <ArrowLeft size={16} />
                 <span className="text-sm font-medium">Back</span>
               </Button>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-xl font-semibold text-slate-900">Activity Log</h1>
-                <p className="text-sm text-slate-500">Track all user activities and system events</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Activity Log</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Track all user activities and system events</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-6">
-        {/* Stats Cards - Clean minimal style */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Activities</p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">{stats.total}</p>
-              </div>
-              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                <FiActivity className="text-slate-600" size={20} />
-              </div>
-            </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+          <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm">
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total</p>
+            <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Activations</p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">{stats.activated}</p>
-              </div>
-              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                <FaCheckCircle className="text-blue-600" size={20} />
-              </div>
-            </div>
+          <div className="bg-white rounded-xl p-3 border border-green-200 shadow-sm bg-green-50/30">
+            <p className="text-xs font-medium text-green-600 uppercase tracking-wide">Created</p>
+            <p className="text-2xl font-bold text-green-700">{stats.created}</p>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Deactivations</p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">{stats.deactivated}</p>
-              </div>
-              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                <FaBan className="text-slate-500" size={20} />
-              </div>
-            </div>
+          <div className="bg-white rounded-xl p-3 border border-amber-200 shadow-sm bg-amber-50/30">
+            <p className="text-xs font-medium text-amber-600 uppercase tracking-wide">Updated</p>
+            <p className="text-2xl font-bold text-amber-700">{stats.updated}</p>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Updates</p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">{stats.updated}</p>
-              </div>
-              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                <FaEdit className="text-blue-600" size={20} />
-              </div>
-            </div>
+          <div className="bg-white rounded-xl p-3 border border-red-200 shadow-sm bg-red-50/30">
+            <p className="text-xs font-medium text-red-600 uppercase tracking-wide">Deleted</p>
+            <p className="text-2xl font-bold text-red-700">{stats.deleted}</p>
+          </div>
+          <div className="bg-white rounded-xl p-3 border border-emerald-200 shadow-sm bg-emerald-50/30">
+            <p className="text-xs font-medium text-emerald-600 uppercase tracking-wide">Activated</p>
+            <p className="text-2xl font-bold text-emerald-700">{stats.activated}</p>
+          </div>
+          <div className="bg-white rounded-xl p-3 border border-purple-200 shadow-sm bg-purple-50/30">
+            <p className="text-xs font-medium text-purple-600 uppercase tracking-wide">Role Assign</p>
+            <p className="text-2xl font-bold text-purple-700">{stats.roleAssignments}</p>
           </div>
         </div>
 
-        {/* Filters - Pill style */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 mb-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search activities or users..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                />
-              </div>
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex-1 min-w-[240px]">
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              <input
+                type="text"
+                placeholder="Search activities, messages or users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
             </div>
-            <div className="flex gap-2 flex-wrap">
-              {['ALL', 'ACTIVATED', 'DEACTIVATED', 'UPDATED'].map((action) => (
-                <button
-                  key={action}
-                  onClick={() => setFilterAction(action)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterAction === action
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
-                    }`}
-                >
-                  {action === 'ALL' ? 'All' : action.charAt(0) + action.slice(1).toLowerCase()}
-                </button>
+          </div>
+          <div className="w-64">
+            <select
+              value={filterAction}
+              onChange={(e) => setFilterAction(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+            >
+              <option value="ALL">All Activities</option>
+              {actionTypes.filter(a => a !== 'ALL').map((action) => (
+                <option key={action} value={action}>
+                  {action.replace(/_/g, ' ')}
+                </option>
               ))}
-            </div>
+            </select>
           </div>
         </div>
 
-        {/* Activities List - Clean table */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="text-left p-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
-                  <th className="text-left p-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Description</th>
-                  <th className="text-left p-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">User</th>
-                  <th className="text-left p-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {paginatedActivities.map((activity) => {
-                  const styles = getActionStyles(activity.actionType);
-                  return (
-                    <tr key={activity.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="p-4">
-                        <span className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-medium ${styles.badge}`}>
-                          {styles.icon}
-                          {styles.badgeText}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <p className="text-sm text-slate-700 font-medium">{activity.description}</p>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-xs font-semibold text-slate-600">
-                            {activity.firstname?.[0]}{activity.lastname?.[0]}
-                          </div>
-                          <span className="text-sm text-slate-700">
-                            {activity.firstname} {activity.lastname}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm text-slate-700">{formatFullDate(activity.createdAt)}</span>
-                          <span className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                            {formatRelativeTime(activity.createdAt)}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        {/* Activities List - Card View */}
+        <div className="space-y-3">
+          {paginatedActivities.map((activity) => {
+            const styles = getActionStyles(activity.actionType);
+            const displayMessage = activity.message || activity.description;
+            const actorName = activity.firstname || activity.lastname
+              ? `${activity.firstname || ''} ${activity.lastname || ''}`.trim()
+              : 'System';
 
-          {/* Pagination - Clean style */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50/50">
-              <div className="text-sm text-slate-500">
-                Showing <span className="font-medium text-slate-900">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-medium text-slate-900">{Math.min(currentPage * itemsPerPage, filteredActivities.length)}</span> of <span className="font-medium text-slate-900">{filteredActivities.length}</span>
+            return (
+              <div
+                key={activity.id}
+                className={`flex items-start gap-4 p-4 ${styles.bg} rounded-xl transition-all duration-300 border-l-4 ${styles.border} hover:shadow-md`}
+              >
+                <div className={`w-10 h-10 ${styles.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                  {styles.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${styles.badge}`}>
+                      {activity.actionType?.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  <p className={`font-medium ${styles.text} text-sm break-words`}>
+                    {displayMessage}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className="text-xs font-medium text-gray-600">
+                      {actorName}
+                    </span>
+                    <span className="text-xs text-gray-300">•</span>
+                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                      {formatFullDate(activity.createdAt)}
+                    </span>
+                    <span className="text-xs text-gray-300">•</span>
+                    <span className="text-xs text-gray-400">
+                      {formatRelativeTime(activity.createdAt)}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="p-2 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-600"
-                >
-                  <FiChevronLeft size={18} />
-                </button>
-                <div className="flex gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            );
+          })}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+            <div className="text-sm text-gray-500">
+              Showing <span className="font-medium text-gray-900">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
+              <span className="font-medium text-gray-900">{Math.min(currentPage * itemsPerPage, filteredActivities.length)}</span> of{' '}
+              <span className="font-medium text-gray-900">{filteredActivities.length}</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-gray-600"
+              >
+                <FiChevronLeft size={16} />
+              </button>
+              <div className="flex gap-1">
+                {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 7) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 4) {
+                    pageNum = i + 1;
+                    if (i === 6) pageNum = totalPages;
+                  } else if (currentPage >= totalPages - 3) {
+                    pageNum = totalPages - 6 + i;
+                  } else {
+                    pageNum = currentPage - 3 + i;
+                  }
+
+                  if (pageNum === undefined) return null;
+                  if (i === 5 && totalPages > 7 && currentPage <= 4) {
+                    return <span key="dots" className="px-2 py-1.5 text-gray-400">...</span>;
+                  }
+                  if (i === 1 && totalPages > 7 && currentPage >= totalPages - 3) {
+                    return <span key="dots" className="px-2 py-1.5 text-gray-400">...</span>;
+                  }
+
+                  return (
                     <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`min-w-[36px] px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${currentPage === page
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`min-w-[36px] px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                         }`}
                     >
-                      {page}
+                      {pageNum}
                     </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="p-2 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-600"
-                >
-                  <FiChevronRight size={18} />
-                </button>
+                  );
+                })}
               </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="p-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-gray-600"
+              >
+                <FiChevronRight size={16} />
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Empty State */}
         {filteredActivities.length === 0 && (
-          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center mt-6">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FiActivity className="text-slate-400" size={28} />
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center mt-6">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FiActivity className="text-gray-400" size={28} />
             </div>
-            <h3 className="text-base font-semibold text-slate-900 mb-1">No activities found</h3>
-            <p className="text-sm text-slate-500">Try adjusting your search or filter criteria</p>
+            <h3 className="text-base font-semibold text-gray-900 mb-1">No activities found</h3>
+            <p className="text-sm text-gray-500">Try adjusting your search or filter criteria</p>
           </div>
         )}
       </div>

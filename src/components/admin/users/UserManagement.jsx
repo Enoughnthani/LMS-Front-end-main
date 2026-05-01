@@ -1,7 +1,7 @@
 import { apiFetch } from '@/api/api';
 import ResponseMessage from '@/components/common/ResponseMessage';
-import { getRoleIcon } from '@/components/common/RoleContent';
-import RoleContent from '@/components/common/RoleContent';
+import RoleContent, { getRoleIcon } from '@/components/common/RoleContent';
+import { useApiResponse } from '@/contexts/ApiResponseContext';
 import { USERS } from '@/utils/apiEndpoint';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -33,16 +33,11 @@ import {
   FaUserTie
 } from 'react-icons/fa';
 import { FiMail, FiUser } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 import { useTopLoader } from '../../../contexts/TopLoaderContext';
-import { formatLastLogin } from '../../../utils/formatLastLogin.js';
-import { readableDate } from '../../../utils/readableDate.js';
 import BulkDeleteModal from './BulkDeleteModal';
-import BulkUploadModal from './BulkUploadModal';
 import DeleteUserModal from './DeleteUserModal';
 import RoleManagerModal from './RoleManagerModal';
-import UserFormModal from './UserFormModal';
-import UserProfileOffcanvas from './UserProfileOffcanvas';
-import { useApiResponse } from '@/contexts/ApiResponseContext';
 
 export default function UserManagement() {
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -59,18 +54,14 @@ export default function UserManagement() {
   const [bulkSelection, setBulkSelection] = useState([]);
   const [response, setResponse] = useState(null);
   const { start, complete } = useTopLoader();
-  const [validated, setValidated] = useState(false);
-  const [invalidIdno, setInvalidIdno] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [roleRequired, setRoleRequired] = useState(false);
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
-  const [bulkFile, setBulkFile] = useState(null);
   const itemsPerPage = 80;
   const [users, setUsers] = useState(null);
   const [showModal, setShowModal] = useState(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
   const [roleManager, setShowRoleManager] = useState(false);
   const { showResponse } = useApiResponse()
+  const navigate = useNavigate()
 
   const [userForm, setUserForm] = useState({
     firstname: "",
@@ -140,13 +131,10 @@ export default function UserManagement() {
 
 
   const handleEditUser = (user) => {
-    setUserForm({ ...user });
-    setEditingUser(user);
-    setShowModal(true);
+    navigate(`${user?.id}/edit`,{state:{user}})
   };
 
 
-  // Bulk Role Assign
   const handleBulkRoleAssign = async (role) => {
     start();
     try {
@@ -222,23 +210,9 @@ export default function UserManagement() {
     );
   };
 
-  const resetForm = () => {
-    setUserForm({
-      firstname: "",
-      lastname: "",
-      contactNumber: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      idNo: '',
-      role: ["LEARNER"],
-      status: "ACTIVE"
-    });
-    setEditingUser(null);
-  };
 
   const convertToCSV = (data) => {
-    const headers = ['First Name', 'Last Name', 'Email', 'Phone', 'ID Number', 'Roles', 'Status'];
+    const headers = ['firstname', 'lastname', 'email', 'contactNumber', 'idNumber', 'roles', 'status'];
     const rows = data.map(u => [
       u.firstname,
       u.lastname,
@@ -316,7 +290,7 @@ export default function UserManagement() {
             <Button
               variant="outline-info"
               size='sm'
-              onClick={() => setShowBulkUploadModal(true)}
+              onClick={() => navigate('new/bulk')}
               className="flex items-center gap-2 px-4 py-2"
             >
               <FaUpload /> Bulk Upload
@@ -324,10 +298,7 @@ export default function UserManagement() {
             <Button
               variant="outline-primary"
               size='sm'
-              onClick={() => {
-                setEditingUser(null);
-                setShowModal(true);
-              }}
+              onClick={() => navigate('new')}
               className="flex items-center gap-2 px-4 py-2"
             >
               <FaUserPlus /> Add New User
@@ -504,7 +475,7 @@ export default function UserManagement() {
               <tbody className="divide-y divide-slate-100">
                 {currentUsers?.map((user, key) => (
                   <tr
-                    onClick={() => { setShowUserDetails(true); setUserForm(user) }}
+                    onClick={() => navigate(`${user?.id}`,{state:{user}})}
                     key={key}
                     className="group cursor-pointer transition-colors duration-200 hover:bg-rose-50/40"
                   >
@@ -645,35 +616,6 @@ export default function UserManagement() {
           )}
         </Card.Footer>
       </Card>
-
-      <UserFormModal
-        show={showModal}
-        setShow={setShowModal}
-        editingUser={editingUser}
-        setEditingUser={setEditingUser}
-        getUsers={getUsers}
-        setResponse={setResponse}
-        response={response}
-      />
-
-      <BulkUploadModal
-        show={showBulkUploadModal}
-        setShow={setShowBulkUploadModal}
-        setResponse={setResponse}
-        response={response}
-        getUsers={getUsers}
-      />
-
-
-      <UserProfileOffcanvas
-        showUserDetails={showUserDetails}
-        setShowUserDetails={setShowUserDetails}
-        userForm={userForm}
-        getRoleIcon={getRoleIcon}
-        readableDate={readableDate}
-        formatLastLogin={formatLastLogin}
-      />
-
 
 
       <DeleteUserModal

@@ -131,21 +131,11 @@ export default function StaffDashboard() {
     const stats = config.getStats(programs, user)
 
     useEffect(() => {
-        getUser()
-    }, [currentRole])
-
-    async function getUser() {
-        setLoading(true)
-        try {
-            const result = await apiFetch(`${ME}`)
-            setUser(result?.payload)
-            setPrograms(result?.payload?.assignedPrograms?.filter(p => p.assignedRoles.includes(config.roleFilter)) || [])
-        } catch (e) {
-            console.error("Network error!", e)
-        } finally {
-            setLoading(false)
+        if (!programs || programs.length == 0) {
+            setPrograms(user?.assignedPrograms?.filter(p => p.assignedRoles.includes(config.roleFilter)) || [])
         }
-    }
+    }, [currentRole, user])
+
 
     function handleSwitchRole(role) {
         switch (role) {
@@ -264,7 +254,7 @@ export default function StaffDashboard() {
                                         ))}
                                     </Dropdown.Menu>
                                 </Dropdown>
-                                }
+                            }
 
                             {/* Logout */}
                             <Button
@@ -367,7 +357,6 @@ export default function StaffDashboard() {
                                     })}
                                     className="group cursor-pointer border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 bg-white rounded-xl overflow-hidden hover:-translate-y-0.5"
                                 >
-                                    {/* Image Container */}
                                     <div className="relative h-48 overflow-hidden">
                                         <Card.Img
                                             src={BASE_URL + program.imageUrl}

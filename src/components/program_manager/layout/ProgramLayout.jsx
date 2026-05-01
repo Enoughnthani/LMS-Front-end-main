@@ -11,7 +11,7 @@ export default function MainLayout() {
 
   const menuItems = [
     { icon: <FaTachometerAlt />, label: "Overview", path: '/user/program-manager' },
-    { icon: <FaGraduationCap />, label: "Program", path: '/user/program-manager/programs' },
+    { icon: <FaGraduationCap />, label: "Programs", path: '/user/program-manager/programs' },
     { icon: <FaUser />, label: "Profile", path: '/user/program-manager/profile' },
   ];
 

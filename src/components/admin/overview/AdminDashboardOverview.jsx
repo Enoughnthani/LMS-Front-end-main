@@ -13,10 +13,12 @@ import {
   FaCheckCircle,
   FaEdit,
   FaPlusCircle,
+  FaSyncAlt,
   FaTrash,
   FaUser,
   FaUserPlus,
-  FaUsers
+  FaUsers,
+  FaUserTag
 } from "react-icons/fa";
 import { FiClock, FiTarget } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -170,7 +172,6 @@ export default function AdminDashboardOverview({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Recent Activity */}
           {activities?.length > 0 &&
             <Card className="border-0 h-full border-t-4 border-blue-500">
               <Card.Header className="bg-white border-0 py-4 flex justify-between items-center">
@@ -182,16 +183,16 @@ export default function AdminDashboardOverview({
                 {activities?.length > 3 &&
                   <Button
                     onClick={() => navigate('activities', { state: { activities: activities } })}
-                    variant="link" size="sm" className="text-blue-600 p-0 font-medium">
+                    variant="link" size="sm" className="text-blue-600 p-0 font-medium"
+                  >
                     View All →
                   </Button>
                 }
-
               </Card.Header>
+
               <Card.Body className="pt-0">
                 <div className="space-y-4">
                   {activities.slice(0, 3).map((act, idx) => {
-                    // Get styles based on actionType
                     const getActionStyles = (actionType) => {
                       switch (actionType?.toUpperCase()) {
                         case 'ACTIVATED':
@@ -205,14 +206,13 @@ export default function AdminDashboardOverview({
                           };
                         case 'DEACTIVATED':
                           return {
-                            bg: 'bg-red-50',
-                            border: 'border-red-200 hover:border-red-400',
-                            text: 'text-red-700',
-                            iconBg: 'bg-red-100',
-                            icon: <FaBan className="text-red-500 text-lg" />,
-                            badge: 'bg-red-100 text-red-700'
+                            bg: 'bg-rose-50',
+                            border: 'border-rose-200 hover:border-rose-400',
+                            text: 'text-rose-700',
+                            iconBg: 'bg-rose-100',
+                            icon: <FaBan className="text-rose-500 text-lg" />,
+                            badge: 'bg-rose-100 text-rose-700'
                           };
-                        case 'CREATE':
                         case 'CREATED':
                           return {
                             bg: 'bg-green-50',
@@ -222,8 +222,8 @@ export default function AdminDashboardOverview({
                             icon: <FaPlusCircle className="text-green-500 text-lg" />,
                             badge: 'bg-green-100 text-green-700'
                           };
-                        case 'DELETE':
                         case 'DELETED':
+                        case 'BULK_DELETE':
                           return {
                             bg: 'bg-red-50',
                             border: 'border-red-200 hover:border-red-400',
@@ -232,7 +232,6 @@ export default function AdminDashboardOverview({
                             icon: <FaTrash className="text-red-500 text-lg" />,
                             badge: 'bg-red-100 text-red-700'
                           };
-                        case 'UPDATE':
                         case 'UPDATED':
                           return {
                             bg: 'bg-amber-50',
@@ -241,6 +240,34 @@ export default function AdminDashboardOverview({
                             iconBg: 'bg-amber-100',
                             icon: <FaEdit className="text-amber-500 text-lg" />,
                             badge: 'bg-amber-100 text-amber-700'
+                          };
+                        case 'ROLE_ASSIGN':
+                        case 'BULK_ROLE_ASSIGN':
+                          return {
+                            bg: 'bg-purple-50',
+                            border: 'border-purple-200 hover:border-purple-400',
+                            text: 'text-purple-700',
+                            iconBg: 'bg-purple-100',
+                            icon: <FaUserTag className="text-purple-500 text-lg" />,
+                            badge: 'bg-purple-100 text-purple-700'
+                          };
+                        case 'BULK_CREATE':
+                          return {
+                            bg: 'bg-teal-50',
+                            border: 'border-teal-200 hover:border-teal-400',
+                            text: 'text-teal-700',
+                            iconBg: 'bg-teal-100',
+                            icon: <FaUsers className="text-teal-500 text-lg" />,
+                            badge: 'bg-teal-100 text-teal-700'
+                          };
+                        case 'BULK_STATUS_UPDATE':
+                          return {
+                            bg: 'bg-indigo-50',
+                            border: 'border-indigo-200 hover:border-indigo-400',
+                            text: 'text-indigo-700',
+                            iconBg: 'bg-indigo-100',
+                            icon: <FaSyncAlt className="text-indigo-500 text-lg" />,
+                            badge: 'bg-indigo-100 text-indigo-700'
                           };
                         default:
                           return {
@@ -256,26 +283,41 @@ export default function AdminDashboardOverview({
 
                     const styles = getActionStyles(act.actionType);
 
+                    // Format the actor name
+                    const actorName = act.firstname || act.lastname
+                      ? `${act.firstname || ''} ${act.lastname || ''}`.trim()
+                      : 'System';
+
+                    // Determine what to display in the description
+                    const displayDescription = act.message || act.description;
+
                     return (
                       <div
                         key={act.id || idx}
                         className={`flex items-start gap-4 p-4 ${styles.bg} rounded-lg transition-all duration-300 border-l-4 ${styles.border} hover:shadow-md`}
                       >
-                        <div className={`w-10 h-10 ${styles.iconBg} rounded-lg flex items-center justify-center`}>
+                        <div className={`w-10 h-10 ${styles.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
                           {styles.icon}
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${styles.badge}`}>
-                              {act.actionType}
+                              {act.actionType?.replace(/_/g, ' ')}
                             </span>
                           </div>
-                          <p className={`font-medium ${styles.text}`}>{act.description}</p>
-                          <div className="flex items-center gap-3 mt-1">
-                            <span className="text-sm text-gray-600">{act.firstname} {act.lastname}</span>
+
+                          <p className={`font-medium ${styles.text} text-sm break-words`}>
+                            {displayDescription}
+                          </p>
+
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <span className="text-sm font-semibold text-gray-600">
+                              {actorName}
+                            </span>
                             <span className="text-xs text-gray-400">•</span>
                             <span className="text-xs text-gray-500 flex items-center gap-1">
-                              <FiClock size={12} />
+                              <FiClock size={11} />
                               {formatRelativeTime(act.createdAt)}
                             </span>
                           </div>
@@ -299,8 +341,7 @@ export default function AdminDashboardOverview({
             </Card.Header>
             <Card.Body className="pt-0 space-y-3">
               {[
-                { icon: <FaUserPlus />, label: "Create User", variant: "outline-primary", event: () => { setStep(1); setShowModal(true) } },
-                { icon: <FaBullhorn />, label: "Send Announcement", variant: "outline-primary" },
+                { icon: <FaUserPlus />, label: "Create User", variant: "outline-primary", event: () => navigate('users/new') },
               ].map((action, idx) => (
                 <Button
                   onClick={action.event}

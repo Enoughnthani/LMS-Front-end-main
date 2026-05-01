@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button } from 'react-bootstrap';
-import {
-  Users,
-  X,
-  Search,
-  Plus,
-  Trash2,
-  Shield,
-  CheckCircle2,
-  Clock,
-  ChevronRight
-} from 'lucide-react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { apiFetch } from '@/api/api';
 import ResponseMessage from '@/components/common/ResponseMessage';
 import { USERS } from '@/utils/apiEndpoint';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import {
+  Clock,
+  Plus,
+  Search,
+  Shield,
+  Trash2,
+  Users,
+  X
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Button, Modal } from 'react-bootstrap';
 
 const RoleManagerModal = ({ show, setShow, user }) => {
   const roles = [

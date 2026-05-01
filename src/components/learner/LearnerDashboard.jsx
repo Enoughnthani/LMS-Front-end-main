@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import LogoImage from '../common/LogoImage';
 import { Badge, Button } from 'react-bootstrap';
 import { Bell, LogOut, Search, Settings, User2 } from 'lucide-react';
@@ -9,8 +9,12 @@ export const LearnerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [program,setProgram] = useState(null)
 
-  console.log(user)
+  useEffect(()=>{
+    setProgram(user?.enrolledProgram)
+  },[user])
+
 
   const initialModules = [
     {
