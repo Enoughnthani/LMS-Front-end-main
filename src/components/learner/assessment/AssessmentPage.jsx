@@ -58,7 +58,7 @@ export default function AssessmentPage() {
   );
 
   return (
-    <div className="p-3 bg-gray-50 min-h-screen w-full">
+    <div className="p-3 bg-gray-50 h-screen w-full">
       <div className="mx-auto">
         {/* Header */}
         <div className="mb-4">
@@ -69,7 +69,7 @@ export default function AssessmentPage() {
           <p className="text-xs text-gray-500 mt-0.5">Advanced React Development</p>
         </div>
 
-        {/* React Bootstrap Accordion */}
+        
         <Accordion defaultActiveKey={[]}>
           {/* Formative */}
           <Accordion.Item eventKey="0" className="mb-3 border rounded-lg overflow-hidden shadow-sm">

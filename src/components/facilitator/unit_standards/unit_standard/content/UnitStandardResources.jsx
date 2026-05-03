@@ -1,16 +1,17 @@
 import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { useProgramResources } from './hooks/useProgramResources';
+import { useUnitStandardContent } from './hooks/useUnitStandardContent';
 import ResourcesHeader from './ResourcesHeader';
 import ResourcesBreadcrumb from './ResourcesBreadcrumb';
 import ResourcesGrid from './ResourcesGrid';
 import CreateFolderModal from './CreateFolderModal';
 import RenameResourceModal from './RenameResourceModal';
 import UploadProgress from './UploadProgress';
+import DeleteResourceConfirm from './DeleteResourceConfirm';
 import { FaFolder } from 'react-icons/fa';
 
-export default function ProgramResources() {
-  const { programId } = useParams();
+export default function UnitStandardResources() {
+  const { unitStandardId } = useParams();
   const {
     contents,
     currentFolder,
@@ -24,10 +25,11 @@ export default function ProgramResources() {
     uploadFile,
     renameItem,
     deleteItem
-  } = useProgramResources(programId);
+  } = useUnitStandardContent(unitStandardId);
 
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -49,6 +51,26 @@ export default function ProgramResources() {
     e.target.value = '';
   };
 
+
+  const handleDeleteClick = (item) => {
+    console.log(item)
+    if (item)  {
+      setSelectedItem(item);
+      setShowDeleteModal(true);
+    } else {
+      console.error('Cannot delete: item or item.id is undefined', item);
+    }
+  };
+
+  const handleConfirmDelete = (id) => {
+    if (id) {
+      console.log(id)
+      deleteItem(id);
+      setShowDeleteModal(false);
+      setSelectedItem(null);
+    }
+  };
+
   if (loading && contents.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -61,13 +83,13 @@ export default function ProgramResources() {
   }
 
   return (
-    <div 
+    <div
       className="h-screen w-full flex flex-col bg-gray-50 overflow-hidden"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
       {/* Header */}
-      <ResourcesHeader 
+      <ResourcesHeader
         onNewFolder={() => setShowFolderModal(true)}
         onUpload={() => fileInputRef.current?.click()}
       />
@@ -82,7 +104,7 @@ export default function ProgramResources() {
       />
 
       {/* Breadcrumb */}
-      <ResourcesBreadcrumb 
+      <ResourcesBreadcrumb
         currentPath={currentPath}
         onNavigate={navigateToPath}
         onBack={goBack}
@@ -102,13 +124,13 @@ export default function ProgramResources() {
             <h3 className="text-lg font-medium text-gray-600 mb-2">Empty folder</h3>
             <p className="text-gray-400 text-sm mb-4">Upload files or create a folder</p>
             <div className="flex justify-center gap-3">
-              <button 
+              <button
                 onClick={() => setShowFolderModal(true)}
                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
               >
                 New Folder
               </button>
-              <button 
+              <button
                 onClick={() => fileInputRef.current?.click()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
@@ -117,30 +139,37 @@ export default function ProgramResources() {
             </div>
           </div>
         ) : (
-          <ResourcesGrid 
+          <ResourcesGrid
             items={contents}
             onOpenFolder={openFolder}
             onRename={(item) => {
               setSelectedItem(item);
               setShowRenameModal(true);
             }}
-            onDelete={deleteItem}
+            onDelete={handleDeleteClick}
           />
         )}
       </div>
 
       {/* Modals */}
-      <CreateFolderModal 
+      <CreateFolderModal
         show={showFolderModal}
         onHide={() => setShowFolderModal(false)}
         onSave={createFolder}
       />
 
-      <RenameResourceModal 
+      <RenameResourceModal
         show={showRenameModal}
         onHide={() => setShowRenameModal(false)}
         item={selectedItem}
         onSave={renameItem}
+      />
+
+      <DeleteResourceConfirm
+        show={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        item={selectedItem}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

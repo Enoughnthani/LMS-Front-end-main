@@ -7,12 +7,12 @@ import { Overlay, Popover, Button } from 'react-bootstrap';
 
 const getFileIcon = (type) => {
   switch (type) {
-    case 'PDF': return <FaFilePdf className="text-red-500 text-4xl" />;
-    case 'DOCX': return <FaFileWord className="text-blue-600 text-4xl" />;
-    case 'XLSX': return <FaFileExcel className="text-green-600 text-4xl" />;
-    case 'PPTX': return <FaFilePowerpoint className="text-orange-500 text-4xl" />;
-    case 'VIDEO': return <FaVideo className="text-purple-500 text-4xl" />;
-    default: return <FaFileAlt className="text-gray-500 text-4xl" />;
+    case 'PDF': return <FaFilePdf size={90} className="text-red-500 text-4xl" />;
+    case 'DOCX': return <FaFileWord size={90} className="text-blue-600 text-4xl" />;
+    case 'XLSX': return <FaFileExcel size={90} className="text-green-600 text-4xl" />;
+    case 'PPTX': return <FaFilePowerpoint size={90} className="text-orange-500 text-4xl" />;
+    case 'VIDEO': return <FaVideo size={90} className="text-purple-500 text-4xl" />;
+    default: return <FaFileAlt size={90} className="text-gray-500 text-4xl" />;
   }
 };
 
@@ -30,24 +30,21 @@ export default function ResourceCard({ item, onOpen, onRename, onDelete }) {
       className="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition cursor-pointer border border-gray-100 relative group"
       onDoubleClick={onOpen}
     >
-      {/* Icon */}
       <div className="flex justify-center pt-2 pb-3">
         {item.type === 'FOLDER' ? (
-          <FaFolder size={56} className="text-amber-400" />
+          <FaFolder size={90} className="text-amber-400" />
         ) : (
           getFileIcon(item.type)
         )}
       </div>
 
-      {/* Name */}
+     
       <p className="text-sm font-medium text-center truncate px-1">{item.name}</p>
       
-      {/* Size for files */}
       {item.type !== 'FOLDER' && item.size && (
         <p className="text-xs text-gray-400 text-center mt-0.5">{item.size}</p>
       )}
 
-      {/* Three dots button */}
       <button
         ref={targetRef}
         onClick={(e) => {
@@ -59,7 +56,6 @@ export default function ResourceCard({ item, onOpen, onRename, onDelete }) {
         <FaEllipsisV className='text-gray-500' size={14} />
       </button>
 
-      {/* Overlay Menu */}
       <Overlay
         target={targetRef.current}
         show={showMenu}

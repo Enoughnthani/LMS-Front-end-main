@@ -24,7 +24,6 @@ import FacilitatorProgramView from "./components/facilitator/view/FacilitatorPro
 import InternPage from "./components/intern/InternPage";
 import CourseAnnouncementPage from "./components/learner/anouncement/CourseAnnouncementPage";
 import AssessmentDetailPage from "./components/learner/assessment/AssessmentDetailPage";
-import AssessmentPage from "./components/learner/assessment/AssessmentPage";
 import ContentPage from "./components/learner/content/ContentPage";
 import PreviewPage from "./components/learner/content/preview/PreviewPage";
 import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
@@ -50,10 +49,13 @@ import BulkUploadPage from "./components/admin/users/BulkUploadModal";
 import InternOverview from "./components/intern/overview/InternOverview";
 import InternReportPage from "./components/intern/reports/InternReportPage";
 import FacilitatorProgramOverview from "./components/facilitator/overview/FacilitatorProgramOverview";
-import ProgramResources from "./components/facilitator/program_resources/ProgramResources";
-import UnitStandardsPage from "./components/facilitator/unit-standard/UnitStandardPage";
-import UnitStandardFormPage from "./components/facilitator/unit-standard/UnitStandardFormPage";
+import UnitStandardResources from "./components/facilitator/unit_standards/unit_standard/content/UnitStandardResources";
+import UnitStandardsPage from "./components/facilitator/unit_standards/UnitStandardsPage";
+import UnitStandardFormPage from "./components/facilitator/unit_standards/UnitStandardFormPage";
 import EnrolledLearnerView from "./components/facilitator/enronlled_learners_view/EnrolledLearnerView";
+import UnitStandardView from "./components/facilitator/unit_standards/unit_standard/UnitStandardView";
+import UnitStandardOverview from "./components/facilitator/unit_standards/unit_standard/overview/UnitStandardOverview";
+import AssessmentPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentPage";
 
 export default function App() {
 
@@ -126,11 +128,15 @@ export default function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="program-view/:programId" element={<FacilitatorProgramView />} >
             <Route index element={<FacilitatorProgramOverview />} />
-            <Route path="content" element={<ProgramResources />} />
-            <Route path="unit-standards" element={<UnitStandardsPage />}/>
-            <Route path="unit-standards/new" element={<UnitStandardFormPage />}/>
-            <Route path="unit-standards/:id/edit" element={<UnitStandardFormPage />}/>
-            <Route path="learners" element={<EnrolledLearnerView />}/>
+            <Route path="unit-standards" element={<UnitStandardsPage />} />
+            <Route path="unit-standards/new" element={<UnitStandardFormPage />} />
+            <Route path="unit-standards/:id/edit" element={<UnitStandardFormPage />} />
+            <Route path="learners" element={<EnrolledLearnerView />} />
+          </Route>
+          <Route path="program-view/:programId/unit-standards/:unitStandardId" element={<UnitStandardView />} >
+            <Route index element={<UnitStandardOverview/>}/>
+            <Route path="content" element={<UnitStandardResources />} />
+            <Route path="assessments" element={<AssessmentPage />} />
           </Route>
         </Route>
 
@@ -171,7 +177,7 @@ export default function App() {
         >
           <Route index element={<LearnerDashboard />} />
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="course-view/:id" element={<CourseViewPage />} >
+          <Route path="unit-standard/:unitStandardId" element={<CourseViewPage />} >
 
             <Route index element={<CourseAnnouncementPage />} />
             <Route path="content" element={<ContentPage />} />

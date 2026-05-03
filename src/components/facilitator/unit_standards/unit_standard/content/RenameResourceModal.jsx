@@ -6,13 +6,13 @@ export default function RenameResourceModal({ show, onHide, item, onSave }) {
   const [newName, setNewName] = useState('');
 
   useEffect(() => {
-    if (item) {
+    if (item && item.name) {
       setNewName(item.name);
     }
   }, [item]);
 
   const handleSave = () => {
-    if (newName.trim() && newName !== item?.name) {
+    if (newName && newName.trim() && newName.trim() !== item?.name) {
       onSave(item.id, newName.trim());
       onHide();
     }
@@ -43,7 +43,7 @@ export default function RenameResourceModal({ show, onHide, item, onSave }) {
         <Button variant="secondary" onClick={onHide}>
           Cancel
         </Button>
-        <Button variant="primary" onClick={handleSave} disabled={!newName.trim() || newName === item.name}>
+        <Button variant="primary" onClick={handleSave} disabled={!newName || !newName.trim() || newName === item.name}>
           Save
         </Button>
       </Modal.Footer>

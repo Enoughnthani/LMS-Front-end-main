@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
-import { programResourceService } from '../service/programResourceService';
+import { UnitStandardContentService } from '../service/UnitStandardContentService';
 
-export const useProgramResources = (programId) => {
+export const useUnitStandardContent = (unitStandardId) => {
   const [contents, setContents] = useState([]);
   const [currentFolder, setCurrentFolder] = useState(null);
   const [currentPath, setCurrentPath] = useState([]);
@@ -11,20 +11,20 @@ export const useProgramResources = (programId) => {
   const loadContents = useCallback(async (folderId = null) => {
     setLoading(true);
     try {
-      const data = await programResourceService.getContents(programId, folderId);
+      const data = await UnitStandardContentService.getContents(unitStandardId, folderId);
       setContents(data);
     } catch (error) {
       console.error('Error loading contents:', error);
     } finally {
       setLoading(false);
     }
-  }, [programId]);
+  }, [unitStandardId]);
 
   const loadRoot = useCallback(() => loadContents(), [loadContents]);
 
   useEffect(() => {
-    if (programId) loadRoot();
-  }, [programId, loadRoot]);
+    if (unitStandardId) loadRoot();
+  }, [unitStandardId, loadRoot]);
 
   const openFolder = async (folder) => {
     setCurrentFolder(folder);
@@ -62,14 +62,14 @@ export const useProgramResources = (programId) => {
   };
 
   const createFolder = async (name) => {
-    await programResourceService.createFolder(name, programId, currentFolder?.id || null);
+    await UnitStandardContentService.createFolder(name, unitStandardId, currentFolder?.id || null);
     await (currentFolder ? loadContents(currentFolder.id) : loadRoot());
   };
 
   const uploadFile = async (file) => {
     setUploadProgress(0);
     try {
-      await programResourceService.uploadFile(file, programId, currentFolder?.id || null, setUploadProgress);
+      await UnitStandardContentService.uploadFile(file, unitStandardId, currentFolder?.id || null, setUploadProgress);
       await (currentFolder ? loadContents(currentFolder.id) : loadRoot());
     } finally {
       setUploadProgress(null);
@@ -77,14 +77,22 @@ export const useProgramResources = (programId) => {
   };
 
   const renameItem = async (id, newName) => {
-    await programResourceService.renameItem(id, newName);
+    await UnitStandardContentService.renameItem(id, newName);
     await (currentFolder ? loadContents(currentFolder.id) : loadRoot());
   };
 
   const deleteItem = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
-    await programResourceService.deleteItem(id);
-    await (currentFolder ? loadContents(currentFolder.id) : loadRoot());
+    if (!id) {
+      console.error('Cannot delete: No ID provided');
+      return;
+    }
+
+    try {
+      await UnitStandardContentService.deleteItem(id);
+      await (currentFolder ? loadContents(currentFolder.id) : loadRoot());
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
   };
 
   const refresh = () => currentFolder ? loadContents(currentFolder.id) : loadRoot();

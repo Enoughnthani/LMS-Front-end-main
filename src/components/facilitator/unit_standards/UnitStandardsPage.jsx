@@ -61,10 +61,10 @@ export default function UnitStandardsPage() {
     );
   };
 
-  const filteredStandards = unitStandards.filter(standard => {
-    const matchesSearch = standard.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      standard.title?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'ALL' || standard.type === filterType;
+  const filteredStandards = unitStandards.filter(unitStandard => {
+    const matchesSearch = unitStandard.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      unitStandard.title?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterType === 'ALL' || unitStandard.type === filterType?.toUpperCase();
     return matchesSearch && matchesFilter;
   });
 
@@ -224,8 +224,8 @@ export default function UnitStandardsPage() {
             </Button>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+          <div className="bg-white rounded-xl border border-gray-200 ">
+            <div >
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -238,45 +238,42 @@ export default function UnitStandardsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filteredStandards.map((standard) => (
-                    <tr key={standard.id} className="hover:bg-gray-50 transition group">
+                  {filteredStandards.map((unitStandard) => (
+                    <tr onClick={() => navigate(`${unitStandard?.unitStandardId}`, { state: { unitStandard } })} key={unitStandard.unitStandardId} className="cursor-pointer hover:bg-gray-50 transition group">
                       <td>
-                        <span className="font-mono text-sm font-medium text-gray-800 bg-gray-100 px-2 py-1 rounded">
-                          {standard?.unitStandardId}
+                        <span className="font-mono text-sm font-medium text-gray-800 bg-gray-100 mx-2 px-2 py-1 rounded">
+                          {unitStandard?.unitStandardId}
                         </span>
                       </td>
                       <td>
                         <div>
-                          <p className="text-sm font-medium text-gray-800">{standard.title}</p>
-                          {standard.description && (
-                            <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{standard.description}</p>
-                          )}
+                          <p className="text-sm p-1 m-0 font-medium text-gray-800">{unitStandard.title}</p>
                         </div>
                       </td>
                       <td >
                         <div className="flex items-center gap-1">
                           <FaStar className="text-amber-400" size={12} />
-                          <span className="text-sm font-medium text-gray-700">{standard.credits}</span>
+                          <span className="text-sm font-medium text-gray-700">{unitStandard.credits}</span>
                         </div>
                       </td>
-                       <td >
-                        {getNQFBadge(standard.nqfLevel)}
+                      <td >
+                        {getNQFBadge(unitStandard.nqfLevel)}
                       </td>
                       <td >
-                        {getTypeBadge(standard.type)}
+                        {getTypeBadge(unitStandard.type)}
                       </td>
-                      <td >
+                      <td className='py-1' onClick={(e) => e.stopPropagation()}>
                         <Dropdown align="end">
-                          <Dropdown.Toggle as="button" className="bg-blue-400 rounded text-white px-2 py-1 ">
+                          <Dropdown.Toggle as="button" className="bg-success font-semibold rounded text-white px-2 py-1 ">
                             Action
                           </Dropdown.Toggle>
                           <Dropdown.Menu className="shadow-lg border-0 rounded-xl">
-                            <Dropdown.Item onClick={() => navigate(`${standard.id}/edit`, { state: { standard } })}>
+                            <Dropdown.Item onClick={() => navigate(`${unitStandard.id}/edit`, { state: { unitStandard } })}>
                               <FaEdit className="inline mr-2 text-blue-500" size={12} /> Edit
                             </Dropdown.Item>
                             <Dropdown.Item
                               onClick={() => {
-                                setEditingItem(standard);
+                                setEditingItem(unitStandard);
                                 setShowDeleteModal(true);
                               }}
                               className="text-red-600"

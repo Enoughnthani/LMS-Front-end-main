@@ -22,44 +22,54 @@ const getContentTypeFromFile = (fileName) => {
     'gif': 'OTHER',
     'txt': 'OTHER',
     'zip': 'OTHER',
-    'rar': 'OTHER',
-    'json': 'OTHER',
-    'xml': 'OTHER'
+    'rar': 'OTHER'
   };
   return typeMap[ext] || 'OTHER';
 };
 
-export const programResourceService = {
-  // Get contents (root or folder)
-  getContents: (programId, folderId = null) => 
-    apiFetch(folderId 
-      ? `/api/content/children/${folderId}`
-      : `/api/content/program/${programId}`),
+export const UnitStandardContentService = {
+  // Get root content for a unit standard - MAIN METHOD
+  getContents: (unitStandardId, folderId = null) => {
+    if (folderId) {
+      return apiFetch(`/api/content/unit-standard/${unitStandardId}/children/${folderId}`);
+    }
+    return apiFetch(`/api/content/unit-standard/${unitStandardId}`);
+  },
 
-  // Create folder
-  createFolder: (name, programId, parentId = null) => 
+  // Get root content for a unit standard (alias)
+  getUnitStandardContents: (unitStandardId) => 
+    apiFetch(`/api/content/unit-standard/${unitStandardId}`),
+
+  // Get children of a folder
+  getChildren: (parentId) => 
+    apiFetch(`/api/content/children/${parentId}`),
+
+  // Get children for a specific unit standard folder
+  getUnitStandardChildren: (parentId, unitStandardId) => 
+    apiFetch(`/api/content/unit-standard/${unitStandardId}/children/${parentId}`),
+
+  // Create folder for a unit standard
+  createFolder: (name, unitStandardId, parentId = null) => 
     apiFetch("/api/content", {
       method: "POST",
       body: JSON.stringify({ 
         name, 
         type: "FOLDER", 
-        programId: parseInt(programId), 
+        unitStandardId: parseInt(unitStandardId), 
         parentId 
       })
     }),
 
-  // Upload file with progress tracking
-  uploadFile: (file, programId, parentId = null, onProgress) => {
+  // Upload file for a unit standard
+  uploadFile: (file, unitStandardId, parentId = null, onProgress) => {
     return new Promise((resolve, reject) => {
       const formData = new FormData();
       formData.append("file", file);
-      // Auto use filename without extension as name
       const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
       formData.append("name", nameWithoutExt);
-      // Use proper content type based on file extension
       const contentType = getContentTypeFromFile(file.name);
       formData.append("type", contentType);
-      formData.append("programId", programId);
+      formData.append("unitStandardId", unitStandardId);
       if (parentId) formData.append("parentId", parentId);
 
       const xhr = new XMLHttpRequest();
@@ -92,14 +102,14 @@ export const programResourceService = {
     });
   },
 
-  // Rename item (folder or file)
+  // Rename content
   renameItem: (id, newName) => 
     apiFetch(`/api/content/${id}`, { 
       method: "PUT", 
       body: JSON.stringify({ name: newName }) 
     }),
 
-  // Delete item (folder or file)
+  // Delete content
   deleteItem: (id) => 
     apiFetch(`/api/content/${id}`, { method: "DELETE" })
 };

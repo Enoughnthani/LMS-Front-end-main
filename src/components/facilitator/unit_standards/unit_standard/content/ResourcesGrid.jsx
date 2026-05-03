@@ -9,7 +9,7 @@ export default function ResourcesGrid({ items, onOpenFolder, onRename, onDelete 
           item={item}
           onOpen={() => item.type === 'FOLDER' && onOpenFolder(item)}
           onRename={() => onRename(item)}
-          onDelete={() => onDelete(item.id)}
+          onDelete={() => onDelete(item)}
         />
       ))}
     </div>

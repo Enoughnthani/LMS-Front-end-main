@@ -1,85 +1,80 @@
 import { FaFolder, FaFileAlt, FaArrowLeft, FaDownload, FaEye, FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint, FaVideo, FaExternalLinkAlt } from 'react-icons/fa';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Card } from 'react-bootstrap';
 import { ArrowLeft, ArrowRight, ChevronRight, Download, Eye, Folder, FolderOpen } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-export default function ContentPage() {
+export default function LearnerContentPage() {
   const [currentPath, setCurrentPath] = useState([]);
   const [currentFolder, setCurrentFolder] = useState(null);
-  const navigate = useNavigate()
+  const [fileSystem, setFileSystem] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { unitStandard } = location?.state || {};
 
-  // Folder structure with resources
-  const fileSystem = {
-    name: "Content",
-    type: "root",
-    children: [
-      {
-        id: 1,
-        name: "Learner Guides",
-        type: "folder",
-        children: [
-          { id: 11, name: "Complete Learner Guide 2026", type: "pdf", size: "2.4 MB", downloadable: true },
-          { id: 12, name: "Quick Reference Handbook", type: "pdf", size: "1.1 MB", downloadable: true },
-          { id: 13, name: "Assessment Guidelines", type: "docx", size: "856 KB", downloadable: true },
-        ]
-      },
-      {
-        id: 2,
-        name: "Video Lectures",
-        type: "folder",
-        children: [
-          { id: 21, name: "Introduction to React", type: "video", duration: "25:30", downloadable: false },
-          { id: 22, name: "Understanding Hooks", type: "video", duration: "32:15", downloadable: false },
-          { id: 23, name: "State Management Deep Dive", type: "video", duration: "45:00", downloadable: false },
-        ]
-      },
-      {
-        id: 3,
-        name: "Worksheets & Exercises",
-        type: "folder",
-        children: [
-          { id: 31, name: "Week 1 - Practice Worksheet", type: "pdf", size: "512 KB", downloadable: true },
-          { id: 32, name: "React Exercises - Set 1", type: "docx", size: "1.2 MB", downloadable: true },
-          { id: 33, name: "Coding Challenge Solutions", type: "pdf", size: "890 KB", downloadable: true },
-        ]
-      },
-      {
-        id: 4,
-        name: "Templates & Tools",
-        type: "folder",
-        children: [
-          { id: 41, name: "Project Proposal Template", type: "docx", size: "245 KB", downloadable: true },
-          { id: 42, name: "Code Review Checklist", type: "xlsx", size: "178 KB", downloadable: true },
-          { id: 43, name: "Presentation Template", type: "pptx", size: "3.1 MB", downloadable: true },
-        ]
-      },
-      {
-        id: 5,
-        name: "Useful Links",
-        type: "folder",
-        children: [
-          { id: 51, name: "Official Documentation", type: "link", url: "https://react.dev", downloadable: false },
-          { id: 52, name: "Community Forum", type: "link", url: "#", downloadable: false },
-          { id: 53, name: "Additional Reading List", type: "link", url: "#", downloadable: false },
-        ]
-      }
-    ]
-  };
+  useEffect(() => {
+    if (unitStandard && unitStandard.contents) {
+      // Build file system from unit standard contents
+      const buildFileSystem = () => {
+        const rootChildren = [];
+        const folderMap = new Map();
+
+        // First pass: create all items
+        unitStandard.contents.forEach(content => {
+          const item = {
+            id: content.id,
+            name: content.name,
+            type: content.type === 'FOLDER' ? 'folder' : content.type.toLowerCase(),
+            size: content.fileSize,
+            duration: content.duration,
+            url: content.fileUrl,
+            externalUrl: content.externalUrl,
+            downloadable: content.downloadable,
+            parentId: content.parentId,
+            children: []
+          };
+          folderMap.set(content.id, item);
+          
+          if (!content.parentId) {
+            rootChildren.push(item);
+          }
+        });
+
+        // Second pass: build hierarchy
+        folderMap.forEach(item => {
+          if (item.parentId && folderMap.has(item.parentId)) {
+            const parent = folderMap.get(item.parentId);
+            parent.children.push(item);
+          }
+        });
+
+        return {
+          name: "Content",
+          type: "root",
+          children: rootChildren
+        };
+      };
+
+      setFileSystem(buildFileSystem());
+    }
+  }, [unitStandard]);
 
   const getFileIcon = (type) => {
-    switch (type) {
+    const t = type?.toLowerCase();
+    switch (t) {
       case 'pdf': return <FaFilePdf className="text-red-500 text-xl" />;
       case 'docx': return <FaFileWord className="text-blue-600 text-xl" />;
       case 'xlsx': return <FaFileExcel className="text-green-600 text-xl" />;
       case 'pptx': return <FaFilePowerpoint className="text-orange-600 text-xl" />;
       case 'video': return <FaVideo className="text-purple-500 text-xl" />;
       case 'link': return <FaExternalLinkAlt className="text-cyan-500 text-xl" />;
+      case 'folder': return <FaFolder className="text-amber-400 text-xl" />;
       default: return <FaFileAlt className="text-gray-500 text-xl" />;
     }
   };
 
   const getCurrentContent = () => {
+    if (!fileSystem) return [];
     if (!currentFolder) {
       return fileSystem.children;
     }
@@ -87,7 +82,7 @@ export default function ContentPage() {
   };
 
   const handleFolderClick = (folder) => {
-    setCurrentPath([...currentPath, folder.name]);
+    setCurrentPath([...currentPath, folder]);
     setCurrentFolder(folder);
   };
 
@@ -96,17 +91,37 @@ export default function ContentPage() {
       const newPath = [...currentPath];
       newPath.pop();
       setCurrentPath(newPath);
-      setCurrentFolder(null);
+      setCurrentFolder(newPath.length > 0 ? newPath[newPath.length - 1] : null);
     }
   };
 
   const handleDownload = (item, e) => {
     e.stopPropagation();
-    // Simulate download
-    alert(`Downloading: ${item.name}`);
+    if (item.url) {
+      window.open(item.url, '_blank');
+    } else {
+      alert(`Downloading: ${item.name}`);
+    }
+  };
+
+  const handlePreview = (item) => {
+    navigate(`preview/${item.id}`, { state: { file: item } });
   };
 
   const content = getCurrentContent();
+
+  if (!fileSystem) {
+    return (
+      <div className="w-full overflow-y-auto h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="text-center py-20">
+            <FaFolder size={60} className="text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No content available for this unit standard</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full overflow-y-auto h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -118,10 +133,12 @@ export default function ContentPage() {
               <FaFolder size={40} className="text-amber-300 text-xl" />
             </div>
             <h1 className="text-3xl m-0 font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-              Course Content
+              {unitStandard?.title || 'Course Content'}
             </h1>
           </div>
-          <p className="text-gray-500 ml-2">Advanced React Development • All learning resources in one place</p>
+          <p className="text-gray-500 ml-2">
+            {unitStandard?.programName} • {unitStandard?.credits} credits • {unitStandard?.nqfLevel}
+          </p>
         </div>
 
         {/* Breadcrumb Navigation */}
@@ -139,10 +156,10 @@ export default function ContentPage() {
 
           <div className="flex items-center gap-2 text-gray-600">
             <span className="font-medium text-gray-500">Content Library</span>
-            {currentPath.map((path, index) => (
+            {currentPath.map((folder, index) => (
               <span key={index} className="flex items-center gap-2">
                 <ChevronRight size={19} />
-                <span className="text-gray-500 font-medium">{path}</span>
+                <span className="text-gray-500 font-medium">{folder.name}</span>
               </span>
             ))}
           </div>
@@ -150,22 +167,20 @@ export default function ContentPage() {
 
         {/* Folder/File Grid */}
         {!currentFolder ? (
-          // Folder View - Grid Layout
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-5">
-            {content.map((folder) => (
-              <div className='cursor-pointer'>
+            {content.map((item) => (
+              <div key={item.id} className="cursor-pointer">
                 <div
-                  onClick={() => handleFolderClick(folder)}
-                  className='flex items-center rounded flex-col'
+                  onClick={() => handleFolderClick(item)}
+                  className='flex items-center rounded flex-col hover:bg-gray-100 p-3 transition'
                 >
                   <FaFolder size={100} className='text-amber-300' />
-                  <span>{folder?.name}</span>
+                  <span className="mt-2 text-center text-gray-700">{item.name}</span>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          // File View - Modern List Layout
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h4 className="font-semibold text-gray-800 flex items-center gap-2">
@@ -178,16 +193,14 @@ export default function ContentPage() {
                 <div key={item.id} className="p-3 hover:bg-gray-50 transition group">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1">
-                      {/* File Icon */}
                       <div className="p-2 bg-gray-100 rounded-xl group-hover:bg-purple-100 transition">
                         {getFileIcon(item.type)}
                       </div>
 
-                      {/* File Info */}
                       <div className="flex-1">
                         <h6 className="font-medium text-gray-800 mb-1">{item.name}</h6>
                         <div className="flex gap-3 text-xs text-gray-500">
-                          {item.type === 'video' && (
+                          {item.type === 'video' && item.duration && (
                             <span className="flex items-center gap-1">🎬 Duration: {item.duration}</span>
                           )}
                           {item.size && (
@@ -201,10 +214,12 @@ export default function ContentPage() {
                       </div>
                     </div>
 
-
                     <div className="flex gap-2">
                       {item.type === 'link' ? (
-                        <button onClick={() => window.open('https://www.wikipedia.org/', '_blank')} className="px-4 py-2 bg-cyan-50 text-cyan-600 rounded-xl text-sm font-medium hover:bg-cyan-100 transition flex items-center gap-2">
+                        <button 
+                          onClick={() => window.open(item.externalUrl, '_blank')} 
+                          className="px-4 py-2 bg-cyan-50 text-cyan-600 rounded-xl text-sm font-medium hover:bg-cyan-100 transition flex items-center gap-2"
+                        >
                           <FaExternalLinkAlt size={12} /> Visit
                         </button>
                       ) : (
@@ -217,12 +232,11 @@ export default function ContentPage() {
                           >
                             <Download size={18} /> Download
                           </Button>
-
                           <Button
                             size='sm'
                             className="text-white font-semibold flex items-center gap-1"
                             variant='warning'
-                            onClick={() => navigate(`preview/${item?.name}`, { state: { file: item } })}
+                            onClick={() => handlePreview(item)}
                           >
                             <Eye size={18} /> Preview
                           </Button>

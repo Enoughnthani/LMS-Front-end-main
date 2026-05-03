@@ -32,30 +32,14 @@ export const CourseViewPage = () => {
     const { start, complete, visible } = useTopLoader();
     const [users, setUsers] = useState(null);
     const location = useLocation()
-
-    async function getUsers() {
-        try {
-            let result = await apiFetch(GETUSERS);
-            setUsers(result);
-        } catch (error) {
-            setResponse({ success: false, message: "An error has accoured while fetching data" });
-        } finally {
-            complete();
-        }
-    }
-
-    useEffect(() => {
-        start();
-        getUsers();
-    }, []);
-
+    const { unitStandard } = location?.state || {}
 
     return (
         <div className="min-h-screen flex text-gray-800">
 
             <aside className="hidden md:block min-w-[16rem] bg-white shadow-md border !border-gray-200 py-6 px-1.5 ">
                 <div className="flex mx-2 items-center gap-3 pb-4">
-                    <LogoImage onClick={()=>navigate('/user/learner')} />
+                    <LogoImage onClick={() => navigate('/user/learner')} />
                 </div>
 
                 <ul className="p-1">
@@ -69,7 +53,7 @@ export const CourseViewPage = () => {
                         const isLogout = item.label === "Logout";
                         return (
                             <li
-                                onClick={() => { isLogout ? item.event() : navigate(item.path) }}
+                                onClick={() => { isLogout ? item.event() : navigate(item.path, { state: { unitStandard } }) }}
                                 key={idx}
                                 className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${isLogout
                                     ? "text-red-600 hover:bg-red-50 hover:text-red-700 mt-0 border-t border-gray-200"
