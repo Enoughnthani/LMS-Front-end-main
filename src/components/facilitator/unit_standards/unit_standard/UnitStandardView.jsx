@@ -1,18 +1,11 @@
 // AdminDashboard.jsx
-import { apiFetch } from "@/api/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { GETUSERS } from "@/utils/apiEndpoint";
-import { Activity, ClipboardList, List, LogOut, Menu } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowLeft, ClipboardList, SquareArrowLeft } from "lucide-react";
 import {
-  FaBell,
   FaChartLine,
-  FaCog,
-  FaFolder,
-  FaQuestionCircle,
-  FaUsers
+  FaFolder
 } from "react-icons/fa";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import LogoImage from "@/components/common/LogoImage";
 
@@ -21,6 +14,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const location = useLocation()
   const { unitStandard } = location?.state || {}
+  const {programId} = useParams()
 
 
   return (
@@ -33,6 +27,7 @@ export default function AdminDashboard() {
 
         <ul className="p-1">
           {[
+            { icon: <ArrowLeft size={20} className="text-blue-300" />, label: "Back", path: -1 },
             { icon: <FaChartLine size={20} className="text-blue-300" />, label: "Overview", path: '' },
             { icon: <FaFolder size={20} className="text-amber-300" />, label: "Content", path: 'content' },
             { icon: <ClipboardList size={20} className="text-green-300" />, label: "Assessements", path: 'assessments' },

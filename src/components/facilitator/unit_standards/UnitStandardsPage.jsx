@@ -247,7 +247,7 @@ export default function UnitStandardsPage() {
                       </td>
                       <td>
                         <div>
-                          <p className="text-sm p-1 m-0 font-medium text-gray-800">{unitStandard.title}</p>
+                          <p className="text-sm   p-1 m-0 font-medium text-gray-800">{unitStandard.title}</p>
                         </div>
                       </td>
                       <td >

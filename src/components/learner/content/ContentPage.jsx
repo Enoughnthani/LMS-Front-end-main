@@ -1,50 +1,59 @@
-import { FaFolder, FaFileAlt, FaArrowLeft, FaDownload, FaEye, FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint, FaVideo, FaExternalLinkAlt } from 'react-icons/fa';
-import { useEffect, useState } from 'react';
-import { Button, Card } from 'react-bootstrap';
-import { ArrowLeft, ArrowRight, ChevronRight, Download, Eye, Folder, FolderOpen } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  FaFolder, FaFileAlt, FaArrowLeft, FaDownload, FaEye,
+  FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint,
+  FaVideo, FaExternalLinkAlt, FaChevronRight, FaMusic,
+  FaFileImage, FaTimes
+} from 'react-icons/fa';
+import { Button, Modal } from 'react-bootstrap';
+import { BASE_URL } from '@/utils/apiEndpoint';
 
 export default function LearnerContentPage() {
-  const [currentPath, setCurrentPath] = useState([]);
   const [currentFolder, setCurrentFolder] = useState(null);
+  const [currentPath, setCurrentPath] = useState([]);
   const [fileSystem, setFileSystem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [previewItem, setPreviewItem] = useState(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { unitStandard } = location?.state || {};
 
   useEffect(() => {
     if (unitStandard && unitStandard.contents) {
-      // Build file system from unit standard contents
       const buildFileSystem = () => {
         const rootChildren = [];
         const folderMap = new Map();
 
-        // First pass: create all items
         unitStandard.contents.forEach(content => {
+          const isFolder = content.type === 'FOLDER';
           const item = {
             id: content.id,
             name: content.name,
-            type: content.type === 'FOLDER' ? 'folder' : content.type.toLowerCase(),
+            type: content.type,
             size: content.fileSize,
             duration: content.duration,
             url: content.fileUrl,
             externalUrl: content.externalUrl,
             downloadable: content.downloadable,
             parentId: content.parentId,
-            children: []
+            children: [],
+            isFolder: isFolder
           };
           folderMap.set(content.id, item);
-          
+
           if (!content.parentId) {
             rootChildren.push(item);
           }
         });
 
-        // Second pass: build hierarchy
         folderMap.forEach(item => {
           if (item.parentId && folderMap.has(item.parentId)) {
             const parent = folderMap.get(item.parentId);
-            parent.children.push(item);
+            if (parent.isFolder) {
+              parent.children.push(item);
+            }
           }
         });
 
@@ -56,20 +65,28 @@ export default function LearnerContentPage() {
       };
 
       setFileSystem(buildFileSystem());
+      setLoading(false);
+    } else {
+      setLoading(false);
     }
   }, [unitStandard]);
 
-  const getFileIcon = (type) => {
-    const t = type?.toLowerCase();
-    switch (t) {
-      case 'pdf': return <FaFilePdf className="text-red-500 text-xl" />;
-      case 'docx': return <FaFileWord className="text-blue-600 text-xl" />;
-      case 'xlsx': return <FaFileExcel className="text-green-600 text-xl" />;
-      case 'pptx': return <FaFilePowerpoint className="text-orange-600 text-xl" />;
-      case 'video': return <FaVideo className="text-purple-500 text-xl" />;
-      case 'link': return <FaExternalLinkAlt className="text-cyan-500 text-xl" />;
-      case 'folder': return <FaFolder className="text-amber-400 text-xl" />;
-      default: return <FaFileAlt className="text-gray-500 text-xl" />;
+  const getFileIcon = (type, name, size = "text-4xl") => {
+    const isImage = name?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+    
+    if (isImage) {
+      return <FaFileImage size={64} className={`text-blue-500 ${size}`} />;
+    }
+    
+    switch (type) {
+      case 'PDF': return <FaFilePdf size={64} className={`text-red-500 ${size}`} />;
+      case 'DOCX': return <FaFileWord size={64} className={`text-blue-600 ${size}`} />;
+      case 'XLSX': return <FaFileExcel size={64} className={`text-green-600 ${size}`} />;
+      case 'PPTX': return <FaFilePowerpoint size={64} className={`text-orange-500 ${size}`} />;
+      case 'VIDEO': return <FaVideo size={64} className={`text-purple-500 ${size}`} />;
+      case 'MP3': return <FaMusic size={64} className={`text-pink-500 ${size}`} />;
+      case 'FOLDER': return <FaFolder size={64} className={`text-amber-400 ${size}`} />;
+      default: return <FaFileAlt size={64} className={`text-gray-500 ${size}`} />;
     }
   };
 
@@ -82,8 +99,10 @@ export default function LearnerContentPage() {
   };
 
   const handleFolderClick = (folder) => {
-    setCurrentPath([...currentPath, folder]);
-    setCurrentFolder(folder);
+    if (folder.isFolder) {
+      setCurrentPath([...currentPath, folder]);
+      setCurrentFolder(folder);
+    }
   };
 
   const handleBackClick = () => {
@@ -95,26 +114,55 @@ export default function LearnerContentPage() {
     }
   };
 
+  const handleNavigateToPath = (index) => {
+    if (index === -1) {
+      setCurrentFolder(null);
+      setCurrentPath([]);
+    } else {
+      const folder = currentPath[index];
+      setCurrentFolder(folder);
+      setCurrentPath(currentPath.slice(0, index + 1));
+    }
+  };
+
   const handleDownload = (item, e) => {
     e.stopPropagation();
     if (item.url) {
-      window.open(item.url, '_blank');
+      window.open(BASE_URL + item.url, '_blank');
     } else {
       alert(`Downloading: ${item.name}`);
     }
   };
 
   const handlePreview = (item) => {
-    navigate(`preview/${item.id}`, { state: { file: item } });
+    setPreviewItem(item);
+    setShowPreviewModal(true);
   };
 
   const content = getCurrentContent();
 
-  if (!fileSystem) {
+  if (loading) {
     return (
-      <div className="w-full overflow-y-auto h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="text-center py-20">
+      <div className="w-full flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+          <p className="text-gray-500">Loading content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!fileSystem || (fileSystem.children.length === 0 && !currentFolder)) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4 text-sm transition"
+          >
+            <FaArrowLeft size={14} /> Back
+          </button>
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
             <FaFolder size={60} className="text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No content available for this unit standard</p>
           </div>
@@ -124,141 +172,286 @@ export default function LearnerContentPage() {
   }
 
   return (
-    <div className="w-full overflow-y-auto h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl">
-              <FaFolder size={40} className="text-amber-300 text-xl" />
+    <div className="w-full overflow-y-auto h-screen bg-gray-50">
+      <div className="px-6 py-6">
+
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4 text-sm transition"
+        >
+          <FaArrowLeft size={14} /> Back
+        </button>
+
+        {/* Header Card - Unit Standard Info */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+          <div className="flex justify-between items-start flex-wrap gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <span className="font-mono text-sm font-bold text-gray-800 bg-gray-100 px-2 py-1 rounded">
+                  ID: {unitStandard?.unitStandardId}
+                </span>
+                <span className={`text-xs px-2 py-1 rounded-full ${unitStandard?.type === 'CORE' ? 'bg-green-100 text-green-700' :
+                    unitStandard?.type === 'FUNDAMENTAL' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                  }`}>
+                  {unitStandard?.type}
+                </span>
+                <span className="text-xs text-gray-400">
+                  {unitStandard?.programName}
+                </span>
+              </div>
+              <h1 className="text-xl font-bold text-gray-800 mb-2">{unitStandard?.title}</h1>
+              <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                <span className="flex items-center gap-1">⭐ {unitStandard?.credits} credits</span>
+                <span className="flex items-center gap-1">🎓 {unitStandard?.nqfLevel}</span>
+                <span className="flex items-center gap-1">📚 {unitStandard?.contentCount || 0} resources</span>
+              </div>
             </div>
-            <h1 className="text-3xl m-0 font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-              {unitStandard?.title || 'Course Content'}
-            </h1>
           </div>
-          <p className="text-gray-500 ml-2">
-            {unitStandard?.programName} • {unitStandard?.credits} credits • {unitStandard?.nqfLevel}
-          </p>
+          {unitStandard?.description && (
+            <p className="text-gray-600 text-sm mt-4 leading-relaxed">{unitStandard.description}</p>
+          )}
         </div>
 
         {/* Breadcrumb Navigation */}
         <div className="flex items-center gap-2 mb-6 text-sm">
           <button
             onClick={handleBackClick}
-            className={`bg-transparent flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${!currentFolder
-              ? 'opacity-50 cursor-not-allowed text-gray-400'
-              : 'hover:bg-gray-200 text-gray-700'
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${currentFolder
+                ? 'text-gray-600 hover:bg-gray-100'
+                : 'text-gray-300 cursor-not-allowed'
               }`}
             disabled={!currentFolder}
           >
-            <ArrowLeft size={19} /> Back
+            <FaArrowLeft size={14} /> Back
           </button>
 
-          <div className="flex items-center gap-2 text-gray-600">
-            <span className="font-medium text-gray-500">Content Library</span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleNavigateToPath(-1)}
+              className="text-gray-500 hover:text-gray-700 px-2 py-1 rounded-lg transition"
+            >
+              Content
+            </button>
             {currentPath.map((folder, index) => (
-              <span key={index} className="flex items-center gap-2">
-                <ChevronRight size={19} />
-                <span className="text-gray-500 font-medium">{folder.name}</span>
+              <span key={index} className="flex items-center gap-1">
+                <FaChevronRight size={12} className="text-gray-400" />
+                <button
+                  onClick={() => handleNavigateToPath(index)}
+                  className="text-gray-600 hover:text-gray-800 px-2 py-1 rounded-lg transition"
+                >
+                  {folder.name}
+                </button>
               </span>
             ))}
           </div>
         </div>
 
-        {/* Folder/File Grid */}
-        {!currentFolder ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-5">
-            {content.map((item) => (
-              <div key={item.id} className="cursor-pointer">
-                <div
-                  onClick={() => handleFolderClick(item)}
-                  className='flex items-center rounded flex-col hover:bg-gray-100 p-3 transition'
-                >
-                  <FaFolder size={100} className='text-amber-300' />
-                  <span className="mt-2 text-center text-gray-700">{item.name}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-                <FaFolder className="text-amber-300" />
-                {currentFolder.name}
-              </h4>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {content.map((item) => (
-                <div key={item.id} className="p-3 hover:bg-gray-50 transition group">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="p-2 bg-gray-100 rounded-xl group-hover:bg-purple-100 transition">
-                        {getFileIcon(item.type)}
-                      </div>
+        {/* Content Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {content.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => item.isFolder ? handleFolderClick(item) : null}
+              className={`bg-white rounded-xl border border-gray-200 p-4 transition group ${item.isFolder ? 'cursor-pointer hover:shadow-md' : ''
+                }`}
+            >
+              <div className="flex flex-col items-center text-center">
+                {item.isFolder ? (
+                  <FaFolder size={64} className="text-amber-400 group-hover:scale-105 transition" />
+                ) : (
+                  getFileIcon(item.type, item.name, "text-5xl")
+                )}
 
-                      <div className="flex-1">
-                        <h6 className="font-medium text-gray-800 mb-1">{item.name}</h6>
-                        <div className="flex gap-3 text-xs text-gray-500">
-                          {item.type === 'video' && item.duration && (
-                            <span className="flex items-center gap-1">🎬 Duration: {item.duration}</span>
-                          )}
-                          {item.size && (
-                            <span className="flex items-center gap-1">📦 Size: {item.size}</span>
-                          )}
-                          {item.type === 'link' && (
-                            <span className="flex items-center gap-1">🔗 External resource</span>
-                          )}
-                          <span className="capitalize">• {item.type}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      {item.type === 'link' ? (
-                        <button 
-                          onClick={() => window.open(item.externalUrl, '_blank')} 
-                          className="px-4 py-2 bg-cyan-50 text-cyan-600 rounded-xl text-sm font-medium hover:bg-cyan-100 transition flex items-center gap-2"
-                        >
-                          <FaExternalLinkAlt size={12} /> Visit
-                        </button>
-                      ) : (
-                        <div className='grid grid-cols-2 gap-2'>
-                          <Button
-                            onClick={(e) => handleDownload(item, e)}
-                            variant='success'
-                            size='sm'
-                            className='font-semibold flex items-center gap-1'
-                          >
-                            <Download size={18} /> Download
-                          </Button>
-                          <Button
-                            size='sm'
-                            className="text-white font-semibold flex items-center gap-1"
-                            variant='warning'
-                            onClick={() => handlePreview(item)}
-                          >
-                            <Eye size={18} /> Preview
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                <p className="mt-2 text-sm font-medium text-gray-700 break-words text-center max-w-full line-clamp-2">
+                  {item.name}
+                </p>
+                
+                {item.isFolder ? (
+                  <p className="text-xs text-gray-400 mt-1">{item.children?.length || 0} items</p>
+                ) : (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownload(item, e);
+                      }}
+                      className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded text-xs hover:bg-emerald-100 transition flex items-center gap-1"
+                    >
+                      <FaDownload size={10} /> Download
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePreview(item);
+                      }}
+                      className="px-2 py-1 bg-amber-50 text-amber-600 rounded text-xs hover:bg-amber-100 transition flex items-center gap-1"
+                    >
+                      <FaEye size={10} /> Preview
+                    </button>
                   </div>
-                </div>
-              ))}
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
 
         {/* Empty State */}
         {content.length === 0 && (
-          <div className="bg-white rounded-2xl shadow-sm p-16 text-center">
-            <div className="text-6xl mb-4">📁</div>
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <FaFolder size={60} className="text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg">This folder is empty</p>
             <p className="text-gray-400 text-sm mt-2">No resources available yet</p>
           </div>
         )}
       </div>
+
+      {/* Preview Modal */}
+      <Modal show={showPreviewModal} onHide={() => setShowPreviewModal(false)} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="flex items-center gap-2">
+            <FaEye className="text-blue-500" />
+            Preview: {previewItem?.name}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-0">
+          
+          {/* Video Player */}
+          {previewItem?.type === 'VIDEO' && (
+            <div className="bg-black rounded-lg overflow-hidden">
+              <video 
+                controls 
+                autoPlay 
+                className="w-full"
+                style={{ maxHeight: '70vh' }}
+              >
+                <source src={BASE_URL + previewItem.url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          )}
+
+          {/* Audio Player */}
+          {previewItem?.type === 'MP3' && (
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-8 rounded-lg text-center">
+              <FaMusic size={80} className="text-purple-500 mx-auto mb-4" />
+              <h4 className="font-semibold text-gray-800 mb-2">{previewItem.name}</h4>
+              <p className="text-sm text-gray-500 mb-4">{previewItem.size}</p>
+              <audio controls className="w-full">
+                <source src={BASE_URL + previewItem.url} type="audio/mpeg" />
+                Your browser does not support the audio tag.
+              </audio>
+            </div>
+          )}
+
+          {/* Image Preview */}
+          {previewItem?.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i) && (
+            <div className="bg-gray-100 rounded-lg p-4 text-center min-h-[400px] flex items-center justify-center">
+              <img 
+                src={BASE_URL + previewItem.url} 
+                alt={previewItem.name}
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                onError={(e) => {
+                  e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+                }}
+              />
+            </div>
+          )}
+
+          {/* PDF Preview */}
+          {previewItem?.type === 'PDF' && (
+            <div className="bg-gray-100 rounded-lg p-4 min-h-[500px]">
+              <iframe
+                src={`${BASE_URL}${previewItem.url}`}
+                className="w-full h-[70vh] border-0 rounded-lg"
+                title={previewItem.name}
+              />
+            </div>
+          )}
+
+          {/* DOCX Preview - Google Docs Viewer */}
+          {previewItem?.type === 'DOCX' && (
+            <div className="bg-gray-100 rounded-lg p-4 min-h-[500px]">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                <p className="text-sm text-yellow-700">
+                  📄 Word document preview. If the document doesn't load, please download to view.
+                </p>
+              </div>
+              <iframe
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(BASE_URL + previewItem.url)}&embedded=true`}
+                className="w-full h-[60vh] border-0 rounded-lg"
+                title={previewItem.name}
+              />
+            </div>
+          )}
+
+          {/* XLSX Preview - Google Docs Viewer */}
+          {previewItem?.type === 'XLSX' && (
+            <div className="bg-gray-100 rounded-lg p-4 min-h-[500px]">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                <p className="text-sm text-yellow-700">
+                  📊 Excel spreadsheet preview. If the spreadsheet doesn't load, please download to view.
+                </p>
+              </div>
+              <iframe
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(BASE_URL + previewItem.url)}&embedded=true`}
+                className="w-full h-[60vh] border-0 rounded-lg"
+                title={previewItem.name}
+              />
+            </div>
+          )}
+
+          {/* PPTX Preview - Google Docs Viewer */}
+          {previewItem?.type === 'PPTX' && (
+            <div className="bg-gray-100 rounded-lg p-4 min-h-[500px]">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                <p className="text-sm text-yellow-700">
+                  📽️ PowerPoint preview. If the presentation doesn't load, please download to view.
+                </p>
+              </div>
+              <iframe
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(BASE_URL + previewItem.url)}&embedded=true`}
+                className="w-full h-[60vh] border-0 rounded-lg"
+                title={previewItem.name}
+              />
+            </div>
+          )}
+
+          {/* Link Preview */}
+          {previewItem?.type === 'LINK' && (
+            <div className="bg-gray-100 rounded-lg p-4 min-h-[500px]">
+              <iframe
+                src={previewItem.externalUrl}
+                className="w-full h-[70vh] border-0 rounded-lg"
+                title={previewItem.name}
+              />
+            </div>
+          )}
+
+          {/* Other/Unknown File Types */}
+          {previewItem?.type === 'OTHER' && !previewItem?.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i) && (
+            <div className="bg-gray-100 rounded-lg p-8 text-center">
+              <FaFileAlt size={80} className="text-gray-400 mx-auto mb-4" />
+              <h4 className="font-semibold text-gray-800 mb-2">{previewItem.name}</h4>
+              <p className="text-gray-500 mb-4">{previewItem.size}</p>
+              <p className="text-sm text-gray-400 mb-4">Preview not available for this file type</p>
+              <Button variant="primary" onClick={() => window.open(BASE_URL + previewItem.url, '_blank')}>
+                <FaDownload className="inline mr-2" /> Download
+              </Button>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowPreviewModal(false)}>
+            Close
+          </Button>
+          {previewItem?.type !== 'LINK' && previewItem?.url && (
+            <Button variant="primary" onClick={() => window.open(BASE_URL + previewItem.url, '_blank')}>
+              <FaDownload className="inline mr-2" /> Download
+            </Button>
+          )}
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
