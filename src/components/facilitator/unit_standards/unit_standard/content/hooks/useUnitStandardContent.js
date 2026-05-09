@@ -95,6 +95,17 @@ export const useUnitStandardContent = (unitStandardId) => {
     }
   };
 
+  const bulkDeleteItems = async (ids) => {
+    if (!window.confirm(`Delete ${ids.length} item(s)?`)) return;
+
+    try {
+      await UnitStandardContentService.bulkDeleteItems(ids);
+      await (currentFolder ? loadContents(currentFolder.id) : loadRoot());
+    } catch (error) {
+      console.error('Error bulk deleting items:', error);
+    }
+  };
+
   const refresh = () => currentFolder ? loadContents(currentFolder.id) : loadRoot();
 
   return {
@@ -110,6 +121,7 @@ export const useUnitStandardContent = (unitStandardId) => {
     uploadFile,
     renameItem,
     deleteItem,
+    bulkDeleteItems,  // Add this if you need bulk delete
     refresh
   };
 };

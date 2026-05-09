@@ -2,9 +2,11 @@ import { apiFetch } from '@/api/api';
 import { BASE_URL } from '@/utils/apiEndpoint';
 
 // Helper to detect content type from file extension
+// Helper to detect content type from file extension
 const getContentTypeFromFile = (fileName) => {
   const ext = fileName.split('.').pop().toLowerCase();
   const typeMap = {
+    // Documents
     'pdf': 'PDF',
     'docx': 'DOCX',
     'doc': 'DOCX',
@@ -12,18 +14,46 @@ const getContentTypeFromFile = (fileName) => {
     'xls': 'XLSX',
     'pptx': 'PPTX',
     'ppt': 'PPTX',
+    // Images - Changed from OTHER to IMAGE
+    'jpg': 'IMAGE',
+    'jpeg': 'IMAGE',
+    'png': 'IMAGE',
+    'gif': 'IMAGE',
+    'webp': 'IMAGE',
+    'svg': 'IMAGE',
+    'bmp': 'IMAGE',
+    // Videos
     'mp4': 'VIDEO',
     'mov': 'VIDEO',
     'avi': 'VIDEO',
     'webm': 'VIDEO',
-    'jpg': 'OTHER',
-    'jpeg': 'OTHER',
-    'png': 'OTHER',
-    'gif': 'OTHER',
-    'txt': 'OTHER',
-    'zip': 'OTHER',
-    'rar': 'OTHER'
+    'mkv': 'VIDEO',
+    // Audio
+    'mp3': 'AUDIO',
+    'wav': 'AUDIO',
+    'ogg': 'AUDIO',
+    'm4a': 'AUDIO',
+    'flac': 'AUDIO',
+    // Text/Code
+    'txt': 'TEXT',
+    'js': 'TEXT',
+    'jsx': 'TEXT',
+    'ts': 'TEXT',
+    'tsx': 'TEXT',
+    'css': 'TEXT',
+    'scss': 'TEXT',
+    'html': 'TEXT',
+    'htm': 'TEXT',
+    'json': 'TEXT',
+    'xml': 'TEXT',
+    'csv': 'TEXT',
+    'md': 'TEXT',
+    // Archives
+    'zip': 'ARCHIVE',
+    'rar': 'ARCHIVE',
+    '7z': 'ARCHIVE'
   };
+
   return typeMap[ext] || 'OTHER';
 };
 
@@ -37,26 +67,26 @@ export const UnitStandardContentService = {
   },
 
   // Get root content for a unit standard (alias)
-  getUnitStandardContents: (unitStandardId) => 
+  getUnitStandardContents: (unitStandardId) =>
     apiFetch(`/api/content/unit-standard/${unitStandardId}`),
 
   // Get children of a folder
-  getChildren: (parentId) => 
+  getChildren: (parentId) =>
     apiFetch(`/api/content/children/${parentId}`),
 
   // Get children for a specific unit standard folder
-  getUnitStandardChildren: (parentId, unitStandardId) => 
+  getUnitStandardChildren: (parentId, unitStandardId) =>
     apiFetch(`/api/content/unit-standard/${unitStandardId}/children/${parentId}`),
 
   // Create folder for a unit standard
-  createFolder: (name, unitStandardId, parentId = null) => 
+  createFolder: (name, unitStandardId, parentId = null) =>
     apiFetch("/api/content", {
       method: "POST",
-      body: JSON.stringify({ 
-        name, 
-        type: "FOLDER", 
-        unitStandardId: parseInt(unitStandardId), 
-        parentId 
+      body: JSON.stringify({
+        name,
+        type: "FOLDER",
+        unitStandardId: parseInt(unitStandardId),
+        parentId
       })
     }),
 
@@ -73,13 +103,13 @@ export const UnitStandardContentService = {
       if (parentId) formData.append("parentId", parentId);
 
       const xhr = new XMLHttpRequest();
-      
+
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
           onProgress?.(Math.round((e.loaded / e.total) * 100));
         }
       });
-      
+
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
@@ -92,10 +122,10 @@ export const UnitStandardContentService = {
           reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
         }
       };
-      
+
       xhr.onerror = () => reject(new Error('Network error'));
       xhr.ontimeout = () => reject(new Error('Upload timeout'));
-      
+
       xhr.open('POST', `${BASE_URL}/api/content/upload`);
       xhr.withCredentials = true;
       xhr.send(formData);
@@ -103,13 +133,20 @@ export const UnitStandardContentService = {
   },
 
   // Rename content
-  renameItem: (id, newName) => 
-    apiFetch(`/api/content/${id}`, { 
-      method: "PUT", 
-      body: JSON.stringify({ name: newName }) 
+  renameItem: (id, newName) =>
+    apiFetch(`/api/content/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ name: newName })
     }),
 
   // Delete content
-  deleteItem: (id) => 
-    apiFetch(`/api/content/${id}`, { method: "DELETE" })
+  deleteItem: (id) =>
+    apiFetch(`/api/content/${id}`, { method: "DELETE" }),
+
+  bulkDeleteItems: (ids) =>
+    apiFetch(`/api/content/bulk`, {
+      method: "DELETE",
+      body: JSON.stringify(ids)
+    }),
 };
+

@@ -3,15 +3,17 @@ import { useApiResponse } from '@/contexts/ApiResponseContext';
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Form } from 'react-bootstrap';
 import { FaArrowLeft, FaBook, FaCode, FaFileAlt, FaGraduationCap, FaSave, FaStar, FaTag } from 'react-icons/fa';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 export default function UnitStandardFormPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = !!id;
-  const {programId} = useParams()
-  const [response,setResponse] = useState(null)
-  const {showResponse} = useApiResponse()
+  const location = useLocation()
+  const { programId } = useParams()
+  const { unitStandard } = location?.state || {}
+  const [response, setResponse] = useState(null)
+  const { showResponse } = useApiResponse()
 
   const [formData, setFormData] = useState({
     unitStandardId: '',
@@ -26,14 +28,14 @@ export default function UnitStandardFormPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && unitStandard) {
       setFormData({
-        unitStandardId: '14933',
-        title: 'Apply comprehension of spoken texts in a defined context',
-        description: 'Learners will be able to understand and interpret spoken texts in various contexts.',
-        credits: '5',
-        nqfLevel: 'NQF Level 4',
-        type: 'Fundamental',
+        unitStandardId: unitStandard?.unitStandardId,
+        title: unitStandard?.title,
+        description: unitStandard?.description,
+        credits: unitStandard?.credits,
+        nqfLevel: unitStandard?.nqfLevel,
+        type: unitStandard?.type,
       });
     }
   }, [isEditing, id]);
@@ -45,7 +47,7 @@ export default function UnitStandardFormPage() {
 
     try {
       const submitData = {
-        unitStandardId:formData?.unitStandardId,
+        unitStandardId: formData?.unitStandardId,
         title: formData.title,
         description: formData.description,
         credits: parseInt(formData.credits),
@@ -57,22 +59,22 @@ export default function UnitStandardFormPage() {
       var data;
 
       if (isEditing) {
-       data= await apiFetch(`/api/unit-standards/${unitStandardId}`, {
+        data = await apiFetch(`/api/unit-standards/${unitStandardId}`, {
           method: 'PUT',
           body: submitData
         });
       } else {
-       data= await apiFetch('/api/unit-standards', {
+        data = await apiFetch('/api/unit-standards', {
           method: 'POST',
           body: submitData
         });
       }
 
-      
+
       setResponse(data)
       showResponse(data)
     } catch (err) {
-      setError('Failed to save unit standard'+err.message);
+      console.log('Failed to save unit standard' + err.message);
     } finally {
       setLoading(false);
     }
