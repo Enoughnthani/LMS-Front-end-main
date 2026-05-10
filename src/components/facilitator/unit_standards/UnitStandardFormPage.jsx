@@ -59,7 +59,7 @@ export default function UnitStandardFormPage() {
       var data;
 
       if (isEditing) {
-        data = await apiFetch(`/api/unit-standards/${unitStandardId}`, {
+        data = await apiFetch(`/api/unit-standards/${formData?.unitStandardId}`, {
           method: 'PUT',
           body: submitData
         });
@@ -74,7 +74,7 @@ export default function UnitStandardFormPage() {
       setResponse(data)
       showResponse(data)
     } catch (err) {
-      console.log('Failed to save unit standard' + err.message);
+      console.log('Failed to save unit standard');
     } finally {
       setLoading(false);
     }
@@ -132,9 +132,10 @@ export default function UnitStandardFormPage() {
                 <Form.Group>
                   <Form.Label className="text-sm font-semibold text-gray-700 mb-1">
                     <FaCode className="inline mr-1 text-blue-500" size={12} />
-                    Unit Standard Code *
+                    SAQA ID *
                   </Form.Label>
                   <Form.Control
+                    disabled={isEditing}
                     type="text"
                     name="unitStandardId"
                     placeholder="e.g., 14933"

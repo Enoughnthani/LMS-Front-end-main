@@ -342,7 +342,6 @@ const ProgramView = ({ onEdit, onDelete }) => {
                 program={program}
             />
 
-            {/* Rest of your existing component JSX remains the same */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
                 {/* Header Navigation */}
                 <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
@@ -370,7 +369,7 @@ const ProgramView = ({ onEdit, onDelete }) => {
                     </div>
                 </div>
 
-                {/* Hero Section - Keep your existing hero section code */}
+                
                 <div className="relative rounded-2xl overflow-hidden shadow-xl mb-8">
                     <div className="absolute inset-0">
                         <img
@@ -451,7 +450,7 @@ const ProgramView = ({ onEdit, onDelete }) => {
                     </div>
                 </div>
 
-                {/* Tab Navigation */}
+                
                 <div className="mb-6 border-b border-gray-200">
                     <nav className="flex gap-6 overflow-x-auto">
                         {[

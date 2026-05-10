@@ -35,7 +35,6 @@ import FacilitatorProgramView from "./components/facilitator/view/FacilitatorPro
 import InternPage from "./components/intern/InternPage";
 import InternOverview from "./components/intern/overview/InternOverview";
 import InternReportPage from "./components/intern/reports/InternReportPage";
-import CourseAnnouncementPage from "./components/learner/anouncement/CourseAnnouncementPage";
 import AssessmentDetailPage from "./components/learner/assessment/AssessmentDetailPage";
 import ContentPage from "./components/learner/content/LearnerContentPage";
 import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
@@ -178,7 +177,7 @@ export default function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="unit-standard/:unitStandardId" element={<CourseViewPage />} >
 
-            <Route index element={<CourseAnnouncementPage />} />
+            <Route index element={<UnitStandardOverview />} />
             <Route path="content" element={<ContentPage />} />
             
             <Route path="assessment" element={<AssessmentPage />} />

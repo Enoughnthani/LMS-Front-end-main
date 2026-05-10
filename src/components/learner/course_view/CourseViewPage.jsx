@@ -2,7 +2,7 @@
 import { apiFetch } from "@/api/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { GETUSERS } from "@/utils/apiEndpoint";
-import { Home, LogOut, Megaphone, Podcast, Radio, Settings } from "lucide-react";
+import { Eye, Home, LogOut, Megaphone, Podcast, Radio, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import {
@@ -45,10 +45,9 @@ export const CourseViewPage = () => {
                 <ul className="p-1">
                     {[
                         { icon: <Home />, label: "Home", path: '/user/learner' },
-                        { icon: <Megaphone />, label: "Anoucement", path: '' },
+                        { icon: <Eye />, label: "Overview", path: '' },
                         { icon: <FaBook />, label: "Content", path: 'content' },
                         { icon: <FaClipboardList />, label: "Assessment", path: 'assessment' },
-                        { icon: <FaComments />, label: "Discussion", path: 'discussion' },
                     ].map((item, idx) => {
                         const isLogout = item.label === "Logout";
                         return (
