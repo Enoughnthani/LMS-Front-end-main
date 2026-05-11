@@ -56,6 +56,7 @@ import ProgramView from "./components/program_manager/view/ProgramView";
 import StaffDashboard from "./components/staff/StaffDashboard";
 import AssessmentViewPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentViewPage";
 import LearnerAssessmentPage from "./components/learner/assessment/LearnerAssessmentPage";
+import AssessmentFormPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentFormPage";
 
 export default function App() {
 
@@ -134,10 +135,12 @@ export default function App() {
             <Route path="learners" element={<EnrolledLearnerView />} />
           </Route>
           <Route path="program-view/:programId/unit-standards/:unitStandardId" element={<UnitStandardView />} >
-            <Route index element={<UnitStandardOverview/>}/>
+            <Route index element={<UnitStandardOverview />} />
             <Route path="content" element={<UnitStandardResources />} />
             <Route path="assessments" element={<AssessmentPage />} />
             <Route path="assessments/:assessmentId" element={<AssessmentViewPage />} />
+            <Route path="assessments/new" element={<AssessmentFormPage />} />
+            <Route path="assessments/:assessmentId/edit" element={<AssessmentFormPage />} />
           </Route>
         </Route>
 
@@ -182,7 +185,7 @@ export default function App() {
 
             <Route index element={<UnitStandardOverview />} />
             <Route path="content" element={<ContentPage />} />
-            
+
             <Route path="assessment" element={<LearnerAssessmentPage />} />
             <Route path="assessment/:id" element={<AssessmentDetailPage />} />
             <Route path="discussion" element={<DiscussionPage />} />

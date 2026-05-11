@@ -96,7 +96,7 @@ export const UnitStandardContentService = {
       const formData = new FormData();
       formData.append("file", file);
       const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-      formData.append("name", nameWithoutExt);
+      formData.append("name", file.name);
       const contentType = getContentTypeFromFile(file.name);
       formData.append("type", contentType);
       formData.append("unitStandardId", unitStandardId);
@@ -148,5 +148,11 @@ export const UnitStandardContentService = {
       method: "DELETE",
       body: JSON.stringify(ids)
     }),
+
+  downloadContentFile: (fileUrl, originalFileName) => {
+    const filename = fileUrl.split('/').pop();
+    const downloadUrl = `${BASE_URL}/uploads/content/${filename}/download?originalName=${encodeURIComponent(originalFileName)}`;
+    window.open(downloadUrl, '_blank');
+  },
 };
 

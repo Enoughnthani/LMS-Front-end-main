@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FaPlus, FaSearch, FaBook, FaClipboardList } from 'react-icons/fa';
-import { Accordion } from 'react-bootstrap';
+import { Accordion, Button } from 'react-bootstrap';
 import AssessmentCard from './AssessmentCard';
-import AssessmentModal from './AssessmentModal';
+import AssessmentModal from './AssessmentFormPage';
 import SubmissionsModal from './SubmissionsModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import { assessmentService } from './services/assessmentService';
@@ -19,6 +19,7 @@ export default function FacilitatorAssessmentPage() {
   const [editingItem, setEditingItem] = useState(null);
   const [selectedAssessment, setSelectedAssessment] = useState(null);
   const [activeAccordion, setActiveAccordion] = useState(['0']);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadAssessments();
@@ -30,7 +31,7 @@ export default function FacilitatorAssessmentPage() {
       // Actual API call to fetch assessments
       const response = await assessmentService.getAssessments(unitStandardId);
       const data = response?.payload || response || [];
-      
+
       const grouped = {
         learnerWorkbooks: data?.filter(a => a.type === 'LEARNER_WORKBOOK') || [],
         summative: data?.filter(a => a.type === 'SUMMATIVE') || []
@@ -58,23 +59,21 @@ export default function FacilitatorAssessmentPage() {
   return (
     <div className="w-full h-screen overflow-y-auto bg-gray-50">
       <div className="max-w-5xl mx-auto px-6 py-8">
-        
+
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Assessments</h1>
             <p className="text-sm text-gray-500 mt-1">Create and manage learner assessments</p>
           </div>
-          <button 
-            onClick={() => {
-              setEditingItem(null);
-              setShowModal(true);
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-sm"
+          <Button
+            onClick={() => navigate(`new`)}
+            variant="success"
+            className='flex items-center gap-2 font-medium'
           >
             <FaPlus size={14} />
-            <span>New Assessment</span>
-          </button>
+            <span >New Assessment</span>
+          </Button>
         </div>
 
         {/* Search Bar */}
@@ -91,15 +90,15 @@ export default function FacilitatorAssessmentPage() {
           </div>
         </div>
 
-       
-        <Accordion 
-          activeKey={activeAccordion} 
+
+        <Accordion
+          activeKey={activeAccordion}
           onSelect={(e) => setActiveAccordion(e)}
           className="space-y-4"
         >
           {/* Learner Workbooks */}
-          <Accordion.Item eventKey="0" className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-            <Accordion.Header className="px-5 py-3 hover:bg-gray-50 transition-colors">
+          <Accordion.Item eventKey="0" className="border border-gray-200 rounded overflow-hidden bg-white">
+            <Accordion.Header>
               <div className="flex items-center gap-3 w-full">
                 <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
                   <FaBook className="text-blue-600 text-sm" />
@@ -121,7 +120,7 @@ export default function FacilitatorAssessmentPage() {
               ) : (
                 <div className="space-y-3">
                   {filterItems(assessments.learnerWorkbooks).map(item => (
-                    <AssessmentCard 
+                    <AssessmentCard
                       key={item.id}
                       item={item}
                       onEdit={() => {
@@ -144,8 +143,8 @@ export default function FacilitatorAssessmentPage() {
           </Accordion.Item>
 
           {/* Summative Assessments */}
-          <Accordion.Item eventKey="1" className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-            <Accordion.Header className="px-5 py-3 hover:bg-gray-50 transition-colors">
+          <Accordion.Item eventKey="1" className="border border-gray-200 rounded overflow-hidden bg-white">
+            <Accordion.Header > 
               <div className="flex items-center gap-3 w-full">
                 <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
                   <FaClipboardList className="text-purple-600 text-sm" />
@@ -167,7 +166,7 @@ export default function FacilitatorAssessmentPage() {
               ) : (
                 <div className="space-y-3">
                   {filterItems(assessments.summative).map(item => (
-                    <AssessmentCard 
+                    <AssessmentCard
                       key={item.id}
                       item={item}
                       onEdit={() => {
@@ -191,22 +190,15 @@ export default function FacilitatorAssessmentPage() {
         </Accordion>
       </div>
 
-      {/* Modals */}
-      <AssessmentModal 
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        editingItem={editingItem}
-        unitStandardId={unitStandardId}
-        onRefresh={loadAssessments}
-      />
 
-      <SubmissionsModal 
+
+      <SubmissionsModal
         show={showSubmissionsModal}
         onHide={() => setShowSubmissionsModal(false)}
         assessment={selectedAssessment}
       />
 
-      <DeleteConfirmModal 
+      <DeleteConfirmModal
         show={showDeleteModal}
         onHide={() => setShowDeleteModal(false)}
         item={editingItem}

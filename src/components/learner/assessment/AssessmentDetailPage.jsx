@@ -26,7 +26,7 @@ export default function AssessmentDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    // Load draft from localStorage
+  
     if (assessment) {
       const savedDraft = localStorage.getItem(`draft_${assessment.id}`);
       if (savedDraft) {
@@ -80,15 +80,6 @@ export default function AssessmentDetailPage() {
     }
   };
 
-  const handleSaveDraft = () => {
-    if (answer.trim()) {
-      localStorage.setItem(`draft_${assessment?.id}`, answer);
-      setSaveStatus('Draft saved successfully!');
-      setTimeout(() => setSaveStatus(''), 2000);
-    } else {
-      alert('Please write something before saving draft');
-    }
-  };
 
   const handleSubmit = async () => {
     if (!answer.trim() && !uploadedFile) {
@@ -215,7 +206,7 @@ export default function AssessmentDetailPage() {
                   <Button 
                     variant="outline-primary" 
                     size="sm"
-                    onClick={() => assessmentService.downloadAssessmentFile(assessment.fileUrl)}
+                    onClick={() => assessmentService.downloadAssessmentFile(assessment.fileUrl,assessment.fileName)}
                     className="flex items-center gap-2"
                   >
                     <FaDownload size={14} /> Download Assessment
@@ -379,14 +370,6 @@ export default function AssessmentDetailPage() {
 
         {/* Action Buttons */}
         <div className="flex gap-3 justify-end">
-          <Button
-            variant="outline-secondary"
-            onClick={handleSaveDraft}
-            disabled={submitting}
-            className="flex items-center gap-2"
-          >
-            <FaSave size={14} /> Save Draft
-          </Button>
           <Button
             variant="primary"
             onClick={handleSubmit}

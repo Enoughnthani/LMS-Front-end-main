@@ -121,7 +121,7 @@ export const useUnitStandardContent = (unitStandardId) => {
     uploadFile,
     renameItem,
     deleteItem,
-    bulkDeleteItems,  // Add this if you need bulk delete
+    bulkDeleteItems,  
     refresh
   };
 };

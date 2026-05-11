@@ -20,17 +20,26 @@ export default function AssessmentViewPage() {
 
   useEffect(() => {
     loadAssessment();
-    loadSubmissions();
   }, [assessmentId]);
 
   const loadAssessment = async () => {
+    setLoading(true);
     try {
       const response = await assessmentService.getAssessmentById(assessmentId);
       const data = response?.payload || response;
       setAssessment(data);
+      // Extract submissions from assessmentSubmissionDTO
+      if (data?.assessmentSubmissionDTO) {
+        setSubmissions(data.assessmentSubmissionDTO);
+      } else {
+        // Fallback to separate API call if needed
+        await loadSubmissions();
+      }
     } catch (err) {
       setError('Failed to load assessment');
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,8 +50,6 @@ export default function AssessmentViewPage() {
       setSubmissions(data);
     } catch (err) {
       console.error('Error loading submissions:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -67,6 +74,14 @@ export default function AssessmentViewPage() {
         <FaClock size={10} /> Pending
       </span>
     );
+  };
+
+  const handleDownloadAssessment = () => {
+    if (assessment?.fileUrl && assessment?.fileName) {
+      assessmentService.downloadAssessmentFile(assessment.fileUrl, assessment.fileName);
+    } else if (assessment?.fileUrl) {
+      assessmentService.downloadAssessmentFile(assessment.fileUrl, assessment.fileName || 'assessment');
+    }
   };
 
   if (loading) {
@@ -149,12 +164,12 @@ export default function AssessmentViewPage() {
                   <div className="flex items-center gap-3">
                     {getFileIcon(assessment.fileName)}
                     <div>
-                      <p className="font-medium text-gray-800">{assessment.fileName}</p>
+                      <p className="font-medium text-gray-800">{assessment.fileName || 'Assessment File'}</p>
                       <p className="text-xs text-gray-400">Assessment file</p>
                     </div>
                   </div>
                   <button
-                    onClick={() => assessmentService.downloadAssessmentFile(assessment.fileUrl)}
+                    onClick={handleDownloadAssessment}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2"
                   >
                     <FaDownloadIcon size={14} /> Download Assessment

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Spinner } from 'react-bootstrap';
-import { FaEye, FaDownload, FaFileAlt, FaFileWord } from 'react-icons/fa';
+import { FaEye, FaDownload, FaFileAlt, FaFileWord, FaFilePdf, FaFileExcel, FaFilePowerpoint, FaVideo, FaMusic, FaFileImage, FaFileCode } from 'react-icons/fa';
 import { BASE_URL } from '@/utils/apiEndpoint';
+
 
 export default function PreviewModal({ show, onHide, item }) {
   const [loading, setLoading] = useState(true);
@@ -32,22 +33,19 @@ export default function PreviewModal({ show, onHide, item }) {
 
   const getDownloadUrl = () => {
     if (!item?.fileUrl) return '';
-    // Extract filename from URL
     const filename = item.fileUrl.split('/').pop();
-    // Use download endpoint
+    
+    if (item?.name) {
+      return `${BASE_URL}/uploads/content/${filename}/download?originalName=${encodeURIComponent(item?.name)}`;
+    }
     return `${BASE_URL}/uploads/content/${filename}/download`;
   };
 
   const handleDownload = () => {
     const downloadUrl = getDownloadUrl();
+    console.log(downloadUrl)
     if (downloadUrl) {
-      // Create a temporary anchor element to trigger download
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = item?.name || filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      window.open(downloadUrl, '_blank');
     }
   };
 
@@ -61,7 +59,8 @@ export default function PreviewModal({ show, onHide, item }) {
       const extension = getFileExtension();
 
       // For text/code files, fetch the content
-      if (fileType === 'TEXT' || (fileType === 'OTHER' && ['txt', 'js', 'jsx', 'ts', 'tsx', 'css', 'html', 'json', 'xml', 'csv', 'md'].includes(extension))) {
+      const isTextFile = ['txt', 'js', 'jsx', 'ts', 'tsx', 'css', 'html', 'json', 'xml', 'csv', 'md'].includes(extension);
+      if (fileType === 'TEXT' || (fileType === 'OTHER' && isTextFile)) {
         const response = await fetch(fileUrl);
         const text = await response.text();
         setTextContent(text);
@@ -102,15 +101,15 @@ export default function PreviewModal({ show, onHide, item }) {
         <div className="text-center py-20">
           <FaFileAlt className="text-gray-400 text-5xl mx-auto mb-3" />
           <p className="text-red-500">{error}</p>
-          <Button variant="primary" size="sm" onClick={() => window.open(fileUrl, '_blank')} className="mt-3">
-            <FaDownload className="inline mr-2" /> Open in Browser
+          <Button variant="primary" size="sm" onClick={handleDownload} className="mt-3">
+            <FaDownload className="inline mr-2" /> Download
           </Button>
         </div>
       );
     }
 
     // IMAGE Preview
-    if (fileType === 'IMAGE') {
+    if (fileType === 'IMAGE' || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
       return (
         <div className="bg-gray-100 rounded-lg p-4 text-center">
           <img
@@ -126,7 +125,7 @@ export default function PreviewModal({ show, onHide, item }) {
     }
 
     // PDF Preview
-    if (fileType === 'PDF') {
+    if (fileType === 'PDF' || extension === 'pdf') {
       return (
         <div className="bg-gray-100 rounded-lg p-4 min-h-[500px]">
           <iframe
@@ -138,68 +137,8 @@ export default function PreviewModal({ show, onHide, item }) {
       );
     }
 
-    // Word Document Preview
-    if (fileType === 'DOCX') {
-      return (
-        <div className="bg-gray-100 rounded-lg p-6 text-center">
-          <FaFileWord size={80} className="text-blue-600 mx-auto mb-4" />
-          <h4 className="font-semibold text-gray-800 mb-2">{fileName}</h4>
-          <p className="text-gray-500 mb-4">{fileSize}</p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-            <p className="text-sm text-blue-700">
-              📄 Word document preview is not available in the browser.
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Download the file to view in Microsoft Word or compatible software.
-            </p>
-          </div>
-          <Button variant="primary" onClick={() => window.open(fileUrl, '_blank')}>
-            <FaDownload className="inline mr-2" /> Download to View
-          </Button>
-        </div>
-      );
-    }
-
-    // Excel Document Preview
-    if (fileType === 'XLSX') {
-      const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileUrl)}&embedded=true`;
-      return (
-        <div className="bg-gray-100 rounded-lg p-4 min-h-[500px]">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 mb-3 text-center">
-            <span className="text-sm text-yellow-700">
-              📊 Excel spreadsheet preview. If not loading, please download.
-            </span>
-          </div>
-          <iframe
-            src={googleViewerUrl}
-            className="w-full h-[65vh] border-0 rounded-lg"
-            title={fileName}
-          />
-        </div>
-      );
-    }
-
-    // PowerPoint Document Preview
-    if (fileType === 'PPTX') {
-      const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileUrl)}&embedded=true`;
-      return (
-        <div className="bg-gray-100 rounded-lg p-4 min-h-[500px]">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 mb-3 text-center">
-            <span className="text-sm text-yellow-700">
-              📽️ PowerPoint preview. If not loading, please download.
-            </span>
-          </div>
-          <iframe
-            src={googleViewerUrl}
-            className="w-full h-[65vh] border-0 rounded-lg"
-            title={fileName}
-          />
-        </div>
-      );
-    }
-
     // Video Preview
-    if (fileType === 'VIDEO') {
+    if (fileType === 'VIDEO' || ['mp4', 'webm', 'mov', 'avi'].includes(extension)) {
       return (
         <div className="bg-black rounded-lg overflow-hidden">
           <video
@@ -216,7 +155,7 @@ export default function PreviewModal({ show, onHide, item }) {
     }
 
     // Audio Preview
-    if (fileType === 'AUDIO') {
+    if (fileType === 'AUDIO' || ['mp3', 'wav', 'ogg', 'm4a'].includes(extension)) {
       return (
         <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-8 rounded-lg text-center">
           <div className="text-6xl mb-4">🎵</div>
@@ -230,8 +169,74 @@ export default function PreviewModal({ show, onHide, item }) {
       );
     }
 
+    // Word Document Preview
+    if (fileType === 'DOCX' || extension === 'docx' || extension === 'doc') {
+      return (
+        <div className="bg-gray-100 rounded-lg p-6 text-center">
+          <FaFileWord size={80} className="text-blue-600 mx-auto mb-4" />
+          <h4 className="font-semibold text-gray-800 mb-2">{fileName}</h4>
+          <p className="text-gray-500 mb-4">{fileSize}</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-blue-700">
+              📄 Word document preview is not available in the browser.
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              Click Download to view in Microsoft Word.
+            </p>
+          </div>
+          <Button variant="primary" onClick={handleDownload}>
+            <FaDownload className="inline mr-2" /> Download
+          </Button>
+        </div>
+      );
+    }
+
+    // Excel Document Preview
+    if (fileType === 'XLSX' || extension === 'xlsx' || extension === 'xls') {
+      return (
+        <div className="bg-gray-100 rounded-lg p-6 text-center">
+          <FaFileExcel size={80} className="text-green-600 mx-auto mb-4" />
+          <h4 className="font-semibold text-gray-800 mb-2">{fileName}</h4>
+          <p className="text-gray-500 mb-4">{fileSize}</p>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-green-700">
+              📊 Excel spreadsheet preview is not available in the browser.
+            </p>
+            <p className="text-xs text-green-600 mt-1">
+              Click Download to view in Microsoft Excel.
+            </p>
+          </div>
+          <Button variant="primary" onClick={handleDownload}>
+            <FaDownload className="inline mr-2" /> Download
+          </Button>
+        </div>
+      );
+    }
+
+    // PowerPoint Document Preview
+    if (fileType === 'PPTX' || extension === 'pptx' || extension === 'ppt') {
+      return (
+        <div className="bg-gray-100 rounded-lg p-6 text-center">
+          <FaFilePowerpoint size={80} className="text-orange-600 mx-auto mb-4" />
+          <h4 className="font-semibold text-gray-800 mb-2">{fileName}</h4>
+          <p className="text-gray-500 mb-4">{fileSize}</p>
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-orange-700">
+              📽️ PowerPoint preview is not available in the browser.
+            </p>
+            <p className="text-xs text-orange-600 mt-1">
+              Click Download to view in Microsoft PowerPoint.
+            </p>
+          </div>
+          <Button variant="primary" onClick={handleDownload}>
+            <FaDownload className="inline mr-2" /> Download
+          </Button>
+        </div>
+      );
+    }
+
     // Text/Code Preview
-    if (fileType === 'TEXT') {
+    if (fileType === 'TEXT' || ['txt', 'js', 'jsx', 'ts', 'tsx', 'css', 'html', 'json', 'xml', 'csv', 'md'].includes(extension)) {
       const maxLength = 50000;
       const content = textContent || '';
       const truncated = content.length > maxLength ? content.substring(0, maxLength) + '\n\n... (file truncated, only showing first 50,000 characters)' : content;
@@ -255,13 +260,13 @@ export default function PreviewModal({ show, onHide, item }) {
         <FaFileAlt className="text-gray-400 text-5xl mx-auto mb-3" />
         <h5 className="text-gray-700 mb-2">Preview not available</h5>
         <p className="text-gray-500 text-sm mb-2">
-          File type: {fileType}
+          File type: {fileType || extension || 'Unknown'}
         </p>
         <p className="text-gray-400 text-xs mb-4">
           This file type cannot be previewed in the modal
         </p>
-        <Button variant="primary" onClick={() => window.open(fileUrl, '_blank')}>
-          <FaEye className="inline mr-2" /> Open in Browser
+        <Button variant="primary" onClick={handleDownload}>
+          <FaDownload className="inline mr-2" /> Download
         </Button>
       </div>
     );

@@ -32,19 +32,36 @@ export default function LearnerPreviewModal({ show, onHide, item }) {
   };
 
   const getDownloadUrl = () => {
-    const filename = item?.url?.split('/').pop();
-    return `${BASE_URL}/uploads/content/${filename}/download`;
+    if (!item?.url) return '';
+
+    const filename = item.url.split('/').pop();
+    const originalName = item.name; // This should be the full filename with extension
+
+    // Get the file extension from the URL
+    const extension = filename.split('.').pop();
+
+    // Ensure the original name has the correct extension
+    let fullName = originalName;
+    if (originalName && !originalName.toLowerCase().endsWith(`.${extension.toLowerCase()}`)) {
+      fullName = `${originalName}.${extension}`;
+    }
+
+    return `${BASE_URL}/uploads/content/${filename}/download?originalName=${encodeURIComponent(fullName)}`;
   };
+
+
+
+
 
   const loadPreview = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const fileUrl = getPreviewUrl();
       const extension = getFileExtension();
       const isTextFile = ['txt', 'js', 'jsx', 'ts', 'tsx', 'css', 'scss', 'html', 'htm', 'json', 'xml', 'csv', 'md', 'yaml', 'yml', 'log'].includes(extension);
-      
+
       if (isTextFile || item.type === 'TEXT') {
         const response = await fetch(fileUrl);
         const text = await response.text();
@@ -132,7 +149,7 @@ export default function LearnerPreviewModal({ show, onHide, item }) {
     if (isText && textContent) {
       const maxLength = 50000;
       const truncated = textContent.length > maxLength ? textContent.substring(0, maxLength) + '\n\n... (file truncated)' : textContent;
-      
+
       return (
         <div className="bg-gray-900 rounded-lg p-4">
           <div className="bg-gray-800 rounded-lg p-2 mb-3 flex justify-between items-center">

@@ -78,7 +78,7 @@ export default function UnitStandardResources() {
     setShowPreviewModal(true);
   };
 
-  // Bulk delete functions
+ 
   const toggleSelectionMode = () => {
     setSelectionMode(!selectionMode);
     if (selectionMode) {
