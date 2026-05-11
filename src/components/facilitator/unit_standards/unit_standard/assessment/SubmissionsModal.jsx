@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { FaUserCircle, FaCalendarAlt, FaDownload, FaTimes } from 'react-icons/fa';
 import { BASE_URL } from '@/utils/apiEndpoint';
-import { AssessmentService } from './services/AssessmentService';
+import {assessmentService}  from './services/AssessmentService';
 
 export default function SubmissionsModal({ show, onHide, assessment }) {
   const [submissions, setSubmissions] = useState([]);
@@ -17,7 +17,7 @@ export default function SubmissionsModal({ show, onHide, assessment }) {
   const loadSubmissions = async () => {
     setLoading(true);
     try {
-      const data = await AssessmentService.getSubmissions(assessment.id);
+      const data = await assessmentService.getSubmissions(assessment.id);
       setSubmissions(data || []);
     } catch (error) {
       console.error('Error loading submissions:', error);

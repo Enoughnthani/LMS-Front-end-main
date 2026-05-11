@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { FaPlus, FaSearch, FaBook, FaClipboardList, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaBook, FaClipboardList } from 'react-icons/fa';
 import { Accordion } from 'react-bootstrap';
 import AssessmentCard from './AssessmentCard';
 import AssessmentModal from './AssessmentModal';
 import SubmissionsModal from './SubmissionsModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import { assessmentService } from './services/assessmentService';
 
 export default function FacilitatorAssessmentPage() {
   const { unitStandardId } = useParams();
@@ -26,8 +27,10 @@ export default function FacilitatorAssessmentPage() {
   const loadAssessments = async () => {
     setLoading(true);
     try {
-      // Replace with actual API call
-      const data = [];
+      // Actual API call to fetch assessments
+      const response = await assessmentService.getAssessments(unitStandardId);
+      const data = response?.payload || response || [];
+      
       const grouped = {
         learnerWorkbooks: data?.filter(a => a.type === 'LEARNER_WORKBOOK') || [],
         summative: data?.filter(a => a.type === 'SUMMATIVE') || []

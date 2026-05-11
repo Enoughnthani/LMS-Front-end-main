@@ -37,6 +37,7 @@ export const assessmentService = {
       xhr.onerror = () => reject(new Error('Network error'));
       
       xhr.open('POST', `${BASE_URL}/api/assessments`);
+      xhr.withCredentials = true;  // Add this line
       xhr.send(formData);
     });
   },
@@ -68,6 +69,7 @@ export const assessmentService = {
       xhr.onerror = () => reject(new Error('Network error'));
       
       xhr.open('PUT', `${BASE_URL}/api/assessments/${id}`);
+      xhr.withCredentials = true;  // Add this line
       xhr.send(formData);
     });
   },

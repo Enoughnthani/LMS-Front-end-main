@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { FaTrash, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
-import { AssessmentService } from './services/AssessmentService';
+import { assessmentService } from './services/AssessmentService';
 
 export default function DeleteConfirmModal({ show, onHide, item, onRefresh }) {
   const [deleting, setDeleting] = useState(false);
@@ -10,7 +10,7 @@ export default function DeleteConfirmModal({ show, onHide, item, onRefresh }) {
     if (!item) return;
     setDeleting(true);
     try {
-      await AssessmentService.deleteAssessment(item.id);
+      await assessmentService.deleteAssessment(item.id);
       onRefresh();
       onHide();
     } catch (error) {
