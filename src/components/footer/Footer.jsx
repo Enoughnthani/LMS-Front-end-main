@@ -14,7 +14,6 @@ export default function Footer() {
                             <div className=" p-2 rounded w-[200px]">
                                 <img src={logo} alt="LMS Logo" />
                             </div>
-                            <h2 className="text-2xl font-bold text-black">LMS</h2>
                         </div>
                         <p className="text-gray-400 text-sm">
                             Your Learning Management System built for students, teachers, and digital learning.

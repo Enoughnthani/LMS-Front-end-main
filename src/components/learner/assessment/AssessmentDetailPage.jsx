@@ -1,26 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Alert, Spinner } from 'react-bootstrap';
 import { FaArrowLeft, FaDownload, FaUpload, FaSave, FaPaperPlane, FaFileWord, FaFilePdf, FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight } from 'react-icons/fa';
+import { assessmentService } from '@/components/facilitator/unit_standards/unit_standard/assessment/services/AssessmentService';
+import { useAuth } from '@/contexts/AuthContext';
+import { BASE_URL } from '@/utils/apiEndpoint';
 
 export default function AssessmentDetailPage() {
-  const { title } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [assessment, setAssessment] = useState(null);
+  const [existingSubmission, setExistingSubmission] = useState(null);
   const [answer, setAnswer] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock assessment data
-  const assessment = {
-    title: title || 'React Basics Quiz',
-    unitStandard: '14933',
-    dueDate: '2026-03-10',
-    downloadUrl: '/assessment/assessment-question.docx'
+  useEffect(() => {
+    loadAssessment();
+    checkExistingSubmission();
+  }, [id]);
+
+  useEffect(() => {
+    // Load draft from localStorage
+    if (assessment) {
+      const savedDraft = localStorage.getItem(`draft_${assessment.id}`);
+      if (savedDraft) {
+        setAnswer(savedDraft);
+      }
+    }
+  }, [assessment]);
+
+  const loadAssessment = async () => {
+    try {
+      const response = await assessmentService.getAssessmentById(id);
+      const data = response?.payload || response;
+      setAssessment(data);
+    } catch (err) {
+      setError('Failed to load assessment');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkExistingSubmission = async () => {
+    try {
+      const response = await assessmentService.getUserSubmission(id);
+      const data = response?.payload || response;
+      if (data && data.id) {
+        setExistingSubmission(data);
+        setSubmitted(true);
+      }
+    } catch (err) {
+      console.error('Error checking submission:', err);
+    }
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   };
@@ -39,9 +81,13 @@ export default function AssessmentDetailPage() {
   };
 
   const handleSaveDraft = () => {
-    localStorage.setItem(`draft_${assessment.title}`, answer);
-    setSaveStatus('Draft saved successfully!');
-    setTimeout(() => setSaveStatus(''), 2000);
+    if (answer.trim()) {
+      localStorage.setItem(`draft_${assessment?.id}`, answer);
+      setSaveStatus('Draft saved successfully!');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } else {
+      alert('Please write something before saving draft');
+    }
   };
 
   const handleSubmit = async () => {
@@ -51,12 +97,32 @@ export default function AssessmentDetailPage() {
     }
 
     setSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
+    
+    try {
+      let response;
+      
+      if (uploadedFile) {
+        // Submit as file
+        response = await assessmentService.submitAssessment(uploadedFile, assessment.id, (progress) => {
+          console.log(`Upload progress: ${progress}%`);
+        });
+      } else {
+        // Submit as text answer
+        response = await assessmentService.submitTextAnswer(assessment.id, answer);
+      }
+      
+      if (response?.success) {
+        setSubmitted(true);
+        localStorage.removeItem(`draft_${assessment?.id}`);
+      } else {
+        alert('Submission failed: ' + (response?.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Submission error:', err);
+      alert('Failed to submit assessment');
+    } finally {
       setSubmitting(false);
-      setSubmitted(true);
-      localStorage.removeItem(`draft_${assessment.title}`);
-    }, 2000);
+    }
   };
 
   const applyFormat = (command) => {
@@ -64,10 +130,32 @@ export default function AssessmentDetailPage() {
     document.getElementById('editor').focus();
   };
 
-  if (submitted) {
+  if (loading) {
+    return (
+      <div className="overflow-y-auto w-full h-screen bg-gray-50 flex items-center justify-center">
+        <Spinner animation="border" variant="primary" />
+      </div>
+    );
+  }
+
+  if (error || !assessment) {
     return (
       <div className="overflow-y-auto w-full h-screen bg-gray-50 p-4">
-        <div className="mx-auto">
+        <div className="max-w-4xl mx-auto text-center py-12">
+          <FaFileWord className="text-gray-300 text-5xl mx-auto mb-3" />
+          <p className="text-gray-500">{error || 'Assessment not found'}</p>
+          <Button variant="primary" onClick={() => navigate(-1)} className="mt-3">
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (submitted && existingSubmission) {
+    return (
+      <div className="w-full overflow-y-auto w-full h-screen bg-gray-50 p-4">
+        <div className="max-w-4xl mx-auto">
           <Card className="text-center p-5">
             <div className="mb-4">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -78,9 +166,17 @@ export default function AssessmentDetailPage() {
             </div>
             <h4 className="font-bold text-gray-800 mb-2">Assessment Submitted!</h4>
             <p className="text-gray-600 text-sm mb-4">
-              Your answer has been submitted successfully.
+              Your answer has been submitted successfully on {new Date(existingSubmission.submittedAt).toLocaleString()}
             </p>
-            <Button variant="primary" onClick={() => navigate(-1)}>
+            {existingSubmission.status === 'GRADED' && (
+              <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm font-medium text-gray-700">Score: {existingSubmission.obtainedMarks}/{assessment.totalMarks}</p>
+                {existingSubmission.feedback && (
+                  <p className="text-sm text-gray-600 mt-2">Feedback: {existingSubmission.feedback}</p>
+                )}
+              </div>
+            )}
+            <Button variant="primary" onClick={() => navigate(-1)} className="mt-3">
               Back to Assessments
             </Button>
           </Card>
@@ -91,7 +187,7 @@ export default function AssessmentDetailPage() {
 
   return (
     <div className="overflow-y-auto w-full h-screen bg-gray-50 p-4">
-      <div className="mx-auto">
+      <div >
         {/* Header */}
         <div className="mb-4">
           <button
@@ -103,22 +199,28 @@ export default function AssessmentDetailPage() {
           
           <Card className="border-0 shadow-sm">
             <Card.Body className="p-4">
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start flex-wrap gap-3">
                 <div>
                   <h3 className="text-xl font-bold text-gray-800 mb-1">{assessment.title}</h3>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
-                    <span className="bg-gray-100 px-2 py-0.5 rounded">US{assessment.unitStandard}</span>
-                    <span>Due: {formatDate(assessment.dueDate)}</span>
+                  <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+                    <span className="bg-gray-100 px-2 py-0.5 rounded">US{assessment.unitStandardId}</span>
+                    {assessment.dueDate && <span>Due: {formatDate(assessment.dueDate)}</span>}
+                    <span>{assessment.totalMarks} marks</span>
                   </div>
+                  {assessment.description && (
+                    <p className="text-sm text-gray-500 mt-2">{assessment.description}</p>
+                  )}
                 </div>
-                <Button 
-                  variant="outline-primary" 
-                  size="sm"
-                  onClick={() => alert('Downloading assessment file...')}
-                  className="flex items-center gap-2"
-                >
-                  <FaDownload size={14} /> Download Assessment
-                </Button>
+                {assessment.fileUrl && (
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => assessmentService.downloadAssessmentFile(assessment.fileUrl)}
+                    className="flex items-center gap-2"
+                  >
+                    <FaDownload size={14} /> Download Assessment
+                  </Button>
+                )}
               </div>
             </Card.Body>
           </Card>
@@ -214,7 +316,7 @@ export default function AssessmentDetailPage() {
               className="border rounded-b-lg p-3 min-h-[300px] focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
               style={{ lineHeight: '1.6' }}
               onInput={(e) => setAnswer(e.target.innerHTML)}
-              dangerouslySetInnerHTML={{ __html: localStorage.getItem(`draft_${assessment.title}`) || '' }}
+              dangerouslySetInnerHTML={{ __html: answer }}
             />
           </Card.Body>
         </Card>
@@ -280,6 +382,7 @@ export default function AssessmentDetailPage() {
           <Button
             variant="outline-secondary"
             onClick={handleSaveDraft}
+            disabled={submitting}
             className="flex items-center gap-2"
           >
             <FaSave size={14} /> Save Draft

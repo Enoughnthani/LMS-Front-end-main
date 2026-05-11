@@ -91,7 +91,7 @@ export default function FacilitatorAssessmentPage() {
           </div>
         </div>
 
-        {/* Accordion Groups */}
+       
         <Accordion 
           activeKey={activeAccordion} 
           onSelect={(e) => setActiveAccordion(e)}

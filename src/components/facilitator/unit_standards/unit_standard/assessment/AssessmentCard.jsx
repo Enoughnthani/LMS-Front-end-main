@@ -1,5 +1,6 @@
 import { FaCalendarAlt, FaStar, FaUsers, FaEdit, FaTrash, FaEye, FaDownload, FaFilePdf, FaFileWord, FaFileAlt } from 'react-icons/fa';
 import { BASE_URL } from '@/utils/apiEndpoint';
+import { useNavigate } from 'react-router-dom';
 
 const getStatusBadge = (status) => {
   if (status === 'PUBLISHED') {
@@ -17,6 +18,9 @@ const getFileIcon = (fileName) => {
 };
 
 export default function AssessmentCard({ item, onEdit, onViewSubmissions, onDelete }) {
+
+  const navigate = useNavigate()
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition">
       <div className="flex justify-between">
@@ -56,7 +60,7 @@ export default function AssessmentCard({ item, onEdit, onViewSubmissions, onDele
 
         <div className="flex gap-1 ml-4">
           <button 
-            onClick={onViewSubmissions}
+            onClick={()=>navigate(`${item?.id}`)}
             className="p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50"
             title="View Submissions"
           >
