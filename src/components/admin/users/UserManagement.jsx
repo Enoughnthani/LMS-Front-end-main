@@ -131,7 +131,7 @@ export default function UserManagement() {
 
 
   const handleEditUser = (user) => {
-    navigate(`${user?.id}/edit`,{state:{user}})
+    navigate(`${user?.id}/edit`, { state: { user } })
   };
 
 
@@ -475,7 +475,7 @@ export default function UserManagement() {
               <tbody className="divide-y divide-slate-100">
                 {currentUsers?.map((user, key) => (
                   <tr
-                    onClick={() => navigate(`${user?.id}`,{state:{user}})}
+                    onClick={() => navigate(`${user?.id}`, { state: { user } })}
                     key={key}
                     className="group cursor-pointer transition-colors duration-200 hover:bg-rose-50/40"
                   >
@@ -547,7 +547,7 @@ export default function UserManagement() {
                             },
                             {
                               label: "VIEW",
-                              event: () => { setShowUserDetails(true); setUserForm(user) },
+                              event: () => navigate(`${user?.id}`, { state: { user } }),
                               style: "text-yellow-600 hover:bg-yellow-600",
                             },
                           ].map((action, idx) => (

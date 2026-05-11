@@ -131,10 +131,12 @@ export default function StaffDashboard() {
     const stats = config.getStats(programs, user)
 
     useEffect(() => {
-        if (!programs || programs.length == 0) {
-            setPrograms(user?.assignedPrograms?.filter(p => p.assignedRoles.includes(config.roleFilter)) || [])
-        }
-    }, [currentRole, user])
+        setPrograms(
+            user?.assignedPrograms?.filter(program =>
+                program.assignedRoles?.includes(config.roleFilter)
+            ) || []
+        )
+    }, [currentRole, user, config.roleFilter])
 
 
     function handleSwitchRole(role) {

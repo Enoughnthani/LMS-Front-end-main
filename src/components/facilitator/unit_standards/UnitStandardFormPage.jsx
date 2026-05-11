@@ -219,9 +219,6 @@ export default function UnitStandardFormPage() {
                     <option value="NQF Level 3">NQF Level 3</option>
                     <option value="NQF Level 4">NQF Level 4</option>
                     <option value="NQF Level 5">NQF Level 5</option>
-                    <option value="NQF Level 6">NQF Level 6</option>
-                    <option value="NQF Level 7">NQF Level 7</option>
-                    <option value="NQF Level 8">NQF Level 8</option>
                   </Form.Select>
                 </Form.Group>
 
