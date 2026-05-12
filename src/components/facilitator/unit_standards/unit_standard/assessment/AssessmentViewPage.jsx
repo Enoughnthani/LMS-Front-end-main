@@ -28,9 +28,9 @@ export default function AssessmentViewPage() {
       const response = await assessmentService.getAssessmentById(assessmentId);
       const data = response?.payload || response;
       setAssessment(data);
-      // Extract submissions from assessmentSubmissionDTO
-      if (data?.assessmentSubmissionDTO) {
-        setSubmissions(data.assessmentSubmissionDTO);
+      
+      if (data?.assessmentSubmission) {
+        setSubmissions(data.assessmentSubmission);
       } else {
         // Fallback to separate API call if needed
         await loadSubmissions();
@@ -62,10 +62,10 @@ export default function AssessmentViewPage() {
   };
 
   const getStatusBadge = (status) => {
-    if (status === 'GRADED') {
+    if (status === 'SUBMITTED') {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
-          <FaCheckCircle size={10} /> Graded
+          <FaCheckCircle size={10} /> SUBMITTED
         </span>
       );
     }
@@ -218,14 +218,12 @@ export default function AssessmentViewPage() {
                         <tr key={submission.id} className="hover:bg-gray-50 transition">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                <FaUserCheck className="text-blue-500 text-sm" />
-                              </div>
+                             
                               <div>
-                                <p className="font-medium text-gray-800">
+                                <p className="font-medium m-0 text-gray-800">
                                   {submission.firstname} {submission.lastname}
                                 </p>
-                                <p className="text-xs text-gray-400">{submission.email}</p>
+                                <p className="text-xs m-0 text-gray-400">{submission.email}</p>
                               </div>
                             </div>
                           </td>

@@ -47,7 +47,7 @@ export const CourseViewPage = () => {
                         { icon: <Home />, label: "Home", path: '/user/learner' },
                         { icon: <Eye />, label: "Overview", path: '' },
                         { icon: <FaBook />, label: "Content", path: 'content' },
-                        { icon: <FaClipboardList />, label: "Assessment", path: 'assessment' },
+                        { icon: <FaClipboardList />, label: "Assessments", path: 'assessments' },
                     ].map((item, idx) => {
                         const isLogout = item.label === "Logout";
                         return (

@@ -186,8 +186,8 @@ export default function App() {
             <Route index element={<LearnerUnitStandardOverview />} />
             <Route path="content" element={<ContentPage />} />
 
-            <Route path="assessment" element={<LearnerAssessmentPage />} />
-            <Route path="assessment/:id" element={<AssessmentDetailPage />} />
+            <Route path="assessments" element={<LearnerAssessmentPage />} />
+            <Route path="assessments/:id" element={<AssessmentDetailPage />} />
             
 
           </Route>

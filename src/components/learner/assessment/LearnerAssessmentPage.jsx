@@ -112,7 +112,7 @@ export default function LearnerAssessmentPage() {
   if (!hasAssessments) {
     return (
       <div className="p-6 bg-gray-50 min-h-screen w-full">
-        <div className="max-w-4xl mx-auto">
+        <div className="">
           <div className="mb-4">
             <div className="flex items-center gap-2">
               <FaClipboardList className="text-purple-600 text-lg" />
