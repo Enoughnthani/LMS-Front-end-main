@@ -25,7 +25,9 @@ import Layout from "./components/common/Layout";
 import ProfilePage from "./components/common/ProfilePage";
 import EnrolledLearnerView from "./components/facilitator/enronlled_learners_view/EnrolledLearnerView";
 import FacilitatorProgramOverview from "./components/facilitator/overview/FacilitatorProgramOverview";
+import AssessmentFormPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentFormPage";
 import AssessmentPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentPage";
+import AssessmentViewPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentViewPage";
 import UnitStandardResources from "./components/facilitator/unit_standards/unit_standard/content/UnitStandardResources";
 import UnitStandardOverview from "./components/facilitator/unit_standards/unit_standard/overview/UnitStandardOverview";
 import UnitStandardView from "./components/facilitator/unit_standards/unit_standard/UnitStandardView";
@@ -36,9 +38,9 @@ import InternPage from "./components/intern/InternPage";
 import InternOverview from "./components/intern/overview/InternOverview";
 import InternReportPage from "./components/intern/reports/InternReportPage";
 import AssessmentDetailPage from "./components/learner/assessment/AssessmentDetailPage";
+import LearnerAssessmentPage from "./components/learner/assessment/LearnerAssessmentPage";
 import ContentPage from "./components/learner/content/LearnerContentPage";
 import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
-import DiscussionPage from "./components/learner/discussion/DiscussionPage";
 import MentorPage from "./components/mentor/MentorPage";
 import ProgramOverview from "./components/mentor/overview/ProgramOverview";
 import InternReports from "./components/mentor/view/InternReports";
@@ -54,9 +56,7 @@ import ProgramForm from "./components/program_manager/program_form/ProgramForm";
 import ProgramManagement from "./components/program_manager/ProgramManagement";
 import ProgramView from "./components/program_manager/view/ProgramView";
 import StaffDashboard from "./components/staff/StaffDashboard";
-import AssessmentViewPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentViewPage";
-import LearnerAssessmentPage from "./components/learner/assessment/LearnerAssessmentPage";
-import AssessmentFormPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentFormPage";
+import LearnerUnitStandardOverview from "./components/learner/overview/LearnerUnitStandardOverview";
 
 export default function App() {
 
@@ -183,12 +183,12 @@ export default function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="unit-standard/:unitStandardId" element={<CourseViewPage />} >
 
-            <Route index element={<UnitStandardOverview />} />
+            <Route index element={<LearnerUnitStandardOverview />} />
             <Route path="content" element={<ContentPage />} />
 
             <Route path="assessment" element={<LearnerAssessmentPage />} />
             <Route path="assessment/:id" element={<AssessmentDetailPage />} />
-            <Route path="discussion" element={<DiscussionPage />} />
+            
 
           </Route>
         </Route>

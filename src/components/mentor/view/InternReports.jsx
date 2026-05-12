@@ -118,8 +118,7 @@ export default function InternReports() {
     setFeedbackText('');
     setRating(0);
     setSelectedReport(null);
-    
-    console.log('Feedback submitted:', { selectedReport, feedbackText, rating });
+
   };
 
   const handleDownload = (attachment) => {

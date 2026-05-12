@@ -6,17 +6,27 @@ import {
     FaEdit, FaTrash
 } from 'react-icons/fa';
 import { Button, Badge } from 'react-bootstrap';
+import { apiFetch } from '@/api/api';
+import { BASE_URL } from '@/utils/apiEndpoint';
 
 export default function UnitStandardOverview() {
     const { programId, unitStandardId } = useParams();
     const navigate = useNavigate();
     const location = useLocation()
-    const {unitStandard} = location?.state||{};
+    const [unitStandard, setUnitStandard] = useState(location?.state?.unitStandard || {});
     const [loading, setLoading] = useState(true);
 
-    useEffect(()=>{
+    useEffect(() => {
         setLoading(false)
-    },[unitStandard])
+
+        const getStats = async () => {
+            const data = await apiFetch(`/api/unit-standards/${unitStandard?.unitStandardId}`)
+            setUnitStandard(data)
+        }
+
+        getStats()
+
+    }, [location])
 
     const getTypeBadge = (type) => {
         const styles = {
@@ -133,13 +143,13 @@ export default function UnitStandardOverview() {
                         </div>
                     </div>
 
-                    {/* Combined Stats */}
+                    
                     <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl p-5 shadow-md">
                         <div className="flex items-center justify-between mb-3">
                             <div>
                                 <p className="text-xs text-gray-300 uppercase">Total Learning Hours</p>
                                 <p className="text-2xl font-bold text-white">
-                                    {unitStandard.credits * 10}
+                                    {unitStandard.credits * 10 || 0}
                                 </p>
                             </div>
                             <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">

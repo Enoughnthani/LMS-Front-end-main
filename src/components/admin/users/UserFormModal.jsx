@@ -49,26 +49,6 @@ export default function UserFormPage({
         }
     }, [user]);
 
-    const resetForm = () => {
-        if (editingUser) {
-            setUserForm({ ...editingUser });
-        } else {
-            setUserForm({
-                firstname: "",
-                lastname: "",
-                contactNumber: "",
-                email: "",
-                password: "",
-                confirmPassword: "",
-                idNo: '',
-                role: ["LEARNER"],
-                status: "ACTIVE"
-            });
-        }
-        setInvalidIdno(false);
-        setRoleRequired(false);
-        setValidated(false);
-    };
 
     useEffect(() => {
         if (editingUser) {
@@ -135,6 +115,10 @@ export default function UserFormPage({
                 method,
                 body: userForm
             });
+
+            if(result.success && editingUser) {
+                navigate(-1);
+            }
 
             setResponse(result);
             showResponse(result);

@@ -59,25 +59,25 @@ export default function ProgramManagementOverview() {
       title: 'Add New Program',
       description: 'Create a new learnership, internship, or short course',
       icon: FaPlus,
-      action: () => navigate('/programs/new')
+      action: () => navigate('programs/new')
     },
     {
       title: 'View All Programs',
       description: 'Manage and edit existing programs',
       icon: FaEye,
-      action: () => navigate('/programs/list')
+      action: () => navigate('programs')
     },
     {
       title: 'Manage Enrollments',
       description: 'View and manage program enrollments',
       icon: FaUserPlus,
-      action: () => navigate('/programs/enrollments')
+      action: () => navigate('programs/enrollments')
     },
     {
       title: 'View Reports',
       description: 'Program analytics and performance',
       icon: FaChartLine,
-      action: () => navigate('/programs/reports')
+      action: () => navigate('programs/reports')
     }
   ];
 

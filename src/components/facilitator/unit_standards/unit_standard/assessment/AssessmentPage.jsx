@@ -18,7 +18,7 @@ export default function FacilitatorAssessmentPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [selectedAssessment, setSelectedAssessment] = useState(null);
-  const [activeAccordion, setActiveAccordion] = useState(['0']);
+  const [activeAccordion, setActiveAccordion] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {

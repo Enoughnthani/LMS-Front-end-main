@@ -66,8 +66,7 @@ export default function ModeratorLearnerView() {
     ]);
 
     const handleDownloadSubmission = (assessmentId) => {
-        // Implement download logic
-        console.log("Download submission for assessment:", assessmentId);
+    
     };
 
     const handleSubmitFeedback = () => {

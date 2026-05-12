@@ -32,7 +32,6 @@ export default function LearnerAssessmentPage() {
         exams: data.filter(a => a.type === 'EXAM')
       };
       setAssessments(grouped);
-      console.log('Grouped assessments:', grouped);
     } catch (err) {
       console.error('Error loading assessments:', err);
       setError('Failed to load assessments');

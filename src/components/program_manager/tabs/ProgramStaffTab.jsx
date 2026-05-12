@@ -96,7 +96,6 @@ export default function ProgramStaffTab({
             }
 
         } catch (e) {
-            console.log(e)
             setResponse({
                 success: false,
                 message: `Failed to unassign role ${person?.name}: ` + e.message

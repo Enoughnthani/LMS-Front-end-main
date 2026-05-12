@@ -43,7 +43,7 @@ export default function PreviewModal({ show, onHide, item }) {
 
   const handleDownload = () => {
     const downloadUrl = getDownloadUrl();
-    console.log(downloadUrl)
+    
     if (downloadUrl) {
       window.open(downloadUrl, '_blank');
     }

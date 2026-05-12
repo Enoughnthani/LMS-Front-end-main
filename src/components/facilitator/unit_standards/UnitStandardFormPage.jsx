@@ -70,6 +70,10 @@ export default function UnitStandardFormPage() {
         });
       }
 
+      if (data?.success) {
+        resetForm()
+      }
+
 
       setResponse(data)
       showResponse(data)
@@ -79,6 +83,18 @@ export default function UnitStandardFormPage() {
       setLoading(false);
     }
   };
+
+  const resetForm = () => {
+    setFormData({
+      unitStandardId: '',
+      title: '',
+      description: '',
+      credits: '',
+      nqfLevel: 'NQF Level 4',
+      type: 'Core',
+    });
+
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;

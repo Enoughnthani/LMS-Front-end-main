@@ -112,7 +112,7 @@ export default function ProgramForm({
             showResponse(result);
             setResponse(result);
 
-            if (result?.success) {
+            if (result?.success && editingProgram) {
                 if (getPrograms) getPrograms();
                 resetForm();
                 setTimeout(() => {

@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { FaArrowLeft, FaFolder, FaList, FaSearch, FaThLarge } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaFolder, FaThLarge, FaList, FaSearch } from 'react-icons/fa';
-import { BASE_URL } from '@/utils/apiEndpoint';
 import LearnerGridView from './LearnerGridView';
 import LearnerListView from './LearnerListView';
 import LearnerPreviewModal from './LearnerPreviewModal';
@@ -72,14 +71,6 @@ export default function LearnerContentPage() {
     setCurrentFolder(folder);
   };
 
-  const handleBackClick = () => {
-    if (currentFolder) {
-      const newPath = [...currentPath];
-      newPath.pop();
-      setCurrentPath(newPath);
-      setCurrentFolder(newPath.length > 0 ? newPath[newPath.length - 1] : null);
-    }
-  };
 
   const handleNavigateToRoot = () => {
     setCurrentFolder(null);

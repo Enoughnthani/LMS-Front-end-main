@@ -22,7 +22,6 @@ export const handleStaffOperation = async (endpoint, { programId, userId, role, 
             }
         });
     } catch (e) {
-         console.log(e)
     }
 };
 

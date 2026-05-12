@@ -95,7 +95,6 @@ export default function AssessmentDetailPage() {
       if (uploadedFile) {
         // Submit as file
         response = await assessmentService.submitAssessment(uploadedFile, assessment.id, (progress) => {
-          console.log(`Upload progress: ${progress}%`);
         });
       } else {
         // Submit as text answer

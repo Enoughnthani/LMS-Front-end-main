@@ -19,14 +19,14 @@ export default function UnitStandardsTable({ standards, onRowClick, onEdit, onDe
           </thead>
           <tbody className="divide-y divide-gray-100">
             {standards.map((standard) => (
-              <tr key={standard.unitStandardId} className="hover:bg-gray-50 transition group">
+              <tr onClick={() => onRowClick(standard)} key={standard.unitStandardId} className="hover:bg-gray-100 cursor-pointer transition group">
                 <td className="p-3">
                   <span className="font-mono text-sm text-gray-700 bg-gray-100 px-2 py-1 rounded">
                     {standard.unitStandardId}
                   </span>
                 </td>
                 <td className="p-3">
-                  <p className="text-sm font-medium text-gray-800 cursor-pointer" onClick={() => onRowClick(standard)}>
+                  <p className="text-sm m-0 font-medium text-gray-800 " >
                     {standard.title}
                   </p>
                 </td>
