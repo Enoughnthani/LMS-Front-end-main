@@ -7,14 +7,15 @@ import {
   FaUsers,
   FaEye
 } from 'react-icons/fa';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '@/api/api';
 
 export default function FacilitatorProgramOverview() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { program } = location?.state || {};
+  const { programId } = useParams()
+  const [program, setProgram] = useState(location?.state?.program);
   const [stats, setStats] = useState({
     totalLearners: 0,
     activeLearners: 0,
@@ -30,6 +31,17 @@ export default function FacilitatorProgramOverview() {
       fetchRecentActivities();
     }
   }, [program]);
+
+  useEffect(() => {
+    if (!program) {
+      getProgram()
+    }
+  }, [location, programId])
+
+  const getProgram = async () => {
+    const data = await apiFetch(`/api/programs/${programId}`)
+    setProgram(data?.payload)
+  }
 
   const fetchProgramStats = async () => {
     try {

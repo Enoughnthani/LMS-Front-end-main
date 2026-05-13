@@ -1,8 +1,9 @@
 // AdminDashboard.jsx
+import { apiFetch } from "@/api/api";
 import LogoImage from "@/components/common/LogoImage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Book, BookA, ChartArea, Clipboard, ClipboardList, File, Folder, Home, LogOut, TrendingUp, Users } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "react-bootstrap";
 import {
   FaBell,
@@ -12,19 +13,34 @@ import {
   FaQuestionCircle,
   FaUsers
 } from "react-icons/fa";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 
 export default function FacilitatorProgramView() {
   const navigate = useNavigate();
   const location = useLocation()
-  const { program } = location?.state || {}
+  const [program, setProgram] = useState(location?.state?.program)
+  const { programId } = useParams()
+
+  useEffect(() => {
+
+    const getProgram = async () => {
+      const data = await apiFetch(`/api/programs/${programId}`)
+      setProgram(data?.payload)
+    }
+
+    if (!program) {
+      getProgram()
+    }
+
+  }, [location, programId])
+
 
   return (
     <div className="min-h-screen flex text-gray-800">
 
       <aside className="hidden md:block min-w-[16rem] bg-white shadow-md border !border-gray-200 py-6 px-1.5 ">
         <div className="flex mx-2 items-center gap-3 pb-4">
-          <LogoImage />
+          <LogoImage onClick={() => navigate('/user/facilitator')} />
         </div>
 
         <div className="px-4">
@@ -44,7 +60,7 @@ export default function FacilitatorProgramView() {
             const isLogout = item.label === "Logout";
             return (
               <li
-                onClick={() => { isLogout ? item.event() : navigate(item.path,{state:{program}}) }}
+                onClick={() => { isLogout ? item.event() : navigate(item.path, { state: { program } }) }}
                 key={idx}
                 className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${isLogout
                   ? "text-red-600 hover:bg-red-50 hover:text-red-700 mt-0 border-t border-gray-200"

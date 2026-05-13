@@ -30,7 +30,7 @@ import AssessmentPage from "./components/facilitator/unit_standards/unit_standar
 import AssessmentViewPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentViewPage";
 import UnitStandardResources from "./components/facilitator/unit_standards/unit_standard/content/UnitStandardResources";
 import UnitStandardOverview from "./components/facilitator/unit_standards/unit_standard/overview/UnitStandardOverview";
-import UnitStandardView from "./components/facilitator/unit_standards/unit_standard/UnitStandardView";
+import UnitStandardLayout from "./components/facilitator/unit_standards/unit_standard/UnitStandardLayout";
 import UnitStandardFormPage from "./components/facilitator/unit_standards/UnitStandardFormPage";
 import UnitStandardsPage from "./components/facilitator/unit_standards/UnitStandardsPage";
 import FacilitatorProgramView from "./components/facilitator/view/FacilitatorProgramView";
@@ -41,6 +41,7 @@ import AssessmentDetailPage from "./components/learner/assessment/AssessmentDeta
 import LearnerAssessmentPage from "./components/learner/assessment/LearnerAssessmentPage";
 import ContentPage from "./components/learner/content/LearnerContentPage";
 import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
+import LearnerUnitStandardOverview from "./components/learner/overview/LearnerUnitStandardOverview";
 import MentorPage from "./components/mentor/MentorPage";
 import ProgramOverview from "./components/mentor/overview/ProgramOverview";
 import InternReports from "./components/mentor/view/InternReports";
@@ -56,7 +57,6 @@ import ProgramForm from "./components/program_manager/program_form/ProgramForm";
 import ProgramManagement from "./components/program_manager/ProgramManagement";
 import ProgramView from "./components/program_manager/view/ProgramView";
 import StaffDashboard from "./components/staff/StaffDashboard";
-import LearnerUnitStandardOverview from "./components/learner/overview/LearnerUnitStandardOverview";
 
 export default function App() {
 
@@ -134,7 +134,7 @@ export default function App() {
             <Route path="unit-standards/:id/edit" element={<UnitStandardFormPage />} />
             <Route path="learners" element={<EnrolledLearnerView />} />
           </Route>
-          <Route path="program-view/:programId/unit-standards/:unitStandardId" element={<UnitStandardView />} >
+          <Route path="program-view/:programId/unit-standards/:unitStandardId" element={<UnitStandardLayout />} >
             <Route index element={<UnitStandardOverview />} />
             <Route path="content" element={<UnitStandardResources />} />
             <Route path="assessments" element={<AssessmentPage />} />

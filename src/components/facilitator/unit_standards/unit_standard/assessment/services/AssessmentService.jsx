@@ -10,9 +10,9 @@ export const assessmentService = {
   getAssessmentById: (id) =>
     apiFetch(`/api/assessments/${id}`),
 
-  // Get user's submission for an assessment
+  
   getUserSubmission: (assessmentId) =>
-    apiFetch(`/api/assessments/${assessmentId}/my-submission`),
+    apiFetch(`/api/assessments/${assessmentId}/submission`),
 
   // Create assessment (with or without file)
   createAssessment: (formData, onProgress) => {

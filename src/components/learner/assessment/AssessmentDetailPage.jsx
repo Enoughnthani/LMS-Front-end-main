@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Alert, Spinner } from 'react-bootstrap';
-import { FaArrowLeft, FaDownload, FaUpload, FaSave, FaPaperPlane, FaFileWord, FaFilePdf, FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight } from 'react-icons/fa';
+import { FaArrowLeft, FaDownload, FaUpload, FaSave, FaPaperPlane, FaFileWord, FaFilePdf, FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaEye, FaRedo } from 'react-icons/fa';
 import { assessmentService } from '@/components/facilitator/unit_standards/unit_standard/assessment/services/AssessmentService';
-import { useAuth } from '@/contexts/AuthContext';
+import { useApiResponse } from '@/contexts/ApiResponseContext';
 import { BASE_URL } from '@/utils/apiEndpoint';
 
 export default function AssessmentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [assessment, setAssessment] = useState(null);
   const [existingSubmission, setExistingSubmission] = useState(null);
   const [answer, setAnswer] = useState('');
@@ -19,6 +18,8 @@ export default function AssessmentDetailPage() {
   const [saveStatus, setSaveStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showResubmitConfirm, setShowResubmitConfirm] = useState(false);
+  const { showResponse } = useApiResponse();
 
   useEffect(() => {
     loadAssessment();
@@ -26,7 +27,6 @@ export default function AssessmentDetailPage() {
   }, [id]);
 
   useEffect(() => {
-  
     if (assessment) {
       const savedDraft = localStorage.getItem(`draft_${assessment.id}`);
       if (savedDraft) {
@@ -54,7 +54,6 @@ export default function AssessmentDetailPage() {
       const data = response?.payload || response;
       if (data && data.id) {
         setExistingSubmission(data);
-        setSubmitted(true);
       }
     } catch (err) {
       console.error('Error checking submission:', err);
@@ -75,15 +74,14 @@ export default function AssessmentDetailPage() {
         setUploadedFile(file);
         setSaveStatus('File ready to submit');
       } else {
-        alert('Please upload a DOCX or PDF file');
+        showResponse({ success: false, message: 'Please upload a DOCX or PDF file' });
       }
     }
   };
 
-
   const handleSubmit = async () => {
     if (!answer.trim() && !uploadedFile) {
-      alert('Please write your answer or upload a file before submitting');
+      showResponse({ success: false, message: 'Please write your answer or upload a file before submitting' });
       return;
     }
 
@@ -93,26 +91,39 @@ export default function AssessmentDetailPage() {
       let response;
       
       if (uploadedFile) {
-        // Submit as file
-        response = await assessmentService.submitAssessment(uploadedFile, assessment.id, (progress) => {
-        });
+        response = await assessmentService.submitAssessment(uploadedFile, assessment.id, (progress) => {});
       } else {
-        // Submit as text answer
         response = await assessmentService.submitTextAnswer(assessment.id, answer);
       }
       
       if (response?.success) {
         setSubmitted(true);
+        setShowResubmitConfirm(false);
         localStorage.removeItem(`draft_${assessment?.id}`);
+        // Reload submission after successful submit
+        await checkExistingSubmission();
+        showResponse({ success: true, message: 'Assessment submitted successfully!' });
       } else {
-        alert('Submission failed: ' + (response?.message || 'Unknown error'));
+        showResponse({ success: false, message: 'Submission failed: ' + (response?.message || 'Unknown error') });
       }
     } catch (err) {
       console.error('Submission error:', err);
-      alert('Failed to submit assessment');
+      showResponse({ success: false, message: 'Failed to submit assessment' });
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleResubmit = () => {
+    setShowResubmitConfirm(true);
+  };
+
+  const handleConfirmResubmit = () => {
+    setSubmitted(false);
+    setExistingSubmission(null);
+    setAnswer('');
+    setUploadedFile(null);
+    setShowResubmitConfirm(false);
   };
 
   const applyFormat = (command) => {
@@ -142,10 +153,11 @@ export default function AssessmentDetailPage() {
     );
   }
 
+  // Show submission success view with option to resubmit
   if (submitted && existingSubmission) {
     return (
-      <div className="w-full overflow-y-auto w-full h-screen bg-gray-50 p-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="w-full min-h-screen bg-gray-50 p-4">
+        <div>
           <Card className="text-center p-5">
             <div className="mb-4">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -155,34 +167,81 @@ export default function AssessmentDetailPage() {
               </div>
             </div>
             <h4 className="font-bold text-gray-800 mb-2">Assessment Submitted!</h4>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-600 text-sm mb-2">
               Your answer has been submitted successfully on {new Date(existingSubmission.submittedAt).toLocaleString()}
             </p>
+            <p className="text-xs text-gray-400 mb-4">
+              Submission ID: {existingSubmission.id}
+            </p>
+            
+            {/* View Submission Button */}
+            {existingSubmission.fileUrl && (
+              <Button 
+                variant="outline-info" 
+                size="sm" 
+                className="mb-3"
+                onClick={() => window.open(`${BASE_URL}${existingSubmission.fileUrl}`, '_blank')}
+              >
+                <FaEye className="inline mr-2" size={14} /> View Your Submission
+              </Button>
+            )}
+            
+            {/* Resubmit Button */}
+            <Button 
+              variant="warning" 
+              size="sm" 
+              className="mb-3 ms-2"
+              onClick={handleResubmit}
+            >
+              <FaRedo className="inline mr-2" size={14} /> Resubmit Assessment
+            </Button>
+            
             {existingSubmission.status === 'GRADED' && (
-              <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+              <div className="mt-3 p-3 bg-blue-50 rounded-lg text-left">
                 <p className="text-sm font-medium text-gray-700">Score: {existingSubmission.obtainedMarks}/{assessment.totalMarks}</p>
                 {existingSubmission.feedback && (
                   <p className="text-sm text-gray-600 mt-2">Feedback: {existingSubmission.feedback}</p>
                 )}
               </div>
             )}
+            
             <Button variant="primary" onClick={() => navigate(-1)} className="mt-3">
               Back to Assessments
             </Button>
           </Card>
         </div>
+
+        {/* Resubmit Confirmation Modal */}
+        {showResubmitConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6">
+              <h4 className="text-lg font-bold text-gray-800 mb-3">Resubmit Assessment?</h4>
+              <p className="text-gray-600 text-sm mb-4">
+                Your previous submission will be replaced with your new answer. This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button variant="secondary" onClick={() => setShowResubmitConfirm(false)}>
+                  Cancel
+                </Button>
+                <Button variant="warning" onClick={handleConfirmResubmit}>
+                  Yes, Resubmit
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div className="overflow-y-auto w-full h-screen bg-gray-50 p-4">
-      <div >
+      <div>
         {/* Header */}
         <div className="mb-4">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-3 transition text-sm"
+            className="flex bg-transparent items-center gap-2 text-gray-600 hover:text-gray-800 mb-3 transition text-sm"
           >
             <FaArrowLeft size={14} /> Back to Assessments
           </button>
@@ -205,7 +264,7 @@ export default function AssessmentDetailPage() {
                   <Button 
                     variant="outline-primary" 
                     size="sm"
-                    onClick={() => assessmentService.downloadAssessmentFile(assessment.fileUrl,assessment.fileName)}
+                    onClick={() => assessmentService.downloadAssessmentFile(assessment.fileUrl, assessment.fileName)}
                     className="flex items-center gap-2"
                   >
                     <FaDownload size={14} /> Download Assessment
@@ -215,6 +274,21 @@ export default function AssessmentDetailPage() {
             </Card.Body>
           </Card>
         </div>
+
+        {/* Previous Submission Info */}
+        {existingSubmission && !submitted && (
+          <Alert variant="info" className="mb-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm font-medium mb-1">You have a previous submission</p>
+                <p className="text-xs text-gray-500">Submitted on: {new Date(existingSubmission.submittedAt).toLocaleString()}</p>
+              </div>
+              <Button variant="link" size="sm" onClick={handleResubmit} className="text-warning">
+                <FaRedo className="inline mr-1" size={12} /> Submit New Version
+              </Button>
+            </div>
+          </Alert>
+        )}
 
         {/* Save Status Alert */}
         {saveStatus && (
@@ -381,7 +455,7 @@ export default function AssessmentDetailPage() {
               </>
             ) : (
               <>
-                <FaPaperPlane size={14} /> Submit Assessment
+                <FaPaperPlane size={14} /> {existingSubmission ? 'Resubmit Assessment' : 'Submit Assessment'}
               </>
             )}
           </Button>

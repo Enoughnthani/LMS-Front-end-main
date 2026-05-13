@@ -86,7 +86,7 @@ export default function EnrolledLearnerView() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="w-full flex items-center justify-center h-screen bg-gray-50">
         <FaSpinner className="text-gray-400 text-3xl animate-spin" />
       </div>
     );
