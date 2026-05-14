@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  FaArrowLeft, FaDownload, FaCalendarAlt, FaStar, FaFilePdf, 
+import {
+  FaArrowLeft, FaDownload, FaCalendarAlt, FaStar, FaFilePdf,
   FaFileWord, FaFileAlt, FaUsers, FaEye, FaSpinner, FaCheckCircle,
-  FaClock, FaUserCheck, FaDownload as FaDownloadIcon, FaFile
+  FaClock, FaUserCheck, FaDownload as FaDownloadIcon, FaFile,
+  FaRedo,
+  FaUndo
 } from 'react-icons/fa';
 import { Tab, Tabs, Badge } from 'react-bootstrap';
 import { assessmentService } from './services/assessmentService';
@@ -28,7 +30,7 @@ export default function AssessmentViewPage() {
       const response = await assessmentService.getAssessmentById(assessmentId);
       const data = response?.payload || response;
       setAssessment(data);
-      
+
       if (data?.assessmentSubmission) {
         setSubmissions(data.assessmentSubmission);
       } else {
@@ -62,18 +64,35 @@ export default function AssessmentViewPage() {
   };
 
   const getStatusBadge = (status) => {
-    if (status === 'SUBMITTED') {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
-          <FaCheckCircle size={10} /> SUBMITTED
-        </span>
-      );
+    switch (status) {
+      case 'SUBMITTED':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+            <FaCheckCircle size={10} /> Submitted
+          </span>
+        );
+
+      case 'GRADED':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+            <FaCheckCircle size={10} /> Graded
+          </span>
+        );
+
+      case 'RE_SUBMITTED':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+            <FaRedo size={10} /> Re-Submitted
+          </span>
+        );
+
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+            <FaClock size={10} /> Pending
+          </span>
+        );
     }
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
-        <FaClock size={10} /> Pending
-      </span>
-    );
   };
 
   const handleDownloadAssessment = () => {
@@ -109,7 +128,7 @@ export default function AssessmentViewPage() {
   return (
     <div className="w-full min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-6 py-8">
-        
+
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -132,10 +151,10 @@ export default function AssessmentViewPage() {
               </div>
               <h1 className="text-xl font-bold text-gray-800 mb-2">{assessment.title}</h1>
               <p className="text-gray-600 text-sm mb-3">{assessment.description}</p>
-              
+
               <div className="flex flex-wrap gap-4 text-sm text-gray-500">
                 <span className="flex items-center gap-1.5">
-                  <FaCalendarAlt size={12} /> 
+                  <FaCalendarAlt size={12} />
                   Due: {assessment.dueDate ? new Date(assessment.dueDate).toLocaleDateString() : 'Not set'}
                 </span>
                 <span className="flex items-center gap-1.5">
@@ -218,7 +237,7 @@ export default function AssessmentViewPage() {
                         <tr key={submission.id} className="hover:bg-gray-50 transition">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
-                             
+
                               <div>
                                 <p className="font-medium m-0 text-gray-800">
                                   {submission.firstname} {submission.lastname}

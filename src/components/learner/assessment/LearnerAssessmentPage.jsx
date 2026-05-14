@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Accordion, Badge, Button, Spinner } from 'react-bootstrap';
-import { FaClipboardList, FaFlask, FaChartLine, FaGraduationCap, FaCalendarAlt, FaCheckCircle, FaRegCircle } from 'react-icons/fa';
+import { FaClipboardList, FaFlask, FaChartLine, FaGraduationCap, FaCalendarAlt, FaCheckCircle, FaRegCircle, FaStar, FaClock, FaEye } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 import { assessmentService } from '@/components/facilitator/unit_standards/unit_standard/assessment/services/AssessmentService';
 
@@ -25,7 +25,6 @@ export default function LearnerAssessmentPage() {
       const response = await assessmentService.getAssessments(unitStandardId);
       const data = response?.payload || response || [];
       
-      // Group assessments by type - using actual backend types
       const grouped = {
         learnerWorkbooks: data.filter(a => a.type === 'LEARNER_WORKBOOK'),
         summative: data.filter(a => a.type === 'SUMMATIVE'),
@@ -46,44 +45,105 @@ export default function LearnerAssessmentPage() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const getStatusBadge = (status) => {
-    if (status === 'PUBLISHED') {
-      return <Badge bg="success" className="text-center">Published</Badge>;
-    }
-    return <Badge bg="secondary" className="text-center">Draft</Badge>;
+  const formatSubmissionDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  const AssessmentItem = ({ item }) => (
-    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 hover:bg-gray-50 px-2 rounded-lg transition">
-      <div className="flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-            US{item.unitStandardId}
-          </span>
-          <span className="text-sm text-gray-700">{item.title}</span>
-          {item.dueDate && (
-            <span className="text-xs text-orange-500 flex items-center gap-1">
-              <FaCalendarAlt size={10} /> Due: {formatDate(item.dueDate)}
-            </span>
-          )}
-          {getStatusBadge(item.status)}
+  const AssessmentItem = ({ item }) => {
+    const hasSubmission = item.hasSubmission || false;
+    const submission = item?.submission;
+    const status = submission?.status;
+
+    return (
+      <div className="flex flex-col gap-2 py-2 border-b border-gray-100 last:border-0">
+        <div className='grid grid-cols-2 gap-3'>
+          {/* TEST COLUMN */}
+          <div className='bg-white rounded-lg p-3 border border-gray-100'>
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                US{item.unitStandardId}
+              </span>
+              <span className="text-sm font-medium text-gray-800">{item.title}</span>
+              {item.dueDate && (
+                <span className="text-xs text-orange-500 flex items-center gap-1">
+                  <FaCalendarAlt size={10} /> Due: {formatDate(item.dueDate)}
+                </span>
+              )}
+            </div>
+            {item.description && (
+              <p className="text-xs text-gray-400 mt-1">{item.description}</p>
+            )}
+            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <FaStar size={10} className="text-amber-400" />
+                {item.totalMarks} marks
+              </span>
+              <span className="flex items-center gap-1">
+                <FaClock size={10} />
+                Self-paced
+              </span>
+            </div>
+          </div>
+
+          {/* SUBMISSION COLUMN */}
+          <div className='bg-gray-50 rounded-lg p-3 border border-gray-100'>
+            {hasSubmission && submission ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <FaCheckCircle className="text-green-500 text-sm" />
+                    <span className="text-sm font-medium text-gray-800">Submitted</span>
+                    {status === 'GRADED' && (
+                      <Badge bg="success" className="text-xs">Graded</Badge>
+                    )}
+                    {status === 'RE_SUBMITTED' && (
+                      <Badge  className="text-xs !bg-amber-700 text-uppercase font-bold">Resubmitted</Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Submitted on: {formatSubmissionDate(submission.submittedAt)}
+                  </p>
+                  {submission.obtainedMarks !== null && (
+                    <p className="text-xs font-medium text-gray-700 mt-1">
+                      Score: {submission.obtainedMarks}/{item.totalMarks}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  onClick={() => navigate(`${item.id}`)}
+                  size="sm"
+                  variant="outline-primary"
+                  className="rounded-md text-xs"
+                >
+                  <FaEye size={12} className="inline mr-1" /> View
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <FaRegCircle className="text-gray-400 text-sm" />
+                    <span className="text-sm font-medium text-gray-600">Not Started</span>
+                  </div>
+                  <p className="text-xs text-gray-400">No submission yet</p>
+                </div>
+                <Button
+                  onClick={() => navigate(`${item.id}`)}
+                  size="sm"
+                  variant="primary"
+                  className="rounded-md text-xs"
+                >
+                  Start
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
-        {item.description && (
-          <p className="text-xs text-gray-400 mt-1 ml-1">{item.description}</p>
-        )}
       </div>
-      <div className="w-[5%] min-w-[70px]">
-        <Button 
-          onClick={() => navigate(`${item.id}`)} 
-          size="sm" 
-          variant="primary" 
-          className="rounded-md w-full p-1 text-xs"
-        >
-          View
-        </Button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -112,7 +172,7 @@ export default function LearnerAssessmentPage() {
   if (!hasAssessments) {
     return (
       <div className="p-6 bg-gray-50 min-h-screen w-full">
-        <div className="">
+        <div className="max-w-4xl mx-auto">
           <div className="mb-4">
             <div className="flex items-center gap-2">
               <FaClipboardList className="text-purple-600 text-lg" />
@@ -131,7 +191,7 @@ export default function LearnerAssessmentPage() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen w-full">
-      <div >
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-4">
           <div className="flex items-center gap-2">
