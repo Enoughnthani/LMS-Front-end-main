@@ -1,6 +1,7 @@
 import { FaCalendarAlt, FaChevronRight, FaDownload, FaEdit, FaEye, FaFileAlt, FaFilePdf, FaFileWord, FaStar, FaTrash, FaUsers } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import {assessmentService} from "./services/AssessmentService"
+import { useNavigate, useParams } from 'react-router-dom';
+import { assessmentService } from "./services/AssessmentService"
+import { useEffect, useState } from 'react';
 
 const getStatusBadge = (status) => {
   if (status === 'PUBLISHED') {
@@ -29,6 +30,19 @@ const getFileIcon = (fileName) => {
 
 export default function AssessmentCard({ item, onEdit, onViewSubmissions, onDelete }) {
   const navigate = useNavigate();
+  const [enrolledCount, setEnrolledCount] = useState(0);
+  const { programId } = useParams()
+
+  useEffect(() => {
+
+    const getCount = async () => {
+      const data = await assessmentService.getEnrollmentCountByProgramId(programId);
+      setEnrolledCount(data?.payload)
+    }
+
+    getCount()
+
+  }, [])
 
   return (
     <div className="group bg-white rounded-xl border border-gray-100 hover:border-gray-200 transition-all duration-200 overflow-hidden my-2">
@@ -56,7 +70,7 @@ export default function AssessmentCard({ item, onEdit, onViewSubmissions, onDele
               </span>
               <span className="flex items-center gap-1.5">
                 <FaUsers size={12} className="text-blue-400" />
-                {item.submissions?.length || 0} / {item.totalLearners || 0} submitted
+                {item.submittedCount || 0} / {enrolledCount || 0} submitted
               </span>
             </div>
 
@@ -80,7 +94,7 @@ export default function AssessmentCard({ item, onEdit, onViewSubmissions, onDele
           <div className="flex gap-1 ml-4">
             <button
               onClick={() => navigate(`${item?.id}`)}
-              className="relative group/btn p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200"
+              className="relative group/btn p-2 text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200"
               title="View Submissions"
             >
               <FaEye size={16} />
@@ -90,7 +104,7 @@ export default function AssessmentCard({ item, onEdit, onViewSubmissions, onDele
             </button>
             <button
               onClick={onEdit}
-              className="relative group/btn p-2 text-gray-400 hover:text-amber-600 rounded-lg hover:bg-amber-50 transition-all duration-200"
+              className="relative group/btn p-2  text-amber-600 rounded-lg hover:bg-amber-50 transition-all duration-200"
               title="Edit"
             >
               <FaEdit size={16} />
@@ -100,7 +114,7 @@ export default function AssessmentCard({ item, onEdit, onViewSubmissions, onDele
             </button>
             <button
               onClick={onDelete}
-              className="relative group/btn p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all duration-200"
+              className="relative group/btn p-2 text-red-600 rounded-lg hover:bg-red-50 transition-all duration-200"
               title="Delete"
             >
               <FaTrash size={16} />
@@ -115,7 +129,7 @@ export default function AssessmentCard({ item, onEdit, onViewSubmissions, onDele
         <div className="mt-4 pt-3 border-t border-gray-50 flex justify-end">
           <button
             onClick={() => navigate(`${item?.id}`)}
-            className="bg-transparent text-xs font-medium text-gray-400 hover:text-blue-600 transition flex items-center gap-1 group/link"
+            className="bg-transparent text-xs font-medium text-blue-600 transition flex items-center gap-1 group/link"
           >
             View Details
             <FaChevronRight size={10} className="group-hover/link:translate-x-0.5 transition" />

@@ -131,6 +131,7 @@ export const AuthProvider = ({ children }) => {
 
       document.cookie = "JSESSIONID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       document.cookie = "remember-me=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      sessionStorage.clear()
       navigate('/', { replace: true });
     } catch (error) {
     } finally {

@@ -1,15 +1,17 @@
-import { ArrowLeft, Calendar, Clock, CreditCard, Edit, Mail, MapPin, MoreHorizontal, Phone, Shield, User, Activity, Award, Briefcase, BookOpen, Users, CheckCircle } from 'lucide-react';
-import { Button, Dropdown, Badge } from 'react-bootstrap';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { readableDate } from "@/utils/readableDate"
-import { formatLastLogin } from "@/utils/formatLastLogin"
-import { FaArrowLeft, FaBookOpen, FaChalkboardTeacher, FaClipboardCheck, FaCrown, FaGavel, FaSeedling, FaUserGraduate, FaBuilding, FaCalendar, FaMapMarkerAlt, FaTag } from 'react-icons/fa';
+import CopyButton from '@/hooks/Clipboard';
+import { formatLastLogin } from "@/utils/formatLastLogin";
+import { readableDate } from "@/utils/readableDate";
+import { Activity, Award, Briefcase, Calendar, Clock, CreditCard, Edit, Mail, Phone, Shield, User } from 'lucide-react';
+import { Button } from 'react-bootstrap';
+import { FaArrowLeft, FaBookOpen, FaBuilding, FaCalendar, FaChalkboardTeacher, FaClipboardCheck, FaCrown, FaGavel, FaMapMarkerAlt, FaSeedling, FaTag, FaUserGraduate } from 'react-icons/fa';
 import { FiUser } from 'react-icons/fi';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const UserProfilePage = ({ onEditProfile }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = location?.state || {};
+
 
   const getInitials = () => {
     const first = user?.firstname?.[0] || '';
@@ -185,10 +187,17 @@ const UserProfilePage = ({ onEditProfile }) => {
             <div className="space-y-4">
               <div className="flex items-start gap-3 p-3 -ml-3 rounded-lg hover:bg-gray-50 transition-colors">
                 <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-xs text-gray-400 mb-0.5">Email</p>
-                  <p className="text-sm text-gray-900">{user?.email || '—'}</p>
+                <div className='w-full flex items-center gap-2'>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">Email</p>
+                    <p className="text-sm text-gray-900">{user?.email || '—'}</p>
+                  </div>
+
+                  <div className='ms-auto  mb-auto'>
+                    <CopyButton text={user?.email}/>
+                  </div>
                 </div>
+
               </div>
 
               <div className="flex items-start gap-3 p-3 -ml-3 rounded-lg hover:bg-gray-50 transition-colors">

@@ -63,36 +63,46 @@ export default function AssessmentViewPage() {
     return <FaFileAlt className="text-gray-500 text-lg" />;
   };
 
+  const baseClass =
+    "inline-flex whitespace-nowrap items-center justify-center gap-1 min-w-[100px] w-fit px-2 py-0.5 rounded-lg text-xs font-medium";
+
+  const STATUS_CONFIG = {
+    SUBMITTED: {
+      label: "Submitted",
+      icon: FaCheckCircle,
+      colors: "bg-blue-50 text-blue-700",
+    },
+
+    GRADED: {
+      label: "Graded",
+      icon: FaCheckCircle,
+      colors: "bg-green-50 text-green-700",
+    },
+
+    RE_SUBMITTED: {
+      label: "Re-Submitted",
+      icon: FaRedo,
+      colors: "bg-amber-200 text-slate-800",
+    },
+
+    DEFAULT: {
+      label: "Pending",
+      icon: FaClock,
+      colors: "bg-amber-50 text-amber-700",
+    },
+  };
+
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 'SUBMITTED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-            <FaCheckCircle size={10} /> Submitted
-          </span>
-        );
+    const config = STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
 
-      case 'GRADED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
-            <FaCheckCircle size={10} /> Graded
-          </span>
-        );
+    const Icon = config.icon;
 
-      case 'RE_SUBMITTED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
-            <FaRedo size={10} /> Re-Submitted
-          </span>
-        );
-
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
-            <FaClock size={10} /> Pending
-          </span>
-        );
-    }
+    return (
+      <span className={`${baseClass} ${config.colors}`}>
+        <Icon size={10} />
+        {config.label}
+      </span>
+    );
   };
 
   const handleDownloadAssessment = () => {
@@ -126,13 +136,13 @@ export default function AssessmentViewPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
+    <div className="w-full overflow-y-auto h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-6 py-8">
 
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4 text-sm transition"
+          className="flex bg-transparent items-center gap-2 text-gray-500 hover:text-gray-700 mb-4 text-sm transition"
         >
           <FaArrowLeft size={14} /> Back
         </button>
@@ -264,14 +274,14 @@ export default function AssessmentViewPage() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => window.open(BASE_URL + submission.fileUrl, '_blank')}
-                                className="px-3 py-1.5 bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-600 rounded-lg text-sm transition flex items-center gap-1"
+                                className="px-3 py-1.5 bg-blue-100 text-blue-600 rounded-lg text-sm transition flex items-center gap-1"
                                 title="Preview Submission"
                               >
                                 <FaEye size={14} /> Preview
                               </button>
                               <button
                                 onClick={() => window.open(BASE_URL + submission.fileUrl, '_blank')}
-                                className="px-3 py-1.5 bg-gray-100 hover:bg-emerald-100 text-gray-700 hover:text-emerald-600 rounded-lg text-sm transition flex items-center gap-1"
+                                className="px-3 py-1.5 bg-emerald-100 text-emerald-600 rounded-lg text-sm transition flex items-center gap-1"
                                 title="Download Submission"
                               >
                                 <FaDownloadIcon size={14} /> Download

@@ -37,31 +37,28 @@ import { useNavigate } from 'react-router-dom';
 import { useTopLoader } from '../../../contexts/TopLoaderContext';
 import BulkDeleteModal from './BulkDeleteModal';
 import DeleteUserModal from './DeleteUserModal';
-import RoleManagerModal from './RoleManagerModal';
+
 
 export default function UserManagement() {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showUserDetails, setShowUserDetails] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRole, setSelectedRole] = useState('all');
+  const [selectedRole, setSelectedRole] = useState(sessionStorage.getItem("selectedRole") || 'all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState({ show: false, message: '', variant: 'success' });
   const [bulkSelection, setBulkSelection] = useState([]);
   const [response, setResponse] = useState(null);
   const { start, complete } = useTopLoader();
-  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const itemsPerPage = 80;
   const [users, setUsers] = useState(null);
   const [showModal, setShowModal] = useState(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
-  const [roleManager, setShowRoleManager] = useState(false);
   const { showResponse } = useApiResponse()
   const navigate = useNavigate()
+
 
   const [userForm, setUserForm] = useState({
     firstname: "",
@@ -91,7 +88,12 @@ export default function UserManagement() {
 
   useEffect(() => {
     getUsers();
-  }, [roleManager]);
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem("selectedRole", selectedRole)
+    setSelectedRole(sessionStorage.getItem("selectedRole"))
+  }, [selectedRole]);
 
   useEffect(() => {
     let result = users;
@@ -522,7 +524,7 @@ export default function UserManagement() {
                           {[
                             {
                               label: "ROLE MANAGER",
-                              event: () => { setShowRoleManager(true); setUserForm(user) },
+                              event: () => navigate(`${user.id}/role-manager`),
                               style: "text-gray-800 hover:bg-gray-700",
                             },
                             {
@@ -636,11 +638,6 @@ export default function UserManagement() {
         setBulkSelection={setBulkSelection}
         getUsers={getUsers}
         setResponse={setResponse} />
-
-      <RoleManagerModal
-        show={roleManager}
-        setShow={setShowRoleManager}
-        user={userForm} />
 
     </div >
   );

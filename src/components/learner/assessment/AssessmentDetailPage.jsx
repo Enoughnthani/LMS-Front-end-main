@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button, Card, Alert, Spinner } from 'react-bootstrap';
 import { FaArrowLeft, FaDownload, FaUpload, FaSave, FaPaperPlane, FaFileWord, FaFilePdf, FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaEye, FaRedo } from 'react-icons/fa';
 import { assessmentService } from '@/components/facilitator/unit_standards/unit_standard/assessment/services/AssessmentService';
@@ -86,16 +86,16 @@ export default function AssessmentDetailPage() {
     }
 
     setSubmitting(true);
-    
+
     try {
       let response;
-      
+
       if (uploadedFile) {
-        response = await assessmentService.submitAssessment(uploadedFile, assessment.id, (progress) => {});
+        response = await assessmentService.submitAssessment(uploadedFile, assessment.id, (progress) => { });
       } else {
         response = await assessmentService.submitTextAnswer(assessment.id, answer);
       }
-      
+
       if (response?.success) {
         setSubmitted(true);
         setShowResubmitConfirm(false);
@@ -153,7 +153,7 @@ export default function AssessmentDetailPage() {
     );
   }
 
-  // Show submission success view with option to resubmit
+
   if (submitted && existingSubmission) {
     return (
       <div className="w-full min-h-screen bg-gray-50 p-4">
@@ -173,29 +173,29 @@ export default function AssessmentDetailPage() {
             <p className="text-xs text-gray-400 mb-4">
               Submission ID: {existingSubmission.id}
             </p>
-            
+
             {/* View Submission Button */}
             {existingSubmission.fileUrl && (
-              <Button 
-                variant="outline-info" 
-                size="sm" 
+              <Button
+                variant="outline-info"
+                size="sm"
                 className="mb-3"
                 onClick={() => window.open(`${BASE_URL}${existingSubmission.fileUrl}`, '_blank')}
               >
                 <FaEye className="inline mr-2" size={14} /> View Your Submission
               </Button>
             )}
-            
+
             {/* Resubmit Button */}
-            <Button 
-              variant="warning" 
-              size="sm" 
+            <Button
+              variant="warning"
+              size="sm"
               className="mb-3 ms-2"
               onClick={handleResubmit}
             >
               <FaRedo className="inline mr-2" size={14} /> Resubmit Assessment
             </Button>
-            
+
             {existingSubmission.status === 'GRADED' && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg text-left">
                 <p className="text-sm font-medium text-gray-700">Score: {existingSubmission.obtainedMarks}/{assessment.totalMarks}</p>
@@ -204,7 +204,7 @@ export default function AssessmentDetailPage() {
                 )}
               </div>
             )}
-            
+
             <Button variant="primary" onClick={() => navigate(-1)} className="mt-3">
               Back to Assessments
             </Button>
@@ -245,7 +245,7 @@ export default function AssessmentDetailPage() {
           >
             <FaArrowLeft size={14} /> Back to Assessments
           </button>
-          
+
           <Card className="border-0 shadow-sm">
             <Card.Body className="p-4">
               <div className="flex justify-between items-start flex-wrap gap-3">
@@ -261,8 +261,8 @@ export default function AssessmentDetailPage() {
                   )}
                 </div>
                 {assessment.fileUrl && (
-                  <Button 
-                    variant="outline-primary" 
+                  <Button
+                    variant="outline-primary"
                     size="sm"
                     onClick={() => assessmentService.downloadAssessmentFile(assessment.fileUrl, assessment.fileName)}
                     className="flex items-center gap-2"
@@ -278,14 +278,51 @@ export default function AssessmentDetailPage() {
         {/* Previous Submission Info */}
         {existingSubmission && !submitted && (
           <Alert variant="info" className="mb-3">
-            <div className="flex justify-between items-center">
-              <div>
+            <div className="flex justify-between items-center flex-wrap gap-3">
+              <div className="flex-1">
                 <p className="text-sm font-medium mb-1">You have a previous submission</p>
-                <p className="text-xs text-gray-500">Submitted on: {new Date(existingSubmission.submittedAt).toLocaleString()}</p>
+                <p className="text-xs text-gray-500 mb-2">
+                  Submitted on: {new Date(existingSubmission.submittedAt).toLocaleString()}
+                </p>
+
+                {/* File Info with Preview and Download */}
+                {existingSubmission.fileUrl && (
+                  <div className="flex items-center gap-3 mt-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-200">
+                      {existingSubmission.fileName?.endsWith('.pdf') ? (
+                        <FaFilePdf className="text-red-500" size={14} />
+                      ) : existingSubmission.fileName?.endsWith('.docx') ? (
+                        <FaFileWord className="text-blue-500" size={14} />
+                      ) : (
+                        <FaFileAlt className="text-gray-500" size={14} />
+                      )}
+                      <span className="text-sm text-gray-600">{existingSubmission.fileName}</span>
+                    </div>
+
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={() => window.open(BASE_URL+existingSubmission.fileUrl, '_blank')}
+                      className="flex items-center gap-1"
+                    >
+                      <FaEye size={12} /> Preview
+                    </Button>
+
+                    <Button
+                      variant="outline-success"
+                      size="sm"
+                      onClick={() => {
+                        const filename = existingSubmission.fileUrl.split('/').pop();
+                        const downloadUrl = `${BASE_URL}/uploads/submissions/${filename}/download?originalName=${encodeURIComponent(existingSubmission.fileName)}`;
+                        window.open(downloadUrl, '_blank');
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <FaDownload size={12} /> Download
+                    </Button>
+                  </div>
+                )}
               </div>
-              <Button variant="link" size="sm" onClick={handleResubmit} className="text-warning">
-                <FaRedo className="inline mr-1" size={12} /> Submit New Version
-              </Button>
             </div>
           </Alert>
         )}

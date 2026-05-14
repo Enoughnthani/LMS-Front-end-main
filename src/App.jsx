@@ -57,6 +57,7 @@ import ProgramForm from "./components/program_manager/program_form/ProgramForm";
 import ProgramManagement from "./components/program_manager/ProgramManagement";
 import ProgramView from "./components/program_manager/view/ProgramView";
 import StaffDashboard from "./components/staff/StaffDashboard";
+import RoleManagerPage from "./components/admin/users/RoleManagerModal";
 
 export default function App() {
 
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="users/new" element={<UserFormPage />} />
           <Route path="users/new/bulk" element={<BulkUploadPage />} />
           <Route path="users/:id/edit" element={<UserFormPage />} />
+          <Route path="users/:userId/role-manager" element={<RoleManagerPage />} />
           <Route path="users/:id" element={<UserProfilePage />} />
           <Route path="settings" element={<AdminProfile />} />
           <Route path="activities" element={<AdminActivities />} />

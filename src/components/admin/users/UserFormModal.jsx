@@ -117,7 +117,7 @@ export default function UserFormPage({
             });
 
             if(result.success && editingUser) {
-                navigate(-1);
+                navigate("/user/admin/users");
             }
 
             setResponse(result);

@@ -1,6 +1,7 @@
 import { X, AlertCircle, CheckCircle } from "lucide-react";
 import { createContext, useContext, useState, useEffect } from "react";
 import { Alert } from "react-bootstrap";
+import { useLocation } from "react-router-dom";
 
 const ApiResponseContext = createContext();
 
@@ -8,6 +9,9 @@ export function ApiResponseProvider({ children }) {
   const [response, setResponse] = useState(null);
   const [visible, setVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const location = useLocation()
+
+
 
   function showResponse(newResponse) {
     if (visible) {
@@ -25,7 +29,6 @@ export function ApiResponseProvider({ children }) {
     }
   }
 
-  // Auto close
   useEffect(() => {
     if (visible) {
       const timer = setTimeout(() => {
@@ -35,13 +38,17 @@ export function ApiResponseProvider({ children }) {
     }
   }, [visible]);
 
+  useEffect(() => {
+    setVisible(false)
+  }, [location])
+
   const handleAnimationEnd = () => {
     if (!visible) {
       setShouldRender(false);
     }
   };
 
-  // ✅ SAME LOGIC AS YOUR FIRST COMPONENT
+
   const isBulk = response?.payload?.successCount !== undefined;
 
   const successCount = isBulk ? response?.payload?.successCount || 0 : 0;
