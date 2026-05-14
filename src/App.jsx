@@ -58,6 +58,7 @@ import ProgramManagement from "./components/program_manager/ProgramManagement";
 import ProgramView from "./components/program_manager/view/ProgramView";
 import StaffDashboard from "./components/staff/StaffDashboard";
 import RoleManagerPage from "./components/admin/users/RoleManagerModal";
+import AssessmentBuilderPage from "./components/facilitator/unit_standards/unit_standard/assessment/create/AssessmentBuilderPage";
 
 export default function App() {
 
@@ -142,6 +143,7 @@ export default function App() {
             <Route path="assessments" element={<AssessmentPage />} />
             <Route path="assessments/:assessmentId" element={<AssessmentViewPage />} />
             <Route path="assessments/new" element={<AssessmentFormPage />} />
+            <Route path="assessments/build" element={<AssessmentBuilderPage />} />
             <Route path="assessments/:assessmentId/edit" element={<AssessmentFormPage />} />
           </Route>
         </Route>
