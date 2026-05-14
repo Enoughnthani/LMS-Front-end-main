@@ -4,8 +4,7 @@ import { BASE_URL } from '@/utils/apiEndpoint';
 export const assessmentService = {
   // Get all assessments for a unit standard
   getAssessments: (unitStandardId) =>
-    apiFetch(`/api/assessments/unit-standard/${unitStandardId}`),
-  
+    apiFetch(`/api/assessments/unit-standard/${unitStandardId}/learner`),
 
   // Get assessment by ID
   getAssessmentById: (id) =>
