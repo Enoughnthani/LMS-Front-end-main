@@ -66,14 +66,27 @@ export default function FacilitatorAssessmentPage() {
             <h1 className="text-2xl font-semibold text-gray-900">Assessments</h1>
             <p className="text-sm text-gray-500 mt-1">Create and manage learner assessments</p>
           </div>
-          <Button
-            onClick={() => navigate(`new`)}
-            variant="success"
-            className='flex items-center gap-2 font-medium'
-          >
-            <FaPlus size={14} />
-            <span >New Assessment</span>
-          </Button>
+          <div className="flex gap-3">
+            {/* Quick Create - Simple form */}
+            <Button
+              onClick={() => navigate(`new`)}
+              variant="outline-primary"
+              className='flex items-center gap-2 font-medium'
+            >
+              <FaPlus size={14} />
+              <span>Quick Create</span>
+            </Button>
+
+            {/* Advanced Builder - Full assessment builder */}
+            <Button
+              onClick={() => navigate(`build`)}
+              variant="success"
+              className='flex items-center gap-2 font-medium'
+            >
+              <FaPlus size={14} />
+              <span>Build Assessment</span>
+            </Button>
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -144,7 +157,7 @@ export default function FacilitatorAssessmentPage() {
 
           {/* Summative Assessments */}
           <Accordion.Item eventKey="1" className="border border-gray-200 rounded overflow-hidden bg-white">
-            <Accordion.Header > 
+            <Accordion.Header >
               <div className="flex items-center gap-3 w-full">
                 <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
                   <FaClipboardList className="text-purple-600 text-sm" />

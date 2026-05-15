@@ -1,17 +1,26 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Form, Badge, Tab, Tabs } from 'react-bootstrap';
-import { 
+import {
   FaArrowLeft, FaPlus, FaTrash, FaSave, FaCopy, FaEye,
   FaCheckCircle, FaTimesCircle, FaListUl, FaPencilAlt,
   FaFont, FaAlignLeft, FaPlusCircle, FaRegCheckCircle
 } from 'react-icons/fa';
-import { assessmentService } from '../services/AssessmentService';
+import { Trash2 } from 'lucide-react';
+// Remove this line if AssessmentService doesn't exist or fix the path
+// import { assessmentService } from '../services/AssessmentService';
 
 export default function AssessmentBuilderPage() {
   const navigate = useNavigate();
   const { unitStandardId } = useParams();
   const [activeTab, setActiveTab] = useState('questions');
+  const [questionCounts, setQuestionCounts] = useState({
+    multipleChoice: 0,
+    trueOrFalse: 0,
+    fillInBlanks: 0,
+    longQuestion: 0,
+    matching: 0,
+  });
   const [assessmentInfo, setAssessmentInfo] = useState({
     title: '',
     description: '',
@@ -19,18 +28,33 @@ export default function AssessmentBuilderPage() {
     passingScore: 50,
     totalMarks: 0
   });
-  
-  const [questions, setQuestions] = useState([]);
-  const [editingQuestion, setEditingQuestion] = useState(null);
-  const [showQuestionModal, setShowQuestionModal] = useState(false);
 
-  // Question Types
+  const [questions, setQuestions] = useState([]);
+
+
+  const questionTypeOrder = {
+    trueOrFalse: 1,
+    multipleChoice: 2,
+    matching: 3,
+    fillInBlanks: 4,
+    longQuestion: 5
+  };
+
+  // Function to sort questions based on the defined order
+  const sortQuestions = (questionsToSort) => {
+    return [...questionsToSort].sort((a, b) => {
+      const orderA = questionTypeOrder[a.type] || 999;
+      const orderB = questionTypeOrder[b.type] || 999;
+      return orderA - orderB;
+    });
+  };
+
   const questionTypes = [
-    { id: 'multiple_choice', label: 'Multiple Choice', icon: <FaListUl />, description: 'Select one correct answer from options' },
-    { id: 'true_false', label: 'True / False', icon: <FaCheckCircle />, description: 'Choose true or false' },
-    { id: 'fill_blanks', label: 'Fill in the Blanks', icon: <FaFont />, description: 'Complete missing words in text' },
-    { id: 'long_answer', label: 'Long Answer', icon: <FaPencilAlt />, description: 'Written response' },
-    { id: 'matching', label: 'Matching', icon: <FaRegCheckCircle />, description: 'Match pairs correctly' }
+    { id: 'multipleChoice', count: questionCounts.multipleChoice, label: 'Multiple Choice', icon: <FaListUl />, description: 'Select one correct answer from options' },
+    { id: 'trueOrFalse', count: questionCounts.trueOrFalse, label: 'True / False', icon: <FaCheckCircle />, description: 'Choose true or false' },
+    { id: 'fillInBlanks', count: questionCounts.fillInBlanks, label: 'Fill in the Blanks', icon: <FaFont />, description: 'Complete missing words in text' },
+    { id: 'longQuestion', count: questionCounts.longQuestion, label: 'Long Question', icon: <FaPencilAlt />, description: 'Written response' },
+    { id: 'matching', count: questionCounts.matching, label: 'Matching', icon: <FaRegCheckCircle />, description: 'Match pairs correctly' }
   ];
 
   const addQuestion = (type) => {
@@ -42,20 +66,24 @@ export default function AssessmentBuilderPage() {
       explanation: ''
     };
 
-    switch(type) {
-      case 'multiple_choice':
+    switch (type) {
+      case 'multipleChoice':
         baseQuestion.options = ['', '', '', ''];
         baseQuestion.correctAnswer = '';
+        updateQuestionCount('multipleChoice')
         break;
-      case 'true_false':
+      case 'trueOrFalse':
         baseQuestion.correctAnswer = 'true';
+        updateQuestionCount('trueOrFalse')
         break;
-      case 'fill_blanks':
+      case 'fillInBlanks':
         baseQuestion.text = '';
         baseQuestion.blanks = [];
+        updateQuestionCount('fillInBlanks')
         break;
-      case 'long_answer':
+      case 'longQuestion':
         baseQuestion.sampleAnswer = '';
+        updateQuestionCount('longQuestion')
         break;
       case 'matching':
         baseQuestion.pairs = [
@@ -63,20 +91,26 @@ export default function AssessmentBuilderPage() {
           { left: '', right: '' },
           { left: '', right: '' }
         ];
+        updateQuestionCount('matching')
         break;
     }
 
-    setQuestions([...questions, baseQuestion]);
+    // Add the new question and then sort all questions
+    setQuestions(prevQuestions => sortQuestions([...prevQuestions, baseQuestion]));
   };
 
+  const updateQuestionCount = (key) => {
+    setQuestionCounts(p => ({ ...p, [key]: p[key] + 1 }))
+  }
+
   const updateQuestion = (id, field, value) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === id ? { ...q, [field]: value } : q
     ));
   };
 
   const updateOption = (questionId, optionIndex, value) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === questionId ? {
         ...q,
         options: q.options.map((opt, idx) => idx === optionIndex ? value : opt)
@@ -85,10 +119,10 @@ export default function AssessmentBuilderPage() {
   };
 
   const updatePair = (questionId, pairIndex, side, value) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === questionId ? {
         ...q,
-        pairs: q.pairs.map((pair, idx) => 
+        pairs: q.pairs.map((pair, idx) =>
           idx === pairIndex ? { ...pair, [side]: value } : pair
         )
       } : q
@@ -96,19 +130,19 @@ export default function AssessmentBuilderPage() {
   };
 
   const addOption = (questionId) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === questionId ? { ...q, options: [...q.options, ''] } : q
     ));
   };
 
   const addPair = (questionId) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === questionId ? { ...q, pairs: [...q.pairs, { left: '', right: '' }] } : q
     ));
   };
 
   const removeOption = (questionId, optionIndex) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === questionId ? {
         ...q,
         options: q.options.filter((_, idx) => idx !== optionIndex)
@@ -117,7 +151,7 @@ export default function AssessmentBuilderPage() {
   };
 
   const removePair = (questionId, pairIndex) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === questionId ? {
         ...q,
         pairs: q.pairs.filter((_, idx) => idx !== pairIndex)
@@ -127,17 +161,52 @@ export default function AssessmentBuilderPage() {
 
   const removeQuestion = (id) => {
     if (window.confirm('Delete this question?')) {
-      setQuestions(questions.filter(q => q.id !== id));
+      const questionToDelete = questions.find(q => q.id === id);
+
+      if (questionToDelete) {
+        const questionType = questionToDelete.type;
+        setQuestionCounts(prev => ({
+          ...prev,
+          [questionType]: prev[questionType] - 1
+        }));
+      }
+
+      // Filter out the deleted question and then sort the remaining ones
+      const remainingQuestions = questions.filter(q => q.id !== id);
+      setQuestions(sortQuestions(remainingQuestions));
     }
   };
 
   const duplicateQuestion = (question) => {
-    setQuestions([...questions, { ...question, id: Date.now() }]);
+    updateQuestionCount(question?.type);
+    const duplicatedQuestion = { ...question, id: Date.now() };
+    // Add the duplicated question and sort all questions
+    setQuestions(prevQuestions => sortQuestions([...prevQuestions, duplicatedQuestion]));
   };
 
   const calculateTotalMarks = () => {
     return questions.reduce((sum, q) => sum + (parseInt(q.marks) || 0), 0);
   };
+
+  const handleReset = () => {
+    setQuestionCounts({
+      multipleChoice: 0,
+      trueOrFalse: 0,
+      fillInBlanks: 0,
+      longQuestion: 0,
+      matching: 0,
+    });
+
+    setAssessmentInfo({
+      title: '',
+      description: '',
+      duration: 60,
+      passingScore: 50,
+      totalMarks: 0
+    });
+
+    setQuestions([])
+  }
 
   const handleSave = async () => {
     const totalMarks = calculateTotalMarks();
@@ -147,15 +216,16 @@ export default function AssessmentBuilderPage() {
       questions,
       unitStandardId: parseInt(unitStandardId)
     };
-    
+
     console.log('Saving assessment:', assessmentData);
+    // Uncomment and fix the path to AssessmentService if needed
     // await assessmentService.createAssessment(assessmentData);
     alert('Assessment saved successfully!');
   };
 
   const renderQuestionEditor = (question) => {
-    switch(question.type) {
-      case 'multiple_choice':
+    switch (question.type) {
+      case 'multipleChoice':
         return (
           <div className="space-y-3">
             {question.options.map((option, idx) => (
@@ -177,23 +247,23 @@ export default function AssessmentBuilderPage() {
                 {question.options.length > 2 && (
                   <button
                     onClick={() => removeOption(question.id, idx)}
-                    className="p-1 text-gray-400 hover:text-red-500"
+                    className="p-1 bg-transparent text-red-500"
                   >
-                    <FaTrash size={12} />
+                    <Trash2 size={15} />
                   </button>
                 )}
               </div>
             ))}
             <button
               onClick={() => addOption(question.id)}
-              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-2"
+              className="text-sm bg-transparent text-blue-700 flex items-center gap-1 mt-2"
             >
               <FaPlus size={12} /> Add Option
             </button>
           </div>
         );
 
-      case 'true_false':
+      case 'trueOrFalse':
         return (
           <div className="flex gap-4">
             <label className="flex items-center gap-2">
@@ -217,7 +287,7 @@ export default function AssessmentBuilderPage() {
           </div>
         );
 
-      case 'fill_blanks':
+      case 'fillInBlanks':
         return (
           <div>
             <p className="text-sm text-gray-500 mb-2">
@@ -232,7 +302,7 @@ export default function AssessmentBuilderPage() {
           </div>
         );
 
-      case 'long_answer':
+      case 'longQuestion':
         return (
           <div>
             <textarea
@@ -271,9 +341,9 @@ export default function AssessmentBuilderPage() {
                   {question.pairs.length > 2 && (
                     <button
                       onClick={() => removePair(question.id, idx)}
-                      className="p-1 text-gray-400 hover:text-red-500"
+                      className="p-1 bg-transparent text-red-500"
                     >
-                      <FaTrash size={12} />
+                      <Trash2 size={15} />
                     </button>
                   )}
                 </div>
@@ -281,7 +351,7 @@ export default function AssessmentBuilderPage() {
             ))}
             <button
               onClick={() => addPair(question.id)}
-              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-2"
+              className="text-sm bg-transparent text-blue-700 flex items-center gap-1 mt-2"
             >
               <FaPlus size={12} /> Add Pair
             </button>
@@ -295,13 +365,13 @@ export default function AssessmentBuilderPage() {
 
   return (
     <div className="overflow-y-auto w-full h-screen bg-gray-50 py-6">
-      <div className="max-w-5xl mx-auto px-6">
-        
+      <div className="px-6">
+
         {/* Header */}
         <div className="mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4 text-sm"
+            className="bg-transparent flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4 text-sm"
           >
             <FaArrowLeft size={14} /> Back
           </button>
@@ -354,21 +424,28 @@ export default function AssessmentBuilderPage() {
             </Card>
 
             {/* Question Types Grid */}
-            <div className="mb-6">
+            <div className="my-3">
               <h3 className="font-semibold text-gray-800 mb-3">Add Question</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {questionTypes.map((type) => (
                   <button
                     key={type.id}
                     onClick={() => addQuestion(type.id)}
-                    className="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md hover:border-blue-300 transition"
+                    className="bg-white relative border border-gray-200 rounded-lg p-4 text-center hover:shadow-md hover:border-blue-300 transition"
                   >
+                    <div className='absolute top-1 right-1'><Badge bg='success'>{type.count}</Badge></div>
                     <div className="text-2xl text-blue-500 mb-2">{type.icon}</div>
                     <div className="text-sm font-medium text-gray-700">{type.label}</div>
                     <div className="text-xs text-gray-400 mt-1">{type.description}</div>
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className='my-4 flex'>
+              <Button onClick={handleReset} className='ms-auto' variant='outline-secondary' size='sm'>
+                Reset
+              </Button>
             </div>
 
             {/* Questions List */}
@@ -379,7 +456,7 @@ export default function AssessmentBuilderPage() {
                     {/* Question Header */}
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                        <Badge className="bg-blue-100 text-blue-700 px-2 py-1">
+                        <Badge className="!bg-blue-100 text-blue-700 px-2 py-1">
                           {index + 1}. {questionTypes.find(t => t.id === question.type)?.label}
                         </Badge>
                         <input
@@ -393,14 +470,14 @@ export default function AssessmentBuilderPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => duplicateQuestion(question)}
-                          className="p-1 text-gray-400 hover:text-blue-500"
+                          className="p-1 bg-transparent text-blue-500"
                           title="Duplicate"
                         >
                           <FaCopy size={14} />
                         </button>
                         <button
                           onClick={() => removeQuestion(question.id)}
-                          className="p-1 text-gray-400 hover:text-red-500"
+                          className="p-1 bg-transparent text-red-500"
                           title="Delete"
                         >
                           <FaTrash size={14} />
@@ -480,14 +557,14 @@ export default function AssessmentBuilderPage() {
                   <span>Questions: {questions.length}</span>
                   <span>Total Marks: {calculateTotalMarks()}</span>
                 </div>
-                
+
                 {questions.map((question, index) => (
                   <div key={question.id} className="mb-6 p-4 bg-gray-50 rounded-lg">
                     <p className="font-medium text-gray-800 mb-2">{index + 1}. {question.text || '[Question text]'}</p>
                     <p className="text-xs text-gray-400 mb-2">({question.marks} marks)</p>
-                    
+
                     {/* Preview of answer options based on type */}
-                    {question.type === 'multiple_choice' && question.options && (
+                    {question.type === 'multipleChoice' && question.options && (
                       <div className="space-y-2 mt-2">
                         {question.options.map((opt, idx) => (
                           <div key={idx} className="flex items-center gap-2">
@@ -497,21 +574,27 @@ export default function AssessmentBuilderPage() {
                         ))}
                       </div>
                     )}
-                    
-                    {question.type === 'true_false' && (
+
+                    {question.type === 'trueOrFalse' && (
                       <div className="flex gap-4 mt-2">
                         <label className="flex items-center gap-2"><input type="radio" disabled /> True</label>
                         <label className="flex items-center gap-2"><input type="radio" disabled /> False</label>
                       </div>
                     )}
-                    
-                    {question.type === 'long_answer' && (
+
+                    {question.type === 'longQuestion' && (
                       <textarea disabled placeholder="Your answer..." className="w-full mt-2 p-2 border border-gray-200 rounded text-sm bg-white" rows={3} />
                     )}
-                    
-                    {question.type === 'fill_blanks' && (
+
+                    {question.type === 'fillInBlanks' && (
                       <div className="mt-2 p-2 bg-white border border-gray-200 rounded">
                         <p className="text-sm text-gray-600">{question.text || '[Sentence with blanks]'}</p>
+                      </div>
+                    )}
+
+                    {question.type === 'matching' && (
+                      <div className="mt-2 space-y-2">
+                        <p className="text-sm text-gray-600">Matching pairs will be displayed here</p>
                       </div>
                     )}
                   </div>
