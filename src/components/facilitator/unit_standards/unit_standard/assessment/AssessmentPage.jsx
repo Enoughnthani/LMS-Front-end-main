@@ -1,40 +1,57 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaPlus, FaSearch, FaBook, FaClipboardList } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaBook, FaClipboardList, FaQuestionCircle } from 'react-icons/fa';
 import { Accordion, Button } from 'react-bootstrap';
 import AssessmentCard from './AssessmentCard';
-import AssessmentModal from './AssessmentFormPage';
 import SubmissionsModal from './SubmissionsModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import { assessmentService } from './services/assessmentService';
 
 export default function FacilitatorAssessmentPage() {
   const { unitStandardId } = useParams();
-  const [assessments, setAssessments] = useState({ learnerWorkbooks: [], summative: [] });
+  const [assessments, setAssessments] = useState({ learnerWorkbooks: [], summative: [], tests: [] });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [selectedAssessment, setSelectedAssessment] = useState(null);
-  const [activeAccordion, setActiveAccordion] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadAssessments();
   }, [unitStandardId]);
 
+
+  const [selectedAssessment, setSelectedAssessment] = useState(() => {
+    const stored = sessionStorage.getItem("activeAccordion");
+    return stored ? JSON.parse(stored) : null;
+  });
+
+  const [activeAccordion, setActiveAccordion] = useState(() => {
+    const stored = sessionStorage.getItem("activeAccordion");
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  useEffect(() => {
+    loadAssessments();
+  }, [unitStandardId]);
+
+  useEffect(() => {
+    sessionStorage.setItem("activeAccordion", JSON.stringify(activeAccordion));
+  }, [activeAccordion]);
+
+
   const loadAssessments = async () => {
     setLoading(true);
     try {
-      // Actual API call to fetch assessments
       const response = await assessmentService.getAssessments(unitStandardId);
       const data = response?.payload || response || [];
 
       const grouped = {
         learnerWorkbooks: data?.filter(a => a.type === 'LEARNER_WORKBOOK') || [],
-        summative: data?.filter(a => a.type === 'SUMMATIVE') || []
+        summative: data?.filter(a => a.type === 'SUMMATIVE') || [],
+        tests: data?.filter(a => a.type === 'TEST') || []
       };
       setAssessments(grouped);
     } catch (error) {
@@ -74,17 +91,7 @@ export default function FacilitatorAssessmentPage() {
               className='flex items-center gap-2 font-medium'
             >
               <FaPlus size={14} />
-              <span>Quick Create</span>
-            </Button>
-
-            {/* Advanced Builder - Full assessment builder */}
-            <Button
-              onClick={() => navigate(`build`)}
-              variant="success"
-              className='flex items-center gap-2 font-medium'
-            >
-              <FaPlus size={14} />
-              <span>Build Assessment</span>
+              <span>Create</span>
             </Button>
           </div>
         </div>
@@ -103,14 +110,58 @@ export default function FacilitatorAssessmentPage() {
           </div>
         </div>
 
-
         <Accordion
           activeKey={activeAccordion}
           onSelect={(e) => setActiveAccordion(e)}
           className="space-y-4"
         >
-          {/* Learner Workbooks */}
+
+          {/* Tests */}
           <Accordion.Item eventKey="0" className="border border-gray-200 rounded overflow-hidden bg-white">
+            <Accordion.Header>
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                  <FaQuestionCircle className="text-green-600 text-sm" />
+                </div>
+                <span className="font-medium text-gray-800">Tests</span>
+                <span className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-xs">
+                  {filterItems(assessments.tests).length}
+                </span>
+              </div>
+            </Accordion.Header>
+            <Accordion.Body className="p-4 pt-0">
+              {filterItems(assessments.tests).length === 0 ? (
+                <div className="text-center py-10">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <FaQuestionCircle className="text-gray-400 text-lg" />
+                  </div>
+                  <p className="text-gray-400 text-sm">No tests found</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filterItems(assessments.tests).map(item => (
+                    <AssessmentCard
+                      key={item.id}
+                      item={item}
+                      questions={item.questions}
+
+                      onViewSubmissions={() => {
+                        setSelectedAssessment(item);
+                        setShowSubmissionsModal(true);
+                      }}
+                      onDelete={() => {
+                        setEditingItem(item);
+                        setShowDeleteModal(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </Accordion.Body>
+          </Accordion.Item>
+
+          {/* Learner Workbooks */}
+          <Accordion.Item eventKey="1" className="border border-gray-200 rounded overflow-hidden bg-white">
             <Accordion.Header>
               <div className="flex items-center gap-3 w-full">
                 <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
@@ -136,10 +187,6 @@ export default function FacilitatorAssessmentPage() {
                     <AssessmentCard
                       key={item.id}
                       item={item}
-                      onEdit={() => {
-                        setEditingItem(item);
-                        setShowModal(true);
-                      }}
                       onViewSubmissions={() => {
                         setSelectedAssessment(item);
                         setShowSubmissionsModal(true);
@@ -156,8 +203,8 @@ export default function FacilitatorAssessmentPage() {
           </Accordion.Item>
 
           {/* Summative Assessments */}
-          <Accordion.Item eventKey="1" className="border border-gray-200 rounded overflow-hidden bg-white">
-            <Accordion.Header >
+          <Accordion.Item eventKey="2" className="border border-gray-200 rounded overflow-hidden bg-white">
+            <Accordion.Header>
               <div className="flex items-center gap-3 w-full">
                 <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
                   <FaClipboardList className="text-purple-600 text-sm" />
@@ -182,10 +229,6 @@ export default function FacilitatorAssessmentPage() {
                     <AssessmentCard
                       key={item.id}
                       item={item}
-                      onEdit={() => {
-                        setEditingItem(item);
-                        setShowModal(true);
-                      }}
                       onViewSubmissions={() => {
                         setSelectedAssessment(item);
                         setShowSubmissionsModal(true);
@@ -202,8 +245,6 @@ export default function FacilitatorAssessmentPage() {
           </Accordion.Item>
         </Accordion>
       </div>
-
-
 
       <SubmissionsModal
         show={showSubmissionsModal}

@@ -17,7 +17,7 @@ export const assessmentService = {
   getUserSubmission: (assessmentId) =>
     apiFetch(`/api/assessments/${assessmentId}/submission`),
 
-  // Create assessment (with or without file)
+
   createAssessment: (formData, onProgress) => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();

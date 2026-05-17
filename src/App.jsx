@@ -18,6 +18,7 @@ import HelpPage from "./components/admin/Help/HelpPage";
 import NotificationPage from "./components/admin/notifications/NotificationPage";
 import AdminDashboardOverview from "./components/admin/overview/AdminDashboardOverview";
 import BulkUploadPage from "./components/admin/users/BulkUploadModal";
+import RoleManagerPage from "./components/admin/users/RoleManagerModal";
 import UserFormPage from "./components/admin/users/UserFormModal";
 import UserProfilePage from "./components/admin/users/UserProfilePage";
 import Login from "./components/auth/Login";
@@ -25,9 +26,9 @@ import Layout from "./components/common/Layout";
 import ProfilePage from "./components/common/ProfilePage";
 import EnrolledLearnerView from "./components/facilitator/enronlled_learners_view/EnrolledLearnerView";
 import FacilitatorProgramOverview from "./components/facilitator/overview/FacilitatorProgramOverview";
-import AssessmentFormPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentFormPage";
 import AssessmentPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentPage";
 import AssessmentViewPage from "./components/facilitator/unit_standards/unit_standard/assessment/AssessmentViewPage";
+import AssessmentFormPage from "./components/facilitator/unit_standards/unit_standard/assessment/create/AssessmentFormPage";
 import UnitStandardResources from "./components/facilitator/unit_standards/unit_standard/content/UnitStandardResources";
 import UnitStandardOverview from "./components/facilitator/unit_standards/unit_standard/overview/UnitStandardOverview";
 import UnitStandardLayout from "./components/facilitator/unit_standards/unit_standard/UnitStandardLayout";
@@ -37,8 +38,8 @@ import FacilitatorProgramView from "./components/facilitator/view/FacilitatorPro
 import InternPage from "./components/intern/InternPage";
 import InternOverview from "./components/intern/overview/InternOverview";
 import InternReportPage from "./components/intern/reports/InternReportPage";
-import AssessmentDetailPage from "./components/learner/assessment/AssessmentDetailPage";
 import LearnerAssessmentPage from "./components/learner/assessment/LearnerAssessmentPage";
+import WriteAssessment from "./components/learner/assessment/write/WriteAssessment";
 import ContentPage from "./components/learner/content/LearnerContentPage";
 import { CourseViewPage } from "./components/learner/course_view/CourseViewPage";
 import LearnerUnitStandardOverview from "./components/learner/overview/LearnerUnitStandardOverview";
@@ -57,8 +58,7 @@ import ProgramForm from "./components/program_manager/program_form/ProgramForm";
 import ProgramManagement from "./components/program_manager/ProgramManagement";
 import ProgramView from "./components/program_manager/view/ProgramView";
 import StaffDashboard from "./components/staff/StaffDashboard";
-import RoleManagerPage from "./components/admin/users/RoleManagerModal";
-import AssessmentBuilderPage from "./components/facilitator/unit_standards/unit_standard/assessment/create/AssessmentBuilderPage";
+import DocumentAssessment from "./components/learner/assessment/DocumentAssessment";
 
 export default function App() {
 
@@ -143,7 +143,6 @@ export default function App() {
             <Route path="assessments" element={<AssessmentPage />} />
             <Route path="assessments/:assessmentId" element={<AssessmentViewPage />} />
             <Route path="assessments/new" element={<AssessmentFormPage />} />
-            <Route path="assessments/build" element={<AssessmentBuilderPage />} />
             <Route path="assessments/:assessmentId/edit" element={<AssessmentFormPage />} />
           </Route>
         </Route>
@@ -191,7 +190,8 @@ export default function App() {
             <Route path="content" element={<ContentPage />} />
 
             <Route path="assessments" element={<LearnerAssessmentPage />} />
-            <Route path="assessments/:id" element={<AssessmentDetailPage />} />
+            <Route path="assessments/:id" element={<DocumentAssessment />} />
+            <Route path="assessments/:id/write" element={<WriteAssessment />} />
             
 
           </Route>

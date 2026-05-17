@@ -10,7 +10,7 @@ export default function LearnerAssessmentPage() {
   const [assessments, setAssessments] = useState({
     learnerWorkbooks: [],
     summative: [],
-    exams: []
+    test: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,11 +24,11 @@ export default function LearnerAssessmentPage() {
     try {
       const response = await assessmentService.getAssessments(unitStandardId);
       const data = response?.payload || response || [];
-      
+
       const grouped = {
         learnerWorkbooks: data.filter(a => a.type === 'LEARNER_WORKBOOK'),
         summative: data.filter(a => a.type === 'SUMMATIVE'),
-        exams: data.filter(a => a.type === 'EXAM')
+        test: data.filter(a => a.type === 'TEST')
       };
       setAssessments(grouped);
     } catch (err) {
@@ -51,7 +51,7 @@ export default function LearnerAssessmentPage() {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  const AssessmentItem = ({ item }) => {
+  const AssessmentItem = ({ item, path }) => {
     const hasSubmission = item.hasSubmission || false;
     const submission = item?.submission;
     const status = submission?.status;
@@ -99,7 +99,7 @@ export default function LearnerAssessmentPage() {
                       <Badge bg="success" className="text-xs">Graded</Badge>
                     )}
                     {status === 'RE_SUBMITTED' && (
-                      <Badge  className="text-xs !bg-amber-700 text-uppercase font-bold">Resubmitted</Badge>
+                      <Badge className="text-xs !bg-amber-700 text-uppercase font-bold">Resubmitted</Badge>
                     )}
                   </div>
                   <p className="text-xs text-gray-500">
@@ -130,7 +130,7 @@ export default function LearnerAssessmentPage() {
                   <p className="text-xs text-gray-400">No submission yet</p>
                 </div>
                 <Button
-                  onClick={() => navigate(`${item.id}`)}
+                  onClick={() => navigate(path || `${item.id}`)}
                   size="sm"
                   variant="primary"
                   className="rounded-md text-xs"
@@ -167,7 +167,7 @@ export default function LearnerAssessmentPage() {
     );
   }
 
-  const hasAssessments = assessments.learnerWorkbooks.length > 0 || assessments.summative.length > 0 || assessments.exams.length > 0;
+  const hasAssessments = assessments.learnerWorkbooks.length > 0 || assessments.summative.length > 0 || assessments.test.length > 0;
 
   if (!hasAssessments) {
     return (
@@ -242,21 +242,21 @@ export default function LearnerAssessmentPage() {
             </Accordion.Item>
           )}
 
-          {/* Exams */}
-          {assessments.exams.length > 0 && (
+          {/* Test */}
+          {assessments.test.length > 0 && (
             <Accordion.Item eventKey="2" className="border rounded-lg overflow-hidden shadow-sm">
               <Accordion.Header>
                 <div className="flex items-center gap-2">
                   <FaGraduationCap className="text-red-500 text-sm" />
-                  <span className="font-semibold text-sm text-gray-700">Examinations</span>
+                  <span className="font-semibold text-sm text-gray-700">Test</span>
                   <Badge bg="secondary" className="ms-2 rounded-pill">
-                    {assessments.exams.length}
+                    {assessments.test.length}
                   </Badge>
                 </div>
               </Accordion.Header>
               <Accordion.Body className="p-3">
-                {assessments.exams.map((item) => (
-                  <AssessmentItem key={item.id} item={item} />
+                {assessments.test.map((item) => (
+                  <AssessmentItem path={`${item?.id}/write`} key={item.id} item={item} />
                 ))}
               </Accordion.Body>
             </Accordion.Item>
